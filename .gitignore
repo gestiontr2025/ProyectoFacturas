@@ -1,0 +1,115 @@
+# ==========================================================
+# ARCHIVOS Y CARPETAS IGNORADOS POR GIT
+# ==========================================================
+#
+# Este archivo le indica a Git qué archivos NO deben formar
+# parte del repositorio.
+#
+# Ignorar un archivo significa que Git no lo agregará al
+# historial del proyecto cuando utilicemos:
+#
+#     git add
+#
+# Esto resulta útil para excluir:
+#
+# - Información privada.
+# - Archivos temporales.
+# - Archivos generados automáticamente.
+# - Configuraciones personales.
+#
+# ==========================================================
+
+
+# ==========================================================
+# VARIABLES DE ENTORNO
+# ==========================================================
+#
+# El archivo .env contiene información privada como:
+#
+# - correo electrónico
+# - contraseña de aplicación
+#
+# Nunca debe subirse a GitHub.
+#
+# Cada desarrollador tendrá su propio archivo .env.
+# ==========================================================
+
+.env
+
+
+# ==========================================================
+# CACHÉ DE PYTHON
+# ==========================================================
+#
+# Cada vez que ejecutamos un programa, Python puede crear
+# automáticamente una carpeta llamada __pycache__.
+#
+# Dentro de ella guarda archivos compilados para acelerar
+# futuras ejecuciones.
+#
+# Esos archivos pueden volver a generarse en cualquier
+# momento, por lo que no tiene sentido incluirlos en Git.
+# ==========================================================
+
+__pycache__/
+
+
+# ==========================================================
+# ARCHIVOS COMPILADOS DE PYTHON
+# ==========================================================
+#
+# Python también puede generar archivos con extensión:
+#
+#     .pyc
+#
+# Son archivos compilados automáticamente.
+#
+# Tampoco forman parte del código fuente.
+# ==========================================================
+
+*.pyc
+
+
+# ==========================================================
+# ENTORNOS VIRTUALES
+# ==========================================================
+#
+# Más adelante probablemente creemos un entorno virtual
+# para instalar las bibliotecas utilizadas por el proyecto.
+#
+# Esa carpeta puede llamarse:
+#
+#     .venv
+#
+# o bien:
+#
+#     venv
+#
+# El entorno virtual puede recrearse fácilmente utilizando
+# el archivo requirements.txt, por lo que tampoco debe
+# almacenarse en Git.
+# ==========================================================
+
+.venv/
+
+venv/
+
+
+# ==========================================================
+# CONFIGURACIÓN LOCAL DE VISUAL STUDIO CODE
+# ==========================================================
+#
+# VS Code guarda algunas configuraciones personales dentro
+# de la carpeta .vscode.
+#
+# Por ejemplo:
+#
+# - preferencias del editor
+# - configuración del depurador
+# - extensiones recomendadas
+#
+# Como esas configuraciones dependen de cada desarrollador,
+# normalmente no se incluyen dentro del repositorio.
+# ==========================================================
+
+.vscode/
