@@ -113,3 +113,7 @@ venv/
 # ==========================================================
 
 .vscode/
+
+#ignorar carepotas facturas
+Facturas/
+
