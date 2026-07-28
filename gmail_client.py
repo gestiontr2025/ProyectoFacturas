@@ -7,7 +7,7 @@ ProyectoFacturas
 
 Versión
 --------
-0.3
+0.4
 
 Archivo
 --------
@@ -25,10 +25,12 @@ Responsabilidades actuales
 ✔ Seleccionar la carpeta "Todos".
 ✔ Buscar todos los correos.
 ✔ Devolver los identificadores de los correos.
+✔ Obtener un correo individual desde Gmail.
+✔ Convertir el contenido del correo en un objeto EmailMessage.
 
 Responsabilidades futuras
 -------------------------
-✔ Leer correos individuales.
+✔ Mostrar los datos principales de los correos.
 ✔ Detectar archivos adjuntos.
 ✔ Descargar archivos adjuntos.
 
@@ -52,6 +54,7 @@ ChatGPT (mentor técnico)
 # INICIO DEL BLOQUE DE IMPORTACIONES
 # ==========================================================
 
+
 # ----------------------------------------------------------
 # Biblioteca oficial de Python para trabajar con el protocolo
 # IMAP.
@@ -72,6 +75,47 @@ import imaplib
 
 
 # ----------------------------------------------------------
+# Biblioteca oficial de Python para interpretar correos
+# electrónicos.
+#
+# Gmail entrega el contenido de los mensajes en formato
+# bytes, es decir, como una secuencia de datos binarios.
+#
+# El módulo email permite convertir esos bytes en un objeto
+# de correo electrónico que Python puede comprender.
+#
+# Una vez convertido el mensaje, podremos acceder a datos
+# como:
+#
+# - El asunto.
+# - El remitente.
+# - El destinatario.
+# - La fecha.
+# - El cuerpo del mensaje.
+# - Los archivos adjuntos.
+# ----------------------------------------------------------
+
+import email
+
+
+# ----------------------------------------------------------
+# Importamos policy desde el módulo email.
+#
+# Una "policy" define cómo debe interpretar Python la
+# estructura interna de un correo electrónico.
+#
+# policy.default utiliza el comportamiento moderno recomendado
+# por Python y genera objetos EmailMessage.
+#
+# Los objetos EmailMessage son más cómodos de utilizar que
+# los objetos producidos por el comportamiento antiguo del
+# módulo email.
+# ----------------------------------------------------------
+
+from email import policy
+
+
+# ----------------------------------------------------------
 # Importamos nuestro propio módulo config.py.
 #
 # Desde allí obtenemos:
@@ -87,6 +131,7 @@ import imaplib
 # ----------------------------------------------------------
 
 import config
+
 
 # ==========================================================
 # FIN DEL BLOQUE DE IMPORTACIONES
@@ -727,6 +772,509 @@ def buscar_todos_los_correos(conexion):
 
 # ==========================================================
 # FIN DE LA FUNCIÓN buscar_todos_los_correos()
+# ==========================================================
+
+
+# ==========================================================
+# INICIO DE LA FUNCIÓN leer_correo()
+# ==========================================================
+
+def leer_correo(conexion, id_correo):
+    """
+    ==========================================================
+    FUNCIÓN
+    ==========================================================
+
+    leer_correo(conexion, id_correo)
+
+    ----------------------------------------------------------
+    OBJETIVO
+    ----------------------------------------------------------
+
+    Obtener un único correo completo desde Gmail utilizando
+    su identificador IMAP.
+
+    Gmail entrega el contenido del correo en formato bytes.
+
+    La función convierte esos bytes en un objeto EmailMessage
+    que posteriormente podrá ser utilizado por otras funciones
+    para consultar:
+
+    - El asunto.
+    - El remitente.
+    - El destinatario.
+    - La fecha.
+    - El cuerpo del mensaje.
+    - Los archivos adjuntos.
+
+    ----------------------------------------------------------
+    PARÁMETROS
+    ----------------------------------------------------------
+
+    conexion:
+
+        Es la conexión IMAP activa devuelta por conectar().
+
+        La carpeta correspondiente debe haber sido seleccionada
+        previamente mediante buscar_todos_los_correos().
+
+    id_correo:
+
+        Es el identificador IMAP del mensaje que queremos
+        obtener.
+
+        Estos identificadores son devueltos por la función
+        buscar_todos_los_correos().
+
+        Por ejemplo:
+
+            b'1'
+            b'25'
+            b'1315'
+
+    ----------------------------------------------------------
+    RETORNA
+    ----------------------------------------------------------
+
+    Devuelve un objeto EmailMessage que representa el correo
+    electrónico completo.
+
+    Por ejemplo, más adelante podremos consultar:
+
+        mensaje["Subject"]
+        mensaje["From"]
+        mensaje["To"]
+        mensaje["Date"]
+
+    ----------------------------------------------------------
+    POSIBLES ERRORES
+    ----------------------------------------------------------
+
+    La función produce un RuntimeError si:
+
+    - Gmail no puede obtener el correo solicitado.
+    - Gmail devuelve una respuesta vacía.
+    - La respuesta no tiene la estructura esperada.
+    - El contenido del mensaje no se encuentra en bytes.
+
+    ----------------------------------------------------------
+    IMPORTANTE
+    ----------------------------------------------------------
+
+    Esta función solamente obtiene e interpreta el correo.
+
+    NO:
+
+    - Muestra los datos del correo en pantalla.
+    - Guarda el correo en el disco.
+    - Descarga archivos adjuntos.
+    - Guarda archivos PDF.
+    - Analiza facturas.
+    - Renombra archivos.
+
+    ==========================================================
+    """
+
+    # ------------------------------------------------------
+    # conexion.fetch() solicita a Gmail el contenido de un
+    # correo específico.
+    #
+    # Recibe dos argumentos:
+    #
+    # id_correo:
+    #     Es el identificador del mensaje que queremos leer.
+    #
+    # "(RFC822)":
+    #     Le indica a Gmail que queremos recibir el mensaje
+    #     electrónico completo.
+    #
+    # RFC822 es un formato estándar utilizado para representar
+    # mensajes de correo electrónico.
+    #
+    # El resultado se divide en dos variables:
+    #
+    # estado:
+    #     Indica si la operación se realizó correctamente.
+    #     Normalmente tendrá el valor "OK".
+    #
+    # datos_correo:
+    #     Contiene la respuesta enviada por Gmail, incluyendo
+    #     el contenido completo del mensaje.
+    # ------------------------------------------------------
+
+    estado, datos_correo = conexion.fetch(
+        id_correo,
+        "(RFC822)"
+    )
+
+
+    # ------------------------------------------------------
+    # INICIO DEL BLOQUE IF:
+    # comprobación de la respuesta de Gmail
+    # ------------------------------------------------------
+
+    if estado != "OK":
+        # Este bloque solamente se ejecutará si Gmail no pudo
+        # obtener correctamente el correo solicitado.
+
+        raise RuntimeError(
+            f"Gmail no pudo obtener el correo con ID "
+            f"{id_correo!r}."
+        )
+
+    # ------------------------------------------------------
+    # FIN DEL BLOQUE IF:
+    # comprobación de la respuesta de Gmail
+    # ------------------------------------------------------
+
+
+    # ------------------------------------------------------
+    # INICIO DEL BLOQUE IF:
+    # comprobación de respuesta vacía
+    # ------------------------------------------------------
+
+    if not datos_correo:
+        # "not datos_correo" será verdadero si Gmail devuelve:
+        #
+        # - Una lista vacía.
+        # - El valor None.
+        # - Cualquier otro valor considerado vacío.
+        #
+        # Aunque el estado haya sido "OK", necesitamos confirmar
+        # que Gmail realmente haya enviado información.
+
+        raise RuntimeError(
+            f"Gmail respondió sin datos para el correo con ID "
+            f"{id_correo!r}."
+        )
+
+    # ------------------------------------------------------
+    # FIN DEL BLOQUE IF:
+    # comprobación de respuesta vacía
+    # ------------------------------------------------------
+
+
+    # ------------------------------------------------------
+    # Gmail normalmente devuelve una estructura parecida a:
+    #
+    # [
+    #     (
+    #         b'1 (RFC822 {cantidad_de_bytes})',
+    #         b'contenido completo del correo'
+    #     ),
+    #     b')'
+    # ]
+    #
+    # datos_correo[0] obtiene el primer elemento de la lista.
+    #
+    # Ese primer elemento debería ser una tupla.
+    #
+    # Una tupla es una colección ordenada, parecida a una
+    # lista, pero que normalmente se utiliza para agrupar
+    # valores relacionados.
+    # ------------------------------------------------------
+
+    primer_elemento = datos_correo[0]
+
+
+    # ------------------------------------------------------
+    # INICIO DEL BLOQUE IF:
+    # comprobación del tipo de dato recibido
+    # ------------------------------------------------------
+
+    if not isinstance(primer_elemento, tuple):
+        # isinstance() comprueba si un valor pertenece a un
+        # tipo determinado.
+        #
+        # En este caso preguntamos:
+        #
+        #     ¿primer_elemento es una tupla?
+        #
+        # Si no es una tupla, la respuesta de Gmail no tiene
+        # la estructura que esperábamos.
+
+        raise RuntimeError(
+            f"El correo con ID {id_correo!r} no tiene "
+            f"la estructura esperada."
+        )
+
+    # ------------------------------------------------------
+    # FIN DEL BLOQUE IF:
+    # comprobación del tipo de dato recibido
+    # ------------------------------------------------------
+
+
+    # ------------------------------------------------------
+    # INICIO DEL BLOQUE IF:
+    # comprobación de la cantidad de elementos de la tupla
+    # ------------------------------------------------------
+
+    if len(primer_elemento) < 2:
+        # La tupla debería contener al menos dos posiciones:
+        #
+        # Posición 0:
+        #     Información técnica enviada por Gmail.
+        #
+        # Posición 1:
+        #     Contenido completo del correo en bytes.
+        #
+        # Si tiene menos de dos elementos, no podremos acceder
+        # al contenido del mensaje.
+
+        raise RuntimeError(
+            f"La respuesta del correo con ID {id_correo!r} "
+            f"está incompleta."
+        )
+
+    # ------------------------------------------------------
+    # FIN DEL BLOQUE IF:
+    # comprobación de la cantidad de elementos de la tupla
+    # ------------------------------------------------------
+
+
+    # ------------------------------------------------------
+    # Obtenemos el elemento ubicado en la posición 1.
+    #
+    # En Python, las posiciones comienzan desde cero:
+    #
+    # primer_elemento[0]
+    #     Contiene la información técnica.
+    #
+    # primer_elemento[1]
+    #     Contiene el correo completo en formato bytes.
+    # ------------------------------------------------------
+
+    correo_bytes = primer_elemento[1]
+
+
+    # ------------------------------------------------------
+    # INICIO DEL BLOQUE IF:
+    # comprobación de que el correo esté en formato bytes
+    # ------------------------------------------------------
+
+    if not isinstance(correo_bytes, bytes):
+        # Para que email.message_from_bytes() pueda interpretar
+        # correctamente el mensaje, necesitamos que su contenido
+        # sea un objeto de tipo bytes.
+
+        raise RuntimeError(
+            f"El contenido del correo con ID {id_correo!r} "
+            f"no se encuentra en formato bytes."
+        )
+
+    # ------------------------------------------------------
+    # FIN DEL BLOQUE IF:
+    # comprobación de que el correo esté en formato bytes
+    # ------------------------------------------------------
+
+
+    # ------------------------------------------------------
+    # email.message_from_bytes() interpreta el contenido
+    # binario del correo.
+    #
+    # Recibe:
+    #
+    # correo_bytes:
+    #     El contenido completo enviado por Gmail.
+    #
+    # policy=policy.default:
+    #     Indica que queremos utilizar el comportamiento moderno
+    #     recomendado por Python.
+    #
+    # El resultado será un objeto EmailMessage.
+    #
+    # Este objeto ya separa y organiza correctamente:
+    #
+    # - Los encabezados.
+    # - El cuerpo.
+    # - Las diferentes partes MIME.
+    # - Los archivos adjuntos.
+    # ------------------------------------------------------
+
+    mensaje = email.message_from_bytes(
+        correo_bytes,
+        policy=policy.default
+    )
+
+
+    # ------------------------------------------------------
+    # Devolvemos el objeto EmailMessage.
+    #
+    # Esta función no muestra nada en pantalla.
+    #
+    # La función que llame a leer_correo() decidirá qué hacer
+    # con el mensaje recibido.
+    # ------------------------------------------------------
+
+    return mensaje
+
+# ==========================================================
+# FIN DE LA FUNCIÓN leer_correo()
+# ==========================================================
+
+# ==========================================================
+# INICIO DE LA FUNCIÓN obtener_datos_correo()
+# ==========================================================
+
+def obtener_datos_correo(mensaje):
+    """
+    ==========================================================
+    FUNCIÓN
+    ==========================================================
+
+    obtener_datos_correo(mensaje)
+
+    ----------------------------------------------------------
+    OBJETIVO
+    ----------------------------------------------------------
+
+    Extraer los encabezados principales de un correo
+    electrónico.
+
+    Esta función recibe un objeto EmailMessage y obtiene la
+    información más importante de sus encabezados.
+
+    Actualmente extrae:
+
+    - Subject (Asunto)
+    - From (Remitente)
+    - To (Destinatario)
+    - Date (Fecha)
+
+    ----------------------------------------------------------
+    PARÁMETROS
+    ----------------------------------------------------------
+
+    mensaje:
+
+        Es un objeto EmailMessage devuelto previamente por la
+        función leer_correo().
+
+    ----------------------------------------------------------
+    RETORNA
+    ----------------------------------------------------------
+
+    Devuelve un diccionario con los encabezados principales
+    del correo.
+
+    Por ejemplo:
+
+    {
+        "Subject": "...",
+        "From": "...",
+        "To": "...",
+        "Date": "..."
+    }
+
+    ----------------------------------------------------------
+    IMPORTANTE
+    ----------------------------------------------------------
+
+    Esta función NO imprime información en pantalla.
+
+    Su única responsabilidad consiste en leer los encabezados
+    del mensaje y devolverlos organizados dentro de un
+    diccionario.
+
+    Si algún encabezado no existe, se devuelve un texto
+    descriptivo en su lugar.
+
+    ==========================================================
+    """
+
+    # ------------------------------------------------------
+    # Los encabezados de un EmailMessage funcionan de manera
+    # parecida a un diccionario.
+    #
+    # Por ejemplo:
+    #
+    # mensaje["Subject"]
+    #
+    # obtiene el asunto del correo.
+    #
+    # Sin embargo, algunos correos pueden no contener alguno
+    # de estos encabezados.
+    #
+    # Para evitar obtener el valor None, utilizamos get(),
+    # que nos permite indicar un valor por defecto.
+    # ------------------------------------------------------
+
+    # ------------------------------------------------------
+    # Obtenemos el asunto.
+    # ------------------------------------------------------
+
+    asunto = mensaje.get(
+        "Subject",
+        "Sin asunto"
+    )
+
+
+    # ------------------------------------------------------
+    # Obtenemos el remitente.
+    # ------------------------------------------------------
+
+    remitente = mensaje.get(
+        "From",
+        "Remitente no informado"
+    )
+
+
+    # ------------------------------------------------------
+    # Obtenemos el destinatario.
+    # ------------------------------------------------------
+
+    destinatario = mensaje.get(
+        "To",
+        "Destinatario no informado"
+    )
+
+
+    # ------------------------------------------------------
+    # Obtenemos la fecha del mensaje.
+    # ------------------------------------------------------
+
+    fecha = mensaje.get(
+        "Date",
+        "Fecha no informada"
+    )
+
+
+    # ------------------------------------------------------
+    # Creamos un diccionario para agrupar todos los datos.
+    #
+    # Un diccionario es una colección formada por pares:
+    #
+    #     clave : valor
+    #
+    # En este caso utilizamos como claves los nombres reales
+    # de los encabezados del correo electrónico.
+    # ------------------------------------------------------
+
+    datos_correo = {
+
+        "Subject": asunto,
+
+        "From": remitente,
+
+        "To": destinatario,
+
+        "Date": fecha
+
+    }
+
+
+    # ------------------------------------------------------
+    # Devolvemos el diccionario completo.
+    #
+    # La función que llame a obtener_datos_correo() decidirá
+    # posteriormente cómo mostrar esta información al usuario.
+    # ------------------------------------------------------
+
+    return datos_correo
+
+
+# ==========================================================
+# FIN DE LA FUNCIÓN obtener_datos_correo()
 # ==========================================================
 
 
