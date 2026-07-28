@@ -3,11 +3,11 @@
 PROYECTO
 ==========================================================
 
-ProyectoFacturas
+Proyecto Facturas
 
 Versión
 --------
-0.5
+0.6
 
 Archivo
 --------
@@ -15,36 +15,27 @@ main.py
 
 Descripción
 -----------
-Este archivo es el punto de entrada principal del programa.
+Este archivo funciona como punto de entrada principal del
+programa.
 
-Cuando ejecutamos:
+Su responsabilidad consiste en coordinar las funciones
+definidas en otros módulos.
 
-    python main.py
+Actualmente, el programa realiza los siguientes pasos:
 
-Python comienza leyendo este archivo.
+1. Muestra la información general del proyecto.
+2. Muestra parte de la configuración utilizada.
+3. Se conecta con Gmail.
+4. Busca todos los correos de la cuenta.
+5. Selecciona el correo más reciente.
+6. Lee el correo completo.
+7. Extrae sus encabezados principales.
+8. Muestra esos encabezados.
+9. Detecta los archivos adjuntos.
+10. Muestra el nombre y el tipo de cada adjunto.
+11. Cierra correctamente la conexión con Gmail.
 
-La responsabilidad de main.py es coordinar el trabajo
-de los distintos módulos del proyecto.
-
-Este archivo NO debe contener la lógica específica de:
-
-- Conexión interna con Gmail.
-- Búsqueda interna de correos.
-- Interpretación interna de mensajes.
-- Lectura de archivos PDF.
-- Creación de carpetas.
-- Renombrado de facturas.
-
-Su función es organizar el flujo general del programa
-llamando a las funciones correspondientes de cada módulo.
-
-En esta versión, main.py coordina:
-
-- La conexión con Gmail.
-- La búsqueda de todos los correos.
-- La lectura del correo más reciente.
-- La extracción de sus encabezados principales.
-- La presentación de esos datos en la terminal.
+En esta versión todavía NO se descargan archivos.
 
 Autor
 ------
@@ -61,41 +52,35 @@ ChatGPT (mentor técnico)
 
 
 # ----------------------------------------------------------
-# Importamos el módulo de configuración.
+# Importamos el módulo config.
 #
-# Este módulo contiene la información configurable
-# del proyecto.
+# Desde config.py obtenemos información general del proyecto
+# y datos de configuración, como:
 #
-# Por ejemplo:
+# - El nombre del proyecto.
+# - La versión actual.
+# - El autor.
+# - La dirección de correo.
+# - El nombre de la carpeta de destino.
 #
-# - Nombre del proyecto.
-# - Versión actual.
-# - Autor.
-# - Correo electrónico.
-# - Contraseña de aplicación.
-# - Carpeta donde se guardarán las facturas.
+# De esta manera evitamos repetir esos valores dentro de
+# diferentes archivos.
 # ----------------------------------------------------------
 
 import config
 
 
 # ----------------------------------------------------------
-# Importamos el módulo encargado de las tareas relacionadas
-# con Gmail.
+# Importamos gmail_client.
 #
-# Actualmente contiene:
+# Este módulo contiene las funciones relacionadas con Gmail:
 #
 # - conectar()
 # - encontrar_carpeta_todos()
 # - buscar_todos_los_correos()
 # - leer_correo()
 # - obtener_datos_correo()
-#
-# Más adelante también contendrá funciones para:
-#
-# - Detectar archivos adjuntos.
-# - Identificar archivos PDF.
-# - Descargar archivos adjuntos.
+# - obtener_adjuntos()
 # ----------------------------------------------------------
 
 import gmail_client
@@ -128,7 +113,13 @@ def mostrar_informacion_proyecto():
     ----------------------------------------------------------
 
     Mostrar en la terminal la información general del
-    proyecto y la configuración principal de la ejecución.
+    proyecto.
+
+    Actualmente muestra:
+
+    - Nombre del proyecto.
+    - Versión.
+    - Autor.
 
     ----------------------------------------------------------
     PARÁMETROS
@@ -142,60 +133,132 @@ def mostrar_informacion_proyecto():
 
     Esta función no devuelve ningún valor.
 
-    Solamente muestra información mediante print().
+    Solamente imprime información en pantalla.
 
     ==========================================================
     """
 
     # ------------------------------------------------------
-    # INICIO DEL BLOQUE DE INFORMACIÓN GENERAL
+    # Mostramos un separador visual.
     # ------------------------------------------------------
 
+    print()
     print("==================================================")
+    print("INFORMACIÓN DEL PROYECTO")
+    print("==================================================")
+
+
+    # ------------------------------------------------------
+    # Obtenemos los valores directamente desde config.py.
+    #
+    # Esto permite modificar el nombre, la versión o el autor
+    # en un único archivo.
+    # ------------------------------------------------------
+
+    print("Proyecto:")
     print(config.PROJECT_NAME)
-    print(f"Versión {config.PROJECT_VERSION}")
-    print(f"Autor: {config.PROJECT_AUTHOR}")
-    print("==================================================")
 
     print()
 
-    # ------------------------------------------------------
-    # FIN DEL BLOQUE DE INFORMACIÓN GENERAL
-    # ------------------------------------------------------
+    print("Versión:")
+    print(config.PROJECT_VERSION)
+
+    print()
+
+    print("Autor:")
+    print(config.PROJECT_AUTHOR)
 
 
     # ------------------------------------------------------
-    # INICIO DEL BLOQUE DE CONFIGURACIÓN ACTUAL
-    #
-    # Mostramos la configuración principal que utilizará
-    # el programa durante esta ejecución.
-    #
-    # Esto permite comprobar rápidamente:
-    #
-    # - Que estamos utilizando la cuenta correcta.
-    # - Que la carpeta de trabajo es la esperada.
-    #
-    # IMPORTANTE:
-    #
-    # Nunca mostramos la contraseña de aplicación.
+    # Cerramos la sección con otro separador.
     # ------------------------------------------------------
 
-    print("Correo configurado:")
+    print("==================================================")
+
+# ==========================================================
+# FIN DE LA FUNCIÓN mostrar_informacion_proyecto()
+# ==========================================================
+
+
+# ==========================================================
+# INICIO DE LA FUNCIÓN mostrar_configuracion()
+# ==========================================================
+
+def mostrar_configuracion():
+    """
+    ==========================================================
+    FUNCIÓN
+    ==========================================================
+
+    mostrar_configuracion()
+
+    ----------------------------------------------------------
+    OBJETIVO
+    ----------------------------------------------------------
+
+    Mostrar algunos valores de configuración utilizados por
+    el programa.
+
+    Actualmente muestra:
+
+    - La cuenta de Gmail configurada.
+    - La carpeta donde se guardarán las facturas más adelante.
+
+    ----------------------------------------------------------
+    SEGURIDAD
+    ----------------------------------------------------------
+
+    Esta función NO debe mostrar la contraseña de aplicación.
+
+    La contraseña es información privada y nunca debe
+    imprimirse en la terminal.
+
+    ----------------------------------------------------------
+    PARÁMETROS
+    ----------------------------------------------------------
+
+    Esta función no recibe parámetros.
+
+    ----------------------------------------------------------
+    RETORNA
+    ----------------------------------------------------------
+
+    Esta función no devuelve ningún valor.
+
+    ==========================================================
+    """
+
+    print()
+    print("==================================================")
+    print("CONFIGURACIÓN")
+    print("==================================================")
+
+
+    # ------------------------------------------------------
+    # Mostramos la dirección de correo configurada.
+    # ------------------------------------------------------
+
+    print("Cuenta de Gmail:")
     print(config.EMAIL)
 
     print()
 
-    print("Carpeta de trabajo:")
+
+    # ------------------------------------------------------
+    # Mostramos el nombre de la carpeta que utilizaremos
+    # más adelante para guardar las facturas.
+    #
+    # En esta versión todavía no guardamos archivos.
+    # ------------------------------------------------------
+
+    print("Carpeta de destino:")
     print(config.SAVE_FOLDER)
 
-    print()
 
-    # ------------------------------------------------------
-    # FIN DEL BLOQUE DE CONFIGURACIÓN ACTUAL
-    # ------------------------------------------------------
+    print("==================================================")
 
 # ==========================================================
-# FIN DE LA FUNCIÓN mostrar_informacion_proyecto()
+# FIN DE LA FUNCIÓN mostrar_configuracion()
 # ==========================================================
 
 
@@ -215,8 +278,7 @@ def mostrar_resultado_busqueda(identificadores_correos):
     OBJETIVO
     ----------------------------------------------------------
 
-    Mostrar cuántos correos fueron encontrados durante
-    la búsqueda realizada en Gmail.
+    Mostrar cuántos correos fueron encontrados por Gmail.
 
     ----------------------------------------------------------
     PARÁMETROS
@@ -224,15 +286,13 @@ def mostrar_resultado_busqueda(identificadores_correos):
 
     identificadores_correos:
 
-        Es la lista de identificadores obtenida mediante:
+        Es la lista devuelta por:
 
             gmail_client.buscar_todos_los_correos()
 
-        Un ejemplo de esta lista sería:
+        Por ejemplo:
 
-            [b'1', b'2', b'3', b'4']
-
-        Cada elemento representa un mensaje encontrado.
+            [b'1', b'2', b'3']
 
     ----------------------------------------------------------
     RETORNA
@@ -240,45 +300,40 @@ def mostrar_resultado_busqueda(identificadores_correos):
 
     Esta función no devuelve ningún valor.
 
-    Solamente muestra información en la terminal.
+    Solamente muestra información en pantalla.
 
     ==========================================================
     """
 
+    print()
+    print("==================================================")
+    print("RESULTADO DE LA BÚSQUEDA")
+    print("==================================================")
+
+
     # ------------------------------------------------------
-    # len() cuenta cuántos elementos contiene una colección.
+    # len() devuelve la cantidad de elementos presentes
+    # dentro de una lista.
     #
-    # En este caso, cuenta cuántos identificadores de correo
-    # existen dentro de la lista.
+    # Por ejemplo:
     #
-    # Si la lista fuera:
+    #     len([b'1', b'2', b'3'])
     #
-    #     [b'1', b'2', b'3']
-    #
-    # len() devolvería:
+    # devuelve:
     #
     #     3
     # ------------------------------------------------------
 
-    cantidad_correos = len(identificadores_correos)
+    cantidad_correos = len(
+        identificadores_correos
+    )
 
 
-    # ------------------------------------------------------
-    # INICIO DEL BLOQUE DE RESULTADO
-    # ------------------------------------------------------
+    print("Cantidad de correos encontrados:")
+    print(cantidad_correos)
 
-    print()
-    print("--------------------------------")
-    print("RESULTADO DE LA BÚSQUEDA")
-    print("--------------------------------")
 
-    print(f"Se encontraron {cantidad_correos} correos.")
-
-    print("--------------------------------")
-
-    # ------------------------------------------------------
-    # FIN DEL BLOQUE DE RESULTADO
-    # ------------------------------------------------------
+    print("==================================================")
 
 # ==========================================================
 # FIN DE LA FUNCIÓN mostrar_resultado_busqueda()
@@ -301,14 +356,13 @@ def mostrar_resultado_lectura(id_correo, mensaje):
     OBJETIVO
     ----------------------------------------------------------
 
-    Mostrar una confirmación de que un correo individual fue
-    obtenido e interpretado correctamente.
+    Mostrar información técnica básica sobre el correo que
+    fue leído.
 
-    Esta función permite comprobar que:
+    Actualmente muestra:
 
-        gmail_client.leer_correo()
-
-    funciona correctamente.
+    - El identificador IMAP del correo.
+    - El tipo de objeto creado por Python.
 
     ----------------------------------------------------------
     PARÁMETROS
@@ -316,15 +370,15 @@ def mostrar_resultado_lectura(id_correo, mensaje):
 
     id_correo:
 
-        Es el identificador IMAP del correo que fue solicitado.
+        Identificador IMAP del mensaje.
 
         Por ejemplo:
 
-            b'1323'
+            b'1324'
 
     mensaje:
 
-        Es el objeto EmailMessage devuelto por:
+        Objeto EmailMessage devuelto por:
 
             gmail_client.leer_correo()
 
@@ -334,75 +388,42 @@ def mostrar_resultado_lectura(id_correo, mensaje):
 
     Esta función no devuelve ningún valor.
 
-    Solamente muestra información en la terminal.
-
-    ----------------------------------------------------------
-    IMPORTANTE
-    ----------------------------------------------------------
-
-    Esta función no analiza el contenido del mensaje.
-
-    Solamente confirma:
-
-    - Qué identificador fue utilizado.
-    - Qué tipo de objeto devolvió leer_correo().
-    - Que el correo no fue guardado en el disco.
-    - Que no se descargaron archivos adjuntos.
-
     ==========================================================
     """
 
-    # ------------------------------------------------------
-    # type() permite conocer el tipo de un objeto.
-    #
-    # En este caso esperamos recibir:
-    #
-    #     <class 'email.message.EmailMessage'>
-    # ------------------------------------------------------
-
-    tipo_mensaje = type(mensaje)
-
-
-    # ------------------------------------------------------
-    # INICIO DEL BLOQUE DE RESULTADO
-    # ------------------------------------------------------
-
     print()
-    print("--------------------------------")
+    print("==================================================")
     print("RESULTADO DE LA LECTURA")
-    print("--------------------------------")
+    print("==================================================")
 
-    print("Correo obtenido correctamente.")
 
-    print()
+    # ------------------------------------------------------
+    # Mostramos el identificador del correo elegido.
+    # ------------------------------------------------------
 
-    print("Identificador IMAP:")
+    print("ID del correo:")
     print(id_correo)
 
     print()
 
-    print("Tipo de objeto recibido:")
-    print(tipo_mensaje)
-
-    print()
-
-    print(
-        "El correo fue descargado temporalmente en memoria, "
-        "pero no fue guardado en el disco."
-    )
-
-    print()
-
-    print(
-        "Durante esta prueba no se descargó ningún "
-        "archivo adjunto."
-    )
-
-    print("--------------------------------")
 
     # ------------------------------------------------------
-    # FIN DEL BLOQUE DE RESULTADO
+    # type() permite conocer el tipo de objeto almacenado
+    # dentro de una variable.
+    #
+    # El resultado esperado es parecido a:
+    #
+    #     <class 'email.message.EmailMessage'>
+    #
+    # Esto confirma que los bytes fueron interpretados
+    # correctamente.
     # ------------------------------------------------------
+
+    print("Tipo de objeto creado:")
+    print(type(mensaje))
+
+
+    print("==================================================")
 
 # ==========================================================
 # FIN DE LA FUNCIÓN mostrar_resultado_lectura()
@@ -425,12 +446,8 @@ def mostrar_datos_correo(datos_correo):
     OBJETIVO
     ----------------------------------------------------------
 
-    Mostrar en la terminal los encabezados principales de
-    un correo electrónico.
-
-    La información fue extraída previamente mediante:
-
-        gmail_client.obtener_datos_correo()
+    Mostrar en pantalla los encabezados principales de un
+    correo electrónico.
 
     ----------------------------------------------------------
     PARÁMETROS
@@ -438,17 +455,18 @@ def mostrar_datos_correo(datos_correo):
 
     datos_correo:
 
-        Es un diccionario que contiene los encabezados
-        principales del correo.
+        Es el diccionario devuelto por:
+
+            gmail_client.obtener_datos_correo()
 
         Su estructura esperada es:
 
-        {
-            "Subject": "...",
-            "From": "...",
-            "To": "...",
-            "Date": "..."
-        }
+            {
+                "Subject": "...",
+                "From": "...",
+                "To": "...",
+                "Date": "..."
+            }
 
     ----------------------------------------------------------
     RETORNA
@@ -456,111 +474,248 @@ def mostrar_datos_correo(datos_correo):
 
     Esta función no devuelve ningún valor.
 
-    Solamente muestra información mediante print().
-
-    ----------------------------------------------------------
-    RESPONSABILIDAD
-    ----------------------------------------------------------
-
-    Esta función solamente presenta los datos.
-
-    No se conecta con Gmail.
-
-    No descarga el correo.
-
-    No interpreta los encabezados.
-
-    No descarga archivos adjuntos.
+    Su responsabilidad consiste únicamente en mostrar los
+    datos recibidos.
 
     ==========================================================
     """
 
+    print()
+    print("==================================================")
+    print("DATOS PRINCIPALES DEL CORREO")
+    print("==================================================")
+
+
     # ------------------------------------------------------
-    # Obtenemos los valores almacenados dentro del
-    # diccionario.
-    #
-    # Para acceder al valor de una clave utilizamos:
-    #
-    #     diccionario["nombre_de_la_clave"]
+    # Accedemos a cada valor utilizando su clave.
     #
     # Por ejemplo:
     #
     #     datos_correo["Subject"]
     #
-    # devuelve el asunto del correo.
-    # ------------------------------------------------------
-
-    asunto = datos_correo["Subject"]
-
-    remitente = datos_correo["From"]
-
-    destinatario = datos_correo["To"]
-
-    fecha = datos_correo["Date"]
-
-
-    # ------------------------------------------------------
-    # INICIO DEL BLOQUE DE PRESENTACIÓN
-    # ------------------------------------------------------
-
-    print()
-    print("--------------------------------")
-    print("DATOS PRINCIPALES DEL CORREO")
-    print("--------------------------------")
-
-
-    # ------------------------------------------------------
-    # Mostramos el asunto del correo.
+    # busca dentro del diccionario el valor asociado a la
+    # clave "Subject".
     # ------------------------------------------------------
 
     print("Asunto:")
-    print(asunto)
+    print(datos_correo["Subject"])
 
     print()
-
-
-    # ------------------------------------------------------
-    # Mostramos el remitente del correo.
-    # ------------------------------------------------------
 
     print("Remitente:")
-    print(remitente)
+    print(datos_correo["From"])
 
     print()
-
-
-    # ------------------------------------------------------
-    # Mostramos el destinatario del correo.
-    # ------------------------------------------------------
 
     print("Destinatario:")
-    print(destinatario)
+    print(datos_correo["To"])
 
     print()
 
-
-    # ------------------------------------------------------
-    # Mostramos la fecha original informada por el correo.
-    #
-    # Por el momento se presenta exactamente con el formato
-    # en el que fue enviada.
-    #
-    # Más adelante podremos convertirla a un formato más
-    # fácil de leer.
-    # ------------------------------------------------------
-
     print("Fecha:")
-    print(fecha)
+    print(datos_correo["Date"])
 
 
-    print("--------------------------------")
-
-    # ------------------------------------------------------
-    # FIN DEL BLOQUE DE PRESENTACIÓN
-    # ------------------------------------------------------
+    print("==================================================")
 
 # ==========================================================
 # FIN DE LA FUNCIÓN mostrar_datos_correo()
+# ==========================================================
+
+
+# ==========================================================
+# INICIO DE LA FUNCIÓN mostrar_adjuntos()
+# ==========================================================
+
+def mostrar_adjuntos(adjuntos):
+    """
+    ==========================================================
+    FUNCIÓN
+    ==========================================================
+
+    mostrar_adjuntos(adjuntos)
+
+    ----------------------------------------------------------
+    OBJETIVO
+    ----------------------------------------------------------
+
+    Mostrar información sobre los archivos adjuntos
+    detectados dentro de un correo.
+
+    Actualmente muestra:
+
+    - La cantidad total de adjuntos.
+    - El número de cada adjunto.
+    - El nombre del archivo.
+    - El tipo de contenido MIME.
+
+    ----------------------------------------------------------
+    PARÁMETROS
+    ----------------------------------------------------------
+
+    adjuntos:
+
+        Es la lista devuelta por:
+
+            gmail_client.obtener_adjuntos()
+
+        Cada elemento de la lista es un diccionario.
+
+        Por ejemplo:
+
+            {
+                "nombre": "factura.pdf",
+                "tipo_contenido": "application/pdf",
+                "parte": parte
+            }
+
+    ----------------------------------------------------------
+    RETORNA
+    ----------------------------------------------------------
+
+    Esta función no devuelve ningún valor.
+
+    ----------------------------------------------------------
+    IMPORTANTE
+    ----------------------------------------------------------
+
+    Esta función no muestra el valor guardado en la clave:
+
+        "parte"
+
+    Esa clave contiene el objeto MIME completo del adjunto.
+
+    Su representación técnica podría ser extensa y difícil
+    de leer.
+
+    La utilizaremos más adelante para obtener el contenido
+    real del archivo.
+
+    ==========================================================
+    """
+
+    print()
+    print("==================================================")
+    print("ARCHIVOS ADJUNTOS")
+    print("==================================================")
+
+
+    # ------------------------------------------------------
+    # Obtenemos la cantidad total de adjuntos utilizando
+    # len().
+    # ------------------------------------------------------
+
+    cantidad_adjuntos = len(
+        adjuntos
+    )
+
+
+    print("Cantidad de adjuntos encontrados:")
+    print(cantidad_adjuntos)
+
+
+    # ------------------------------------------------------
+    # Una lista vacía se considera False dentro de una
+    # condición.
+    #
+    # Por eso:
+    #
+    #     if not adjuntos:
+    #
+    # significa:
+    #
+    #     "Si la lista no contiene ningún elemento".
+    # ------------------------------------------------------
+
+    if not adjuntos:
+
+        print()
+        print("El correo no contiene archivos adjuntos.")
+
+        print("==================================================")
+
+
+        # --------------------------------------------------
+        # return finaliza inmediatamente la función.
+        #
+        # Como no existen adjuntos, no hace falta ejecutar
+        # el recorrido que aparece más abajo.
+        # --------------------------------------------------
+
+        return
+
+
+    # ------------------------------------------------------
+    # enumerate() permite recorrer una lista y obtener al
+    # mismo tiempo:
+    #
+    # - La posición del elemento.
+    # - El propio elemento.
+    #
+    # Sin enumerate(), podríamos recorrer solamente:
+    #
+    #     for adjunto in adjuntos:
+    #
+    # Con enumerate(), obtenemos:
+    #
+    #     numero_adjunto
+    #     adjunto
+    #
+    # start=1 indica que la numeración debe comenzar en 1.
+    #
+    # Sin start=1, Python comenzaría desde 0.
+    # ------------------------------------------------------
+
+    for numero_adjunto, adjunto in enumerate(
+        adjuntos,
+        start=1
+    ):
+
+        print()
+        print("--------------------------------")
+        print(f"Adjunto número {numero_adjunto}")
+        print("--------------------------------")
+
+
+        # --------------------------------------------------
+        # Obtenemos el nombre desde el diccionario.
+        # --------------------------------------------------
+
+        nombre_archivo = adjunto["nombre"]
+
+
+        # --------------------------------------------------
+        # Obtenemos el tipo MIME desde el diccionario.
+        # --------------------------------------------------
+
+        tipo_contenido = adjunto["tipo_contenido"]
+
+
+        # --------------------------------------------------
+        # Mostramos solamente la información útil para una
+        # persona.
+        #
+        # No mostramos:
+        #
+        #     adjunto["parte"]
+        #
+        # porque contiene el objeto MIME interno.
+        # --------------------------------------------------
+
+        print("Nombre:")
+        print(nombre_archivo)
+
+        print()
+
+        print("Tipo de contenido:")
+        print(tipo_contenido)
+
+
+    print()
+    print("==================================================")
+
+# ==========================================================
+# FIN DE LA FUNCIÓN mostrar_adjuntos()
 # ==========================================================
 
 
@@ -580,139 +735,85 @@ def main():
     OBJETIVO
     ----------------------------------------------------------
 
-    Coordinar el flujo principal del programa.
+    Coordinar el flujo completo del programa.
 
-    En esta versión, la función realiza estos pasos:
+    Esta función no contiene directamente toda la lógica de
+    Gmail.
 
-    1. Muestra la información del proyecto.
-    2. Se conecta con Gmail.
-    3. Busca todos los correos de la cuenta.
-    4. Cuenta cuántos mensajes fueron encontrados.
-    5. Comprueba que la lista no esté vacía.
-    6. Toma el identificador del correo más reciente.
-    7. Obtiene el correo completo desde Gmail.
-    8. Confirma que el mensaje fue interpretado.
-    9. Extrae los encabezados principales.
-    10. Muestra los encabezados en la terminal.
-    11. Cierra correctamente la conexión.
+    En cambio, llama a funciones especializadas de otros
+    módulos.
 
     ----------------------------------------------------------
-    IMPORTANTE
+    FLUJO ACTUAL
     ----------------------------------------------------------
 
-    main() coordina las tareas, pero no implementa la lógica
-    interna de Gmail.
+    1. Mostrar información del proyecto.
+    2. Mostrar configuración.
+    3. Conectarse con Gmail.
+    4. Buscar todos los correos.
+    5. Verificar que haya correos.
+    6. Elegir el correo más reciente.
+    7. Leerlo.
+    8. Obtener sus encabezados.
+    9. Mostrar sus encabezados.
+    10. Detectar adjuntos.
+    11. Mostrar información de los adjuntos.
+    12. Cerrar la conexión.
 
-    La lógica específica permanece dentro de:
+    ----------------------------------------------------------
+    RETORNA
+    ----------------------------------------------------------
 
-        gmail_client.py
-
-    Esta separación ayuda a mantener el proyecto:
-
-    - Ordenado.
-    - Fácil de entender.
-    - Fácil de probar.
-    - Fácil de modificar.
+    Esta función no devuelve ningún valor.
 
     ==========================================================
     """
 
     # ------------------------------------------------------
-    # PASO 1: MOSTRAR LA INFORMACIÓN DEL PROYECTO
-    #
-    # La función no devuelve ningún valor.
-    #
-    # Solamente imprime la información general en la
-    # terminal.
+    # Mostramos la información inicial.
     # ------------------------------------------------------
 
     mostrar_informacion_proyecto()
 
+    mostrar_configuracion()
+
 
     # ------------------------------------------------------
-    # Creamos la variable conexion y le asignamos inicialmente
-    # el valor None.
+    # Creamos inicialmente la variable conexion con el valor
+    # None.
     #
-    # None significa:
+    # Esto es importante porque la conexión podría fallar
+    # antes de llegar a crearse.
     #
-    #     "Todavía no hay ningún valor".
-    #
-    # Hacemos esto antes del try porque luego necesitaremos
-    # comprobar si la conexión llegó a abrirse correctamente.
+    # Más adelante, dentro de finally, comprobaremos si la
+    # variable contiene realmente una conexión.
     # ------------------------------------------------------
 
     conexion = None
 
 
     # ------------------------------------------------------
-    # INICIO DEL BLOQUE TRY
+    # Utilizamos try para ejecutar el bloque principal.
     #
-    # try significa:
+    # Si aparece un error, el bloque except podrá capturarlo.
     #
-    #     "Intentá ejecutar este código".
-    #
-    # Colocamos aquí las operaciones que podrían producir
-    # errores, como:
-    #
-    # - La conexión a Internet.
-    # - El inicio de sesión.
-    # - La selección de una carpeta.
-    # - La búsqueda de correos.
-    # - La lectura de un mensaje.
-    # - La extracción de sus datos.
+    # El bloque finally se ejecutará tanto si el programa
+    # funciona correctamente como si aparece un error.
     # ------------------------------------------------------
 
     try:
-        # Todo lo que tiene esta indentación pertenece al try.
-
 
         # --------------------------------------------------
-        # PASO 2: CONECTARSE CON GMAIL
-        #
-        # gmail_client.conectar() abre la conexión y la
-        # devuelve mediante return.
-        #
-        # Guardamos esa conexión dentro de la variable:
-        #
-        #     conexion
+        # Abrimos la conexión con Gmail.
         # --------------------------------------------------
 
         conexion = gmail_client.conectar()
 
 
         # --------------------------------------------------
-        # Este mensaje tiene fines educativos.
+        # Buscamos todos los correos.
         #
-        # Confirma que:
-        #
-        # 1. gmail_client.py abrió la conexión.
-        # 2. conectar() devolvió el objeto.
-        # 3. main.py recibió correctamente ese objeto.
-        # --------------------------------------------------
-
-        print()
-
-        print("--------------------------------")
-        print(
-            "La conexión fue recibida correctamente "
-            "por main.py."
-        )
-        print("--------------------------------")
-
-
-        # --------------------------------------------------
-        # PASO 3: BUSCAR TODOS LOS CORREOS
-        #
-        # Entregamos la conexión activa a:
-        #
-        #     buscar_todos_los_correos()
-        #
-        # Esa función:
-        #
-        # - Localiza la carpeta "Todos".
-        # - La selecciona en modo de solo lectura.
-        # - Busca mensajes leídos y no leídos.
-        # - Devuelve sus identificadores.
+        # La función devuelve una lista de identificadores.
         # --------------------------------------------------
 
         identificadores_correos = (
@@ -723,14 +824,7 @@ def main():
 
 
         # --------------------------------------------------
-        # PASO 4: MOSTRAR EL RESULTADO DE LA BÚSQUEDA
-        #
-        # Pasamos la lista obtenida a:
-        #
-        #     mostrar_resultado_busqueda()
-        #
-        # Esa función utiliza len() para contar cuántos
-        # mensajes fueron encontrados.
+        # Mostramos cuántos correos fueron encontrados.
         # --------------------------------------------------
 
         mostrar_resultado_busqueda(
@@ -739,76 +833,42 @@ def main():
 
 
         # --------------------------------------------------
-        # PASO 5: COMPROBAR SI SE ENCONTRARON CORREOS
+        # Antes de intentar acceder a un correo, comprobamos
+        # que la lista no esté vacía.
         #
-        # Antes de intentar acceder a un elemento de la lista,
-        # debemos comprobar que no esté vacía.
-        #
-        # Si la lista estuviera vacía, no existiría ningún
-        # identificador que pudiéramos utilizar.
-        # --------------------------------------------------
-
-
-        # --------------------------------------------------
-        # INICIO DEL BLOQUE IF:
-        # comprobación de lista vacía
+        # Intentar acceder al último elemento de una lista
+        # vacía produciría un error.
         # --------------------------------------------------
 
         if not identificadores_correos:
-            # Este bloque solamente se ejecutará si la lista
-            # no contiene ningún identificador.
-
-            raise RuntimeError(
-                "No se encontró ningún correo para realizar "
-                "la prueba de lectura."
+            print()
+            print(
+                "No se encontraron correos para procesar."
             )
 
-        # --------------------------------------------------
-        # FIN DEL BLOQUE IF:
-        # comprobación de lista vacía
-        # --------------------------------------------------
+            return
 
 
         # --------------------------------------------------
-        # PASO 6: SELECCIONAR EL CORREO MÁS RECIENTE
+        # Elegimos el último identificador de la lista.
         #
-        # Los identificadores están guardados en una lista.
+        # En Python:
         #
-        # Por ejemplo:
+        #     lista[-1]
         #
-        #     [b'1', b'2', b'3', b'4']
+        # representa el último elemento.
         #
-        # En Python, el índice:
-        #
-        #     -1
-        #
-        # representa el último elemento de una colección.
-        #
-        # Por lo tanto:
-        #
-        #     identificadores_correos[-1]
-        #
-        # obtiene el último identificador de la lista.
+        # En este caso, normalmente será el correo más
+        # reciente dentro de la carpeta seleccionada.
         # --------------------------------------------------
 
         id_correo_prueba = identificadores_correos[-1]
 
 
         # --------------------------------------------------
-        # PASO 7: LEER UN ÚNICO CORREO
+        # Leemos el correo completo.
         #
-        # Llamamos a gmail_client.leer_correo() y le
-        # entregamos:
-        #
-        # - La conexión activa.
-        # - El identificador del correo elegido.
-        #
-        # La función solicitará el mensaje completo a Gmail
-        # y convertirá sus bytes en un objeto EmailMessage.
-        #
-        # El objeto devuelto se guarda en:
-        #
-        #     mensaje
+        # El resultado será un objeto EmailMessage.
         # --------------------------------------------------
 
         mensaje = gmail_client.leer_correo(
@@ -818,13 +878,7 @@ def main():
 
 
         # --------------------------------------------------
-        # PASO 8: MOSTRAR EL RESULTADO DE LA LECTURA
-        #
-        # Confirmamos:
-        #
-        # - Qué identificador fue utilizado.
-        # - Qué tipo de objeto devolvió leer_correo().
-        # - Que no se guardaron archivos en el disco.
+        # Mostramos información técnica sobre la lectura.
         # --------------------------------------------------
 
         mostrar_resultado_lectura(
@@ -834,26 +888,9 @@ def main():
 
 
         # --------------------------------------------------
-        # PASO 9: EXTRAER LOS DATOS PRINCIPALES
+        # Extraemos los encabezados principales.
         #
-        # Entregamos el objeto EmailMessage a la nueva
-        # función:
-        #
-        #     obtener_datos_correo()
-        #
-        # Esa función obtiene:
-        #
-        # - Subject.
-        # - From.
-        # - To.
-        # - Date.
-        #
-        # Después organiza los resultados dentro de un
-        # diccionario.
-        #
-        # Guardamos el diccionario recibido en:
-        #
-        #     datos_correo
+        # El resultado será un diccionario.
         # --------------------------------------------------
 
         datos_correo = gmail_client.obtener_datos_correo(
@@ -862,84 +899,114 @@ def main():
 
 
         # --------------------------------------------------
-        # PASO 10: MOSTRAR LOS DATOS DEL CORREO
-        #
-        # Entregamos el diccionario a:
-        #
-        #     mostrar_datos_correo()
-        #
-        # Esta función se encargará únicamente de presentar
-        # sus valores en la terminal.
+        # Mostramos los encabezados obtenidos.
         # --------------------------------------------------
 
         mostrar_datos_correo(
             datos_correo
         )
 
-    # ------------------------------------------------------
-    # FIN DEL BLOQUE TRY
-    #
-    # El bloque finally comienza nuevamente al nivel de
-    # indentación del try.
-    # ------------------------------------------------------
+
+        # --------------------------------------------------
+        # Detectamos los archivos adjuntos del mensaje.
+        #
+        # obtener_adjuntos() recorre las partes MIME y
+        # devuelve una lista.
+        #
+        # En esta etapa no descarga archivos.
+        # --------------------------------------------------
+
+        adjuntos = gmail_client.obtener_adjuntos(
+            mensaje
+        )
+
+
+        # --------------------------------------------------
+        # Mostramos la cantidad, el nombre y el tipo MIME
+        # de los adjuntos encontrados.
+        # --------------------------------------------------
+
+        mostrar_adjuntos(
+            adjuntos
+        )
 
 
     # ------------------------------------------------------
-    # INICIO DEL BLOQUE FINALLY
+    # except captura errores producidos durante la ejecución.
     #
-    # finally significa:
+    # Exception es una categoría general que incluye muchos
+    # tipos de errores.
     #
-    #     "Ejecutá este código siempre".
+    # Guardamos el error dentro de la variable:
     #
-    # Se ejecutará tanto si todo salió correctamente como
-    # si ocurrió un error dentro del try.
+    #     error
     #
-    # Esto resulta ideal para cerrar recursos importantes,
-    # como una conexión con Gmail.
+    # para poder mostrarlo.
+    # ------------------------------------------------------
+
+    except Exception as error:
+
+        print()
+        print("==================================================")
+        print("SE PRODUJO UN ERROR")
+        print("==================================================")
+
+        print(type(error).__name__)
+        print(error)
+
+        print("==================================================")
+
+
+    # ------------------------------------------------------
+    # finally se ejecuta siempre.
+    #
+    # Esto permite intentar cerrar la conexión incluso si
+    # apareció un error durante la búsqueda o la lectura.
     # ------------------------------------------------------
 
     finally:
-        # Todo lo indentado aquí pertenece al finally.
-
 
         # --------------------------------------------------
-        # INICIO DEL BLOQUE IF
+        # Verificamos si la conexión fue creada.
         #
-        # Comprobamos que conexion sea diferente de None.
-        #
-        # Si sigue siendo None, significa que la conexión
-        # nunca llegó a abrirse.
-        #
-        # En ese caso no debemos intentar llamar logout(),
-        # porque no existe ninguna sesión que cerrar.
+        # Si conectar() falló antes de devolver un objeto,
+        # conexion todavía tendrá el valor None.
         # --------------------------------------------------
 
         if conexion is not None:
-            # Este código solamente se ejecutará si realmente
-            # existe un objeto de conexión.
+
+            try:
+
+                # ------------------------------------------
+                # logout() cierra correctamente la sesión
+                # IMAP con Gmail.
+                # ------------------------------------------
+
+                conexion.logout()
+
+                print()
+                print(
+                    "Conexión cerrada correctamente."
+                )
 
 
             # ----------------------------------------------
-            # Cerramos correctamente la sesión IMAP.
+            # También podría aparecer un error al intentar
+            # cerrar una conexión que ya fue interrumpida.
+            #
+            # En ese caso mostramos una advertencia, pero no
+            # detenemos el programa nuevamente.
             # ----------------------------------------------
 
-            conexion.logout()
+            except Exception as error_cierre:
 
+                print()
+                print(
+                    "No fue posible cerrar la conexión "
+                    "de forma normal."
+                )
 
-            # ----------------------------------------------
-            # Mostramos una confirmación.
-            # ----------------------------------------------
-
-            print()
-            print("Conexión cerrada correctamente.")
-
-        # --------------------------------------------------
-        # FIN DEL BLOQUE IF
-        # ------------------------------------------------------
-
-    # ------------------------------------------------------
-    # FIN DEL BLOQUE FINALLY
-    # ------------------------------------------------------
+                print(error_cierre)
 
 # ==========================================================
 # FIN DE LA FUNCIÓN main()
@@ -947,43 +1014,24 @@ def main():
 
 
 # ==========================================================
-# FIN DEL BLOQUE DE FUNCIONES
+# PUNTO DE ENTRADA DEL PROGRAMA
 # ==========================================================
 
-
-# ==========================================================
-# INICIO DEL PUNTO DE ENTRADA DEL PROGRAMA
-# ==========================================================
 
 # ----------------------------------------------------------
-# Esta condición comprueba si main.py está siendo ejecutado
-# directamente.
-#
-# Cuando usamos:
+# Python asigna el valor "__main__" a la variable especial
+# __name__ cuando ejecutamos directamente este archivo:
 #
 #     python main.py
 #
-# Python asigna a la variable especial __name__ el valor:
-#
-#     "__main__"
-#
-# Por eso la condición será verdadera y se llamará a main().
-#
-# En cambio, si en el futuro otro archivo importa main.py,
-# esta condición será falsa y el programa no comenzará a
-# ejecutarse automáticamente.
-#
-# Esto permite reutilizar las funciones de main.py sin
-# iniciar todo el programa accidentalmente.
+# La condición evita que main() se ejecute automáticamente
+# si este archivo es importado desde otro módulo.
 # ----------------------------------------------------------
 
 if __name__ == "__main__":
-    # INICIO DEL BLOQUE IF
-
     main()
 
-    # FIN DEL BLOQUE IF
 
 # ==========================================================
-# FIN DEL PUNTO DE ENTRADA DEL PROGRAMA
+# FIN DEL ARCHIVO
 # ==========================================================

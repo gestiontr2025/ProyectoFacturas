@@ -202,7 +202,7 @@ PROJECT_NAME = "Proyecto Facturas"
 # y estable, podremos cambiar este valor a 1.0.
 # ----------------------------------------------------------
 
-PROJECT_VERSION = "0.5"
+PROJECT_VERSION = "0.6"
 
 
 # ----------------------------------------------------------
@@ -358,5 +358,5 @@ if not APP_PASSWORD:
 # ----------------------------------------------------------
 
 SAVE_FOLDER = Path(
-    r"C:\Users\gesti\OneDrive\Documentos\proyectoFacturas\Facturas"
+    r"C:\Users\gesti\OneDrive\Documentos\Facturas"
 )

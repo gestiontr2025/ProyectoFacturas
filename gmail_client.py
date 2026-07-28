@@ -3,11 +3,11 @@
 PROYECTO
 ==========================================================
 
-ProyectoFacturas
+Proyecto Facturas
 
 Versión
 --------
-0.4
+0.6
 
 Archivo
 --------
@@ -15,31 +15,28 @@ gmail_client.py
 
 Descripción
 -----------
-Este módulo contiene todas las funciones relacionadas
-con la comunicación con Gmail.
+Este módulo contiene las funciones relacionadas con Gmail
+y con la interpretación básica de los correos electrónicos.
 
-Responsabilidades actuales
---------------------------
-✔ Conectarse a Gmail.
-✔ Localizar la carpeta "Todos".
-✔ Seleccionar la carpeta "Todos".
-✔ Buscar todos los correos.
-✔ Devolver los identificadores de los correos.
-✔ Obtener un correo individual desde Gmail.
-✔ Convertir el contenido del correo en un objeto EmailMessage.
+Actualmente permite:
 
-Responsabilidades futuras
--------------------------
-✔ Mostrar los datos principales de los correos.
-✔ Detectar archivos adjuntos.
-✔ Descargar archivos adjuntos.
+- Conectarse con Gmail mediante IMAP.
+- Encontrar la carpeta que contiene todos los correos.
+- Buscar los identificadores de todos los mensajes.
+- Obtener un correo individual.
+- Convertir los bytes del correo en un EmailMessage.
+- Extraer los encabezados principales del mensaje.
+- Detectar los archivos adjuntos del correo.
 
-No debe
---------
-✘ Leer el contenido interno de los PDFs.
-✘ Crear la estructura final de carpetas.
-✘ Analizar datos fiscales.
-✘ Renombrar definitivamente las facturas.
+En esta versión todavía NO se descargan archivos adjuntos.
+
+La función obtener_adjuntos() solamente:
+
+- Recorre las partes internas del correo.
+- Detecta cuáles parecen ser archivos adjuntos.
+- Obtiene el nombre del archivo.
+- Obtiene su tipo de contenido.
+- Conserva la parte MIME para utilizarla más adelante.
 
 Autor
 ------
@@ -56,77 +53,58 @@ ChatGPT (mentor técnico)
 
 
 # ----------------------------------------------------------
-# Biblioteca oficial de Python para trabajar con el protocolo
-# IMAP.
+# Importamos imaplib.
 #
-# IMAP nos permite acceder a los correos almacenados en Gmail.
+# Esta biblioteca forma parte de Python y permite trabajar
+# con servidores de correo mediante el protocolo IMAP.
 #
-# Gracias a esta biblioteca podremos:
+# IMAP nos permite:
 #
 # - Conectarnos con Gmail.
+# - Iniciar sesión.
 # - Seleccionar carpetas.
-# - Buscar correos.
-# - Leer mensajes.
-# - Descargar adjuntos.
-# - Cerrar la sesión.
+# - Buscar mensajes.
+# - Obtener correos completos.
 # ----------------------------------------------------------
 
 import imaplib
 
 
 # ----------------------------------------------------------
-# Biblioteca oficial de Python para interpretar correos
-# electrónicos.
+# Importamos el módulo email.
 #
-# Gmail entrega el contenido de los mensajes en formato
-# bytes, es decir, como una secuencia de datos binarios.
+# Cuando Gmail nos entrega un mensaje mediante IMAP,
+# normalmente lo recibimos como una secuencia de bytes.
 #
-# El módulo email permite convertir esos bytes en un objeto
-# de correo electrónico que Python puede comprender.
-#
-# Una vez convertido el mensaje, podremos acceder a datos
-# como:
-#
-# - El asunto.
-# - El remitente.
-# - El destinatario.
-# - La fecha.
-# - El cuerpo del mensaje.
-# - Los archivos adjuntos.
+# El módulo email nos permite transformar esos bytes en
+# un objeto de Python que podemos consultar y recorrer.
 # ----------------------------------------------------------
 
 import email
 
 
 # ----------------------------------------------------------
-# Importamos policy desde el módulo email.
+# Importamos policy desde email.
 #
-# Una "policy" define cómo debe interpretar Python la
-# estructura interna de un correo electrónico.
+# La política policy.default indica cómo debe interpretarse
+# el mensaje.
 #
-# policy.default utiliza el comportamiento moderno recomendado
-# por Python y genera objetos EmailMessage.
-#
-# Los objetos EmailMessage son más cómodos de utilizar que
-# los objetos producidos por el comportamiento antiguo del
-# módulo email.
+# Gracias a esta política, email.message_from_bytes()
+# devuelve normalmente un objeto EmailMessage moderno.
 # ----------------------------------------------------------
 
 from email import policy
 
 
 # ----------------------------------------------------------
-# Importamos nuestro propio módulo config.py.
+# Importamos nuestro archivo config.py.
 #
-# Desde allí obtenemos:
+# Desde este módulo obtenemos:
 #
-# - EMAIL
-# - APP_PASSWORD
+# - La dirección de correo.
+# - La contraseña de aplicación.
 #
-# Las credenciales reales están almacenadas en el archivo
-# .env y config.py se encarga de cargarlas.
-#
-# De esta manera evitamos escribir datos privados directamente
+# De esta manera evitamos escribir esos valores directamente
 # dentro de gmail_client.py.
 # ----------------------------------------------------------
 
@@ -159,8 +137,9 @@ def conectar():
     OBJETIVO
     ----------------------------------------------------------
 
-    Establecer una conexión segura con Gmail utilizando
-    el protocolo IMAP.
+    Abrir una conexión segura con el servidor IMAP de Gmail
+    e iniciar sesión utilizando las credenciales guardadas
+    en config.py.
 
     ----------------------------------------------------------
     PARÁMETROS
@@ -168,99 +147,106 @@ def conectar():
 
     Esta función no recibe parámetros.
 
+    Utiliza directamente:
+
+        config.EMAIL
+        config.APP_PASSWORD
+
     ----------------------------------------------------------
     RETORNA
     ----------------------------------------------------------
 
-    Devuelve el objeto que representa la conexión abierta
-    con Gmail.
+    Devuelve el objeto de conexión IMAP autenticado.
 
-    Ese objeto será utilizado posteriormente por otras
-    funciones del proyecto.
+    Ese objeto será utilizado posteriormente para:
+
+    - Consultar las carpetas.
+    - Seleccionar una carpeta.
+    - Buscar mensajes.
+    - Leer correos.
+    - Cerrar la sesión.
 
     ----------------------------------------------------------
-    IMPORTANTE
+    POSIBLES ERRORES
     ----------------------------------------------------------
 
-    Esta función solamente se encarga de conectar.
+    La conexión podría fallar por diferentes motivos:
 
-    No busca correos.
-
-    No descarga archivos.
-
-    No procesa PDFs.
+    - No hay conexión a Internet.
+    - El correo configurado es incorrecto.
+    - La contraseña de aplicación es incorrecta.
+    - Gmail rechaza temporalmente la conexión.
+    - El servidor IMAP no está disponible.
 
     ==========================================================
     """
 
     # ------------------------------------------------------
-    # INICIO DEL BLOQUE DE MENSAJES DE CONEXIÓN
+    # Mostramos un mensaje para indicar que comenzó el
+    # proceso de conexión.
     # ------------------------------------------------------
 
     print()
-
     print("--------------------------------")
     print("Conectando con Gmail...")
     print("--------------------------------")
 
-    # ------------------------------------------------------
-    # FIN DEL BLOQUE DE MENSAJES DE CONEXIÓN
-    # ------------------------------------------------------
-
 
     # ------------------------------------------------------
-    # Creamos una conexión segura con Gmail.
+    # Creamos una conexión segura con el servidor IMAP
+    # de Gmail.
     #
-    # La variable "mail" representa la conexión abierta.
+    # IMAP4_SSL significa:
     #
-    # IMAP4_SSL significa que utilizaremos IMAP mediante una
-    # conexión cifrada y segura.
+    # - IMAP4: utilizamos la versión 4 del protocolo IMAP.
+    # - SSL: la comunicación se realiza de forma cifrada.
     #
-    # "imap.gmail.com" es la dirección del servidor IMAP
-    # oficial de Gmail.
+    # El servidor IMAP oficial de Gmail es:
+    #
+    #     imap.gmail.com
     # ------------------------------------------------------
 
-    mail = imaplib.IMAP4_SSL("imap.gmail.com")
+    conexion = imaplib.IMAP4_SSL(
+        "imap.gmail.com"
+    )
 
 
     # ------------------------------------------------------
-    # Iniciamos sesión utilizando las credenciales
-    # almacenadas en config.py.
+    # Iniciamos sesión en Gmail.
     #
-    # config.EMAIL contiene la dirección de correo.
+    # Entregamos:
     #
-    # config.APP_PASSWORD contiene la contraseña de aplicación
-    # creada específicamente para este programa.
+    # 1. La dirección de correo.
+    # 2. La contraseña de aplicación.
+    #
+    # No utilizamos la contraseña normal de Gmail.
+    # Utilizamos una contraseña de aplicación creada
+    # específicamente para este proyecto.
     # ------------------------------------------------------
 
-    mail.login(
+    conexion.login(
         config.EMAIL,
         config.APP_PASSWORD
     )
 
 
     # ------------------------------------------------------
-    # Este mensaje solo se mostrará si login() terminó
-    # correctamente.
-    #
-    # Si Gmail rechazara las credenciales, Python produciría
-    # un error antes de llegar a esta línea.
+    # Si el programa llegó hasta este punto sin producir
+    # una excepción, significa que el inicio de sesión fue
+    # aceptado.
     # ------------------------------------------------------
 
     print("Conexión realizada correctamente.")
 
 
     # ------------------------------------------------------
-    # MUY IMPORTANTE
+    # Devolvemos el objeto de conexión.
     #
-    # En lugar de cerrar la conexión dentro de esta función,
-    # la devolvemos al programa principal mediante return.
-    #
-    # Gracias a esto, main.py y las demás funciones podrán
-    # reutilizar exactamente la misma conexión.
+    # Gracias a return, main.py puede guardar este objeto
+    # dentro de una variable y utilizarlo en otras funciones.
     # ------------------------------------------------------
 
-    return mail
+    return conexion
 
 # ==========================================================
 # FIN DE LA FUNCIÓN conectar()
@@ -283,24 +269,18 @@ def encontrar_carpeta_todos(conexion):
     OBJETIVO
     ----------------------------------------------------------
 
-    Encontrar automáticamente la carpeta especial de Gmail
-    que contiene todos los correos de la cuenta.
+    Buscar dentro de la cuenta de Gmail la carpeta que
+    representa todos los correos.
 
-    En la interfaz de Gmail esta carpeta puede aparecer como:
+    En Gmail en español, normalmente se llama:
 
-    - Todos
-    - Todos los correos
-    - All Mail
+        [Gmail]/Todos
 
-    El nombre visible puede cambiar según el idioma de Gmail.
+    Sin embargo, el nombre puede variar según el idioma
+    configurado en la cuenta.
 
-    Sin embargo, Gmail identifica internamente esta carpeta
-    mediante la marca especial:
-
-        \\All
-
-    Por esa razón, esta función busca la marca interna y no
-    depende del idioma configurado en la cuenta.
+    Por ese motivo, la función consulta las carpetas
+    disponibles e intenta localizar la carpeta correcta.
 
     ----------------------------------------------------------
     PARÁMETROS
@@ -308,117 +288,100 @@ def encontrar_carpeta_todos(conexion):
 
     conexion:
 
-        Es el objeto de conexión IMAP devuelto anteriormente
+        Es el objeto de conexión IMAP devuelto previamente
         por la función conectar().
 
     ----------------------------------------------------------
     RETORNA
     ----------------------------------------------------------
 
-    Devuelve un texto con el nombre exacto de la carpeta.
+    Devuelve el nombre de la carpeta de todos los correos.
 
     Por ejemplo:
 
-        [Gmail]/All Mail
-
-    o alguna variante equivalente en español.
+        [Gmail]/Todos
 
     ----------------------------------------------------------
     POSIBLES ERRORES
     ----------------------------------------------------------
 
-    La función produce un RuntimeError si:
+    La función genera un RuntimeError si:
 
-    - Gmail no permite consultar las carpetas.
-    - No se encuentra ninguna carpeta marcada como \\All.
+    - Gmail no permite obtener la lista de carpetas.
+    - La respuesta está vacía.
+    - No puede localizar la carpeta de todos los correos.
 
     ==========================================================
     """
 
     # ------------------------------------------------------
-    # conexion.list() solicita a Gmail una lista con todas
-    # las carpetas o etiquetas disponibles.
+    # Solicitamos al servidor IMAP la lista de carpetas
+    # disponibles.
     #
-    # El resultado se divide en dos variables:
+    # list() devuelve dos valores:
     #
     # estado:
-    #     Indica si la operación terminó correctamente.
-    #     Normalmente tendrá el valor "OK".
+    #     Indica si la operación fue exitosa.
     #
     # carpetas:
-    #     Contiene la información de todas las carpetas
-    #     encontradas.
+    #     Contiene las carpetas devueltas por Gmail.
     # ------------------------------------------------------
 
     estado, carpetas = conexion.list()
 
 
     # ------------------------------------------------------
-    # INICIO DEL BLOQUE IF:
-    # comprobación de la respuesta de Gmail
+    # Comprobamos que Gmail haya respondido correctamente.
+    #
+    # El valor esperado es:
+    #
+    #     "OK"
     # ------------------------------------------------------
 
     if estado != "OK":
-        # Todo lo que tiene esta indentación pertenece al if.
-        #
-        # Solo se ejecutará si Gmail no respondió con "OK".
-
         raise RuntimeError(
             "Gmail no permitió obtener la lista de carpetas."
         )
 
-    # ------------------------------------------------------
-    # FIN DEL BLOQUE IF
-    #
-    # La siguiente línea ya no pertenece al if porque regresó
-    # al mismo nivel de indentación anterior.
-    # ------------------------------------------------------
-
 
     # ------------------------------------------------------
-    # INICIO DEL BLOQUE IF:
-    # comprobación de que la lista no esté vacía
+    # Verificamos que la respuesta contenga carpetas.
     # ------------------------------------------------------
 
     if not carpetas:
-        # "not carpetas" será verdadero si la lista está vacía
-        # o si Gmail devolvió None.
-
         raise RuntimeError(
-            "Gmail respondió correctamente, pero no devolvió carpetas."
+            "Gmail devolvió una lista de carpetas vacía."
         )
 
-    # ------------------------------------------------------
-    # FIN DEL BLOQUE IF
-    # ------------------------------------------------------
-
 
     # ------------------------------------------------------
-    # INICIO DEL BUCLE FOR
+    # Recorremos cada una de las carpetas.
     #
-    # Recorremos una por una todas las carpetas devueltas
-    # por Gmail.
+    # Cada carpeta suele llegar como bytes.
     #
-    # La variable carpeta_bytes cambiará en cada vuelta del
-    # bucle y contendrá una carpeta diferente.
+    # Por ejemplo:
+    #
+    #     b'(\\HasNoChildren) "/" "[Gmail]/Todos"'
+    #
+    # Para poder buscar palabras dentro de ese valor,
+    # primero lo convertimos en texto utilizando decode().
     # ------------------------------------------------------
 
     for carpeta_bytes in carpetas:
-        # Todo lo indentado a partir de aquí pertenece al for.
+
+        # --------------------------------------------------
+        # Ignoramos cualquier elemento que no sea bytes.
+        # --------------------------------------------------
+
+        if not isinstance(carpeta_bytes, bytes):
+            continue
 
 
         # --------------------------------------------------
-        # Gmail entrega esta información en formato bytes.
+        # Convertimos los bytes en texto.
         #
-        # Los bytes son datos binarios y suelen verse así:
-        #
-        #     b'(...)'
-        #
-        # Para poder buscar palabras dentro de esos datos,
-        # utilizamos decode() y los convertimos en texto.
-        #
-        # errors="replace" evita que el programa se detenga si
-        # encuentra algún carácter que no puede interpretar.
+        # errors="replace" evita que una codificación extraña
+        # detenga completamente el programa.
         # --------------------------------------------------
 
         carpeta_texto = carpeta_bytes.decode(
@@ -428,121 +391,114 @@ def encontrar_carpeta_todos(conexion):
 
 
         # --------------------------------------------------
-        # INICIO DEL BLOQUE IF:
-        # búsqueda de la marca especial \All
+        # Convertimos temporalmente el texto a minúsculas.
+        #
+        # Esto permite comparar:
+        #
+        #     Todos
+        #     TODOS
+        #     todos
+        #
+        # como si fueran la misma palabra.
         # --------------------------------------------------
 
-        if "\\All" in carpeta_texto:
-            # Este bloque solamente se ejecutará si la carpeta
-            # actual contiene la marca especial \All.
+        carpeta_minusculas = carpeta_texto.lower()
 
-
-            # ----------------------------------------------
-            # Una respuesta típica de Gmail puede verse así:
-            #
-            # (\HasNoChildren \All) "/" "[Gmail]/All Mail"
-            #
-            # El nombre de la carpeta aparece al final,
-            # normalmente encerrado entre comillas.
-            #
-            # rsplit('"', maxsplit=2) divide el texto desde
-            # la derecha utilizando las comillas.
-            #
-            # El resultado esperado será parecido a:
-            #
-            # [
-            #     '(\HasNoChildren \\All) "/" ',
-            #     '[Gmail]/All Mail',
-            #     ''
-            # ]
-            # ----------------------------------------------
-
-            partes = carpeta_texto.rsplit(
-                '"',
-                maxsplit=2
-            )
-
-
-            # ----------------------------------------------
-            # INICIO DEL BLOQUE IF:
-            # comprobación de formato con comillas
-            # ----------------------------------------------
-
-            if len(partes) >= 2:
-                # Si la respuesta tiene el formato esperado,
-                # el elemento ubicado en la posición 1
-                # contendrá el nombre de la carpeta.
-
-                nombre_carpeta = partes[1]
-
-
-                # ------------------------------------------
-                # Devolvemos el nombre encontrado.
-                #
-                # return finaliza inmediatamente la función.
-                # El bucle for también termina porque ya no
-                # es necesario seguir buscando.
-                # ------------------------------------------
-
-                return nombre_carpeta
-
-            # ----------------------------------------------
-            # FIN DEL BLOQUE IF:
-            # comprobación de formato con comillas
-            # ----------------------------------------------
-
-
-            # ----------------------------------------------
-            # Este bloque funciona como alternativa por si
-            # Gmail devolviera el nombre sin comillas.
-            #
-            # rsplit(" ", maxsplit=1) divide el texto una sola
-            # vez desde la derecha y toma la última parte.
-            # ----------------------------------------------
-
-            nombre_carpeta = carpeta_texto.rsplit(
-                " ",
-                maxsplit=1
-            )[-1]
-
-
-            # ----------------------------------------------
-            # strip('"') elimina posibles comillas sobrantes
-            # al principio o al final del texto.
-            # ----------------------------------------------
-
-            nombre_carpeta = nombre_carpeta.strip('"')
-
-
-            # ----------------------------------------------
-            # Devolvemos el nombre encontrado.
-            # ----------------------------------------------
-
-            return nombre_carpeta
 
         # --------------------------------------------------
-        # FIN DEL BLOQUE IF:
-        # búsqueda de la marca especial \All
+        # Buscamos nombres habituales de la carpeta que
+        # contiene todos los correos.
+        #
+        # En español:
+        #
+        #     todos
+        #
+        # En inglés:
+        #
+        #     all mail
         # --------------------------------------------------
 
-    # ------------------------------------------------------
-    # FIN DEL BUCLE FOR
-    #
-    # La siguiente parte ya no está indentada dentro del for.
-    # Solo llegaremos aquí si recorrimos todas las carpetas
-    # y ninguna contenía la marca \All.
-    # ------------------------------------------------------
+        es_carpeta_todos = (
+            "todos" in carpeta_minusculas
+            or "all mail" in carpeta_minusculas
+        )
+
+
+        # --------------------------------------------------
+        # Si esta carpeta no parece ser la carpeta "Todos",
+        # continuamos con el siguiente elemento.
+        # --------------------------------------------------
+
+        if not es_carpeta_todos:
+            continue
+
+
+        # --------------------------------------------------
+        # El nombre de la carpeta suele aparecer después
+        # del último separador:
+        #
+        #     " "
+        #
+        # Utilizamos rsplit() para dividir solamente desde
+        # la derecha.
+        #
+        # El número 1 indica que queremos realizar una única
+        # división.
+        # --------------------------------------------------
+
+        partes = carpeta_texto.rsplit(
+            " ",
+            1
+        )
+
+
+        # --------------------------------------------------
+        # Comprobamos que la división haya producido dos
+        # elementos.
+        # --------------------------------------------------
+
+        if len(partes) != 2:
+            continue
+
+
+        # --------------------------------------------------
+        # Tomamos el último elemento, que debería contener
+        # el nombre de la carpeta.
+        #
+        # strip('"') elimina las comillas dobles externas.
+        # --------------------------------------------------
+
+        nombre_carpeta = partes[-1].strip('"')
+
+
+        # --------------------------------------------------
+        # Mostramos la carpeta encontrada.
+        # --------------------------------------------------
+
+        print()
+        print("--------------------------------")
+        print("Carpeta de todos los correos encontrada:")
+        print(nombre_carpeta)
+        print("--------------------------------")
+
+
+        # --------------------------------------------------
+        # Devolvemos inmediatamente el nombre.
+        #
+        # Una vez encontrada la carpeta correcta, no hace
+        # falta continuar recorriendo la lista.
+        # --------------------------------------------------
+
+        return nombre_carpeta
 
 
     # ------------------------------------------------------
-    # Si la función llega hasta aquí, significa que no pudo
-    # encontrar la carpeta de todos los correos.
-    #
-    # raise interrumpe la ejecución y muestra un error claro.
+    # Si el recorrido terminó sin ejecutar return,
+    # significa que no encontramos una carpeta compatible.
     # ------------------------------------------------------
 
     raise RuntimeError(
-        "No se encontró la carpeta de Gmail que contiene "
+        "No fue posible encontrar la carpeta que contiene "
         "todos los correos."
     )
 
@@ -567,29 +523,15 @@ def buscar_todos_los_correos(conexion):
     OBJETIVO
     ----------------------------------------------------------
 
-    Seleccionar la carpeta que contiene todos los correos
-    y obtener los identificadores de todos sus mensajes.
+    Seleccionar la carpeta que contiene todos los correos y
+    buscar los identificadores de todos los mensajes.
 
-    Esta función incluye:
+    La búsqueda incluye:
 
     - Correos leídos.
     - Correos no leídos.
-    - Correos antiguos.
-    - Correos recientes.
-
-    ----------------------------------------------------------
-    IMPORTANTE
-    ----------------------------------------------------------
-
-    Esta función todavía NO:
-
-    - Descarga correos completos.
-    - Descarga archivos adjuntos.
-    - Lee PDFs.
-    - Renombra facturas.
-    - Modifica mensajes.
-
-    Solamente obtiene una lista de identificadores.
+    - Correos archivados.
+    - Correos que no aparecen en la bandeja principal.
 
     ----------------------------------------------------------
     PARÁMETROS
@@ -597,32 +539,36 @@ def buscar_todos_los_correos(conexion):
 
     conexion:
 
-        Es la conexión IMAP activa, devuelta por conectar().
+        Es el objeto de conexión IMAP autenticado.
 
     ----------------------------------------------------------
     RETORNA
     ----------------------------------------------------------
 
-    Devuelve una lista de identificadores de mensajes.
+    Devuelve una lista de identificadores IMAP.
 
     Por ejemplo:
 
         [b'1', b'2', b'3', b'4']
 
-    Cada identificador representa un correo y nos permitirá
-    solicitar su contenido más adelante.
+    Cada identificador representa un correo dentro de la
+    carpeta seleccionada.
+
+    ----------------------------------------------------------
+    IMPORTANTE
+    ----------------------------------------------------------
+
+    Estos identificadores pertenecen a la sesión y a la
+    carpeta IMAP seleccionada.
+
+    No deben confundirse con el encabezado Message-ID
+    de un correo electrónico.
 
     ==========================================================
     """
 
     # ------------------------------------------------------
-    # Primero llamamos a encontrar_carpeta_todos().
-    #
-    # El resultado se guarda en la variable carpeta_todos.
-    #
-    # Esta variable podría contener algo como:
-    #
-    #     [Gmail]/All Mail
+    # Primero localizamos la carpeta de todos los correos.
     # ------------------------------------------------------
 
     carpeta_todos = encontrar_carpeta_todos(
@@ -631,144 +577,117 @@ def buscar_todos_los_correos(conexion):
 
 
     # ------------------------------------------------------
-    # Mostramos el nombre exacto encontrado.
+    # Seleccionamos la carpeta encontrada.
     #
-    # Esto es especialmente útil durante el aprendizaje y
-    # las primeras pruebas, porque nos permite confirmar qué
-    # carpeta está utilizando realmente el programa.
+    # readonly=True significa que abrimos la carpeta en modo
+    # de solo lectura.
+    #
+    # Esto reduce el riesgo de modificar accidentalmente:
+    #
+    # - El estado de lectura.
+    # - Las etiquetas.
+    # - La ubicación de los correos.
     # ------------------------------------------------------
 
-    print()
-    print("--------------------------------")
-    print("Carpeta de todos los correos encontrada:")
-    print(carpeta_todos)
-    print("--------------------------------")
-
-
-    # ------------------------------------------------------
-    # conexion.select() selecciona la carpeta sobre la cual
-    # realizaremos las búsquedas.
-    #
-    # readonly=True significa "solo lectura".
-    #
-    # Esta opción es muy importante durante las pruebas:
-    #
-    # - No marca mensajes como leídos.
-    # - No mueve mensajes.
-    # - No elimina mensajes.
-    # - Reduce el riesgo de modificar la cuenta.
-    # ------------------------------------------------------
-
-    estado, cantidad_informada = conexion.select(
+    estado_seleccion, _ = conexion.select(
         carpeta_todos,
         readonly=True
     )
 
 
     # ------------------------------------------------------
-    # INICIO DEL BLOQUE IF:
-    # comprobación de selección de carpeta
+    # Comprobamos que Gmail haya permitido seleccionar
+    # la carpeta.
     # ------------------------------------------------------
 
-    if estado != "OK":
-        # Este bloque solo se ejecuta si Gmail no permitió
-        # seleccionar la carpeta.
-
+    if estado_seleccion != "OK":
         raise RuntimeError(
-            f"No fue posible seleccionar la carpeta: "
-            f"{carpeta_todos}"
+            "No fue posible seleccionar la carpeta "
+            "de todos los correos."
         )
 
-    # ------------------------------------------------------
-    # FIN DEL BLOQUE IF
-    # ------------------------------------------------------
-
 
     # ------------------------------------------------------
-    # conexion.search() realiza una búsqueda dentro de la
-    # carpeta seleccionada.
+    # Realizamos la búsqueda.
     #
-    # None:
-    #     Indica que no estamos especificando una codificación
-    #     especial para el criterio de búsqueda.
+    # El criterio ALL significa:
     #
-    # "ALL":
-    #     Significa que queremos obtener todos los mensajes.
-    #
-    # No importa si están leídos o no leídos.
+    #     Buscar todos los mensajes de la carpeta.
     # ------------------------------------------------------
 
-    estado, resultado = conexion.search(
+    estado_busqueda, respuesta_busqueda = conexion.search(
         None,
         "ALL"
     )
 
 
     # ------------------------------------------------------
-    # INICIO DEL BLOQUE IF:
-    # comprobación de la búsqueda
+    # Verificamos que la búsqueda haya sido exitosa.
     # ------------------------------------------------------
 
-    if estado != "OK":
-        # Este bloque solo se ejecutará si Gmail no pudo
-        # realizar correctamente la búsqueda.
-
+    if estado_busqueda != "OK":
         raise RuntimeError(
-            "Gmail no pudo realizar la búsqueda de correos."
+            "Gmail no pudo completar la búsqueda de correos."
         )
 
+
     # ------------------------------------------------------
-    # FIN DEL BLOQUE IF
+    # Comprobamos que exista una respuesta.
     # ------------------------------------------------------
+
+    if not respuesta_busqueda:
+        raise RuntimeError(
+            "Gmail devolvió una respuesta vacía durante "
+            "la búsqueda de correos."
+        )
 
 
     # ------------------------------------------------------
-    # INICIO DEL BLOQUE IF:
-    # comprobación de resultado vacío o inválido
-    # ------------------------------------------------------
-
-    if not resultado or not resultado[0]:
-        # Si Gmail no encontró ningún mensaje, devolvemos una
-        # lista vacía.
-        #
-        # Devolver [] es mejor que producir un error, porque
-        # encontrar cero correos es un resultado válido.
-
-        return []
-
-    # ------------------------------------------------------
-    # FIN DEL BLOQUE IF
-    # ------------------------------------------------------
-
-
-    # ------------------------------------------------------
-    # Gmail suele devolver los identificadores agrupados
-    # dentro del primer elemento de la lista.
+    # Normalmente Gmail devuelve los identificadores dentro
+    # del primer elemento.
     #
     # Por ejemplo:
     #
     #     [b'1 2 3 4 5']
     #
-    # resultado[0] obtiene:
-    #
-    #     b'1 2 3 4 5'
-    #
-    # split() separa la secuencia por sus espacios:
-    #
-    #     [b'1', b'2', b'3', b'4', b'5']
+    # Tomamos ese primer elemento.
     # ------------------------------------------------------
 
-    identificadores = resultado[0].split()
+    identificadores_bytes = respuesta_busqueda[0]
 
 
     # ------------------------------------------------------
-    # Devolvemos la lista de identificadores.
-    #
-    # La función main.py podrá usar len() para contar cuántos
-    # correos fueron encontrados.
+    # Verificamos que el elemento sea bytes.
     # ------------------------------------------------------
 
-    return identificadores
+    if not isinstance(identificadores_bytes, bytes):
+        raise RuntimeError(
+            "La respuesta de Gmail no contiene los "
+            "identificadores en el formato esperado."
+        )
+
+
+    # ------------------------------------------------------
+    # split() separa los identificadores utilizando los
+    # espacios.
+    #
+    # Convierte:
+    #
+    #     b'1 2 3 4'
+    #
+    # en:
+    #
+    #     [b'1', b'2', b'3', b'4']
+    # ------------------------------------------------------
+
+    identificadores_correos = identificadores_bytes.split()
+
+
+    # ------------------------------------------------------
+    # Devolvemos la lista completa.
+    # ------------------------------------------------------
+
+    return identificadores_correos
 
 # ==========================================================
 # FIN DE LA FUNCIÓN buscar_todos_los_correos()
@@ -791,21 +710,8 @@ def leer_correo(conexion, id_correo):
     OBJETIVO
     ----------------------------------------------------------
 
-    Obtener un único correo completo desde Gmail utilizando
-    su identificador IMAP.
-
-    Gmail entrega el contenido del correo en formato bytes.
-
-    La función convierte esos bytes en un objeto EmailMessage
-    que posteriormente podrá ser utilizado por otras funciones
-    para consultar:
-
-    - El asunto.
-    - El remitente.
-    - El destinatario.
-    - La fecha.
-    - El cuerpo del mensaje.
-    - Los archivos adjuntos.
+    Obtener un correo completo desde Gmail y convertirlo
+    desde bytes en un objeto EmailMessage.
 
     ----------------------------------------------------------
     PARÁMETROS
@@ -813,282 +719,146 @@ def leer_correo(conexion, id_correo):
 
     conexion:
 
-        Es la conexión IMAP activa devuelta por conectar().
-
-        La carpeta correspondiente debe haber sido seleccionada
-        previamente mediante buscar_todos_los_correos().
+        Es el objeto de conexión IMAP autenticado.
 
     id_correo:
 
-        Es el identificador IMAP del mensaje que queremos
-        obtener.
-
-        Estos identificadores son devueltos por la función
-        buscar_todos_los_correos().
+        Es el identificador IMAP del correo que queremos leer.
 
         Por ejemplo:
 
-            b'1'
-            b'25'
-            b'1315'
+            b'1324'
 
     ----------------------------------------------------------
     RETORNA
     ----------------------------------------------------------
 
-    Devuelve un objeto EmailMessage que representa el correo
-    electrónico completo.
+    Devuelve un objeto:
 
-    Por ejemplo, más adelante podremos consultar:
+        email.message.EmailMessage
 
-        mensaje["Subject"]
-        mensaje["From"]
-        mensaje["To"]
-        mensaje["Date"]
+    Este objeto permite consultar:
 
-    ----------------------------------------------------------
-    POSIBLES ERRORES
-    ----------------------------------------------------------
-
-    La función produce un RuntimeError si:
-
-    - Gmail no puede obtener el correo solicitado.
-    - Gmail devuelve una respuesta vacía.
-    - La respuesta no tiene la estructura esperada.
-    - El contenido del mensaje no se encuentra en bytes.
+    - Los encabezados.
+    - El cuerpo.
+    - Las partes MIME.
+    - Los archivos adjuntos.
 
     ----------------------------------------------------------
     IMPORTANTE
     ----------------------------------------------------------
 
-    Esta función solamente obtiene e interpreta el correo.
+    Esta función obtiene el mensaje en memoria.
 
-    NO:
+    No guarda el correo en el disco.
 
-    - Muestra los datos del correo en pantalla.
-    - Guarda el correo en el disco.
-    - Descarga archivos adjuntos.
-    - Guarda archivos PDF.
-    - Analiza facturas.
-    - Renombra archivos.
+    Tampoco guarda los archivos adjuntos.
 
     ==========================================================
     """
 
     # ------------------------------------------------------
-    # conexion.fetch() solicita a Gmail el contenido de un
-    # correo específico.
+    # Solicitamos el contenido completo del mensaje.
     #
-    # Recibe dos argumentos:
+    # RFC822 indica que queremos obtener el correo completo,
+    # incluyendo:
     #
-    # id_correo:
-    #     Es el identificador del mensaje que queremos leer.
-    #
-    # "(RFC822)":
-    #     Le indica a Gmail que queremos recibir el mensaje
-    #     electrónico completo.
-    #
-    # RFC822 es un formato estándar utilizado para representar
-    # mensajes de correo electrónico.
-    #
-    # El resultado se divide en dos variables:
-    #
-    # estado:
-    #     Indica si la operación se realizó correctamente.
-    #     Normalmente tendrá el valor "OK".
-    #
-    # datos_correo:
-    #     Contiene la respuesta enviada por Gmail, incluyendo
-    #     el contenido completo del mensaje.
+    # - Encabezados.
+    # - Cuerpo.
+    # - Partes MIME.
+    # - Archivos adjuntos.
     # ------------------------------------------------------
 
-    estado, datos_correo = conexion.fetch(
+    estado, respuesta = conexion.fetch(
         id_correo,
         "(RFC822)"
     )
 
 
     # ------------------------------------------------------
-    # INICIO DEL BLOQUE IF:
-    # comprobación de la respuesta de Gmail
+    # Verificamos que Gmail haya completado correctamente
+    # la operación.
     # ------------------------------------------------------
 
     if estado != "OK":
-        # Este bloque solamente se ejecutará si Gmail no pudo
-        # obtener correctamente el correo solicitado.
-
         raise RuntimeError(
-            f"Gmail no pudo obtener el correo con ID "
+            f"No fue posible obtener el correo con ID "
             f"{id_correo!r}."
         )
 
-    # ------------------------------------------------------
-    # FIN DEL BLOQUE IF:
-    # comprobación de la respuesta de Gmail
-    # ------------------------------------------------------
-
 
     # ------------------------------------------------------
-    # INICIO DEL BLOQUE IF:
-    # comprobación de respuesta vacía
+    # Comprobamos que exista una respuesta.
     # ------------------------------------------------------
 
-    if not datos_correo:
-        # "not datos_correo" será verdadero si Gmail devuelve:
-        #
-        # - Una lista vacía.
-        # - El valor None.
-        # - Cualquier otro valor considerado vacío.
-        #
-        # Aunque el estado haya sido "OK", necesitamos confirmar
-        # que Gmail realmente haya enviado información.
-
+    if not respuesta:
         raise RuntimeError(
-            f"Gmail respondió sin datos para el correo con ID "
-            f"{id_correo!r}."
+            "Gmail devolvió una respuesta vacía al intentar "
+            "leer el correo."
         )
 
-    # ------------------------------------------------------
-    # FIN DEL BLOQUE IF:
-    # comprobación de respuesta vacía
-    # ------------------------------------------------------
-
 
     # ------------------------------------------------------
-    # Gmail normalmente devuelve una estructura parecida a:
+    # El primer elemento suele ser una tupla.
     #
-    # [
+    # Una estructura simplificada sería:
+    #
     #     (
-    #         b'1 (RFC822 {cantidad_de_bytes})',
-    #         b'contenido completo del correo'
-    #     ),
-    #     b')'
-    # ]
-    #
-    # datos_correo[0] obtiene el primer elemento de la lista.
-    #
-    # Ese primer elemento debería ser una tupla.
-    #
-    # Una tupla es una colección ordenada, parecida a una
-    # lista, pero que normalmente se utiliza para agrupar
-    # valores relacionados.
+    #         información_del_mensaje,
+    #         bytes_del_correo
+    #     )
     # ------------------------------------------------------
 
-    primer_elemento = datos_correo[0]
+    primer_elemento = respuesta[0]
 
 
     # ------------------------------------------------------
-    # INICIO DEL BLOQUE IF:
-    # comprobación del tipo de dato recibido
+    # Verificamos que realmente sea una tupla.
     # ------------------------------------------------------
 
     if not isinstance(primer_elemento, tuple):
-        # isinstance() comprueba si un valor pertenece a un
-        # tipo determinado.
-        #
-        # En este caso preguntamos:
-        #
-        #     ¿primer_elemento es una tupla?
-        #
-        # Si no es una tupla, la respuesta de Gmail no tiene
-        # la estructura que esperábamos.
-
         raise RuntimeError(
-            f"El correo con ID {id_correo!r} no tiene "
-            f"la estructura esperada."
+            "La respuesta recibida no tiene la estructura "
+            "esperada."
         )
 
-    # ------------------------------------------------------
-    # FIN DEL BLOQUE IF:
-    # comprobación del tipo de dato recibido
-    # ------------------------------------------------------
-
 
     # ------------------------------------------------------
-    # INICIO DEL BLOQUE IF:
-    # comprobación de la cantidad de elementos de la tupla
+    # Comprobamos que la tupla tenga al menos dos elementos.
     # ------------------------------------------------------
 
     if len(primer_elemento) < 2:
-        # La tupla debería contener al menos dos posiciones:
-        #
-        # Posición 0:
-        #     Información técnica enviada por Gmail.
-        #
-        # Posición 1:
-        #     Contenido completo del correo en bytes.
-        #
-        # Si tiene menos de dos elementos, no podremos acceder
-        # al contenido del mensaje.
-
         raise RuntimeError(
-            f"La respuesta del correo con ID {id_correo!r} "
-            f"está incompleta."
+            "La respuesta del correo está incompleta."
         )
 
-    # ------------------------------------------------------
-    # FIN DEL BLOQUE IF:
-    # comprobación de la cantidad de elementos de la tupla
-    # ------------------------------------------------------
-
 
     # ------------------------------------------------------
-    # Obtenemos el elemento ubicado en la posición 1.
-    #
-    # En Python, las posiciones comienzan desde cero:
-    #
-    # primer_elemento[0]
-    #     Contiene la información técnica.
-    #
-    # primer_elemento[1]
-    #     Contiene el correo completo en formato bytes.
+    # El segundo elemento contiene los bytes del correo.
     # ------------------------------------------------------
 
     correo_bytes = primer_elemento[1]
 
 
     # ------------------------------------------------------
-    # INICIO DEL BLOQUE IF:
-    # comprobación de que el correo esté en formato bytes
+    # Verificamos que el contenido realmente sea bytes.
     # ------------------------------------------------------
 
     if not isinstance(correo_bytes, bytes):
-        # Para que email.message_from_bytes() pueda interpretar
-        # correctamente el mensaje, necesitamos que su contenido
-        # sea un objeto de tipo bytes.
-
         raise RuntimeError(
-            f"El contenido del correo con ID {id_correo!r} "
-            f"no se encuentra en formato bytes."
+            "El contenido del correo no fue recibido "
+            "en formato bytes."
         )
 
-    # ------------------------------------------------------
-    # FIN DEL BLOQUE IF:
-    # comprobación de que el correo esté en formato bytes
-    # ------------------------------------------------------
-
 
     # ------------------------------------------------------
-    # email.message_from_bytes() interpreta el contenido
-    # binario del correo.
+    # Convertimos los bytes en un objeto EmailMessage.
     #
-    # Recibe:
+    # message_from_bytes() interpreta la estructura completa
+    # del correo.
     #
-    # correo_bytes:
-    #     El contenido completo enviado por Gmail.
-    #
-    # policy=policy.default:
-    #     Indica que queremos utilizar el comportamiento moderno
-    #     recomendado por Python.
-    #
-    # El resultado será un objeto EmailMessage.
-    #
-    # Este objeto ya separa y organiza correctamente:
-    #
-    # - Los encabezados.
-    # - El cuerpo.
-    # - Las diferentes partes MIME.
-    # - Los archivos adjuntos.
+    # policy.default permite utilizar la interfaz moderna
+    # del módulo email.
     # ------------------------------------------------------
 
     mensaje = email.message_from_bytes(
@@ -1098,12 +868,7 @@ def leer_correo(conexion, id_correo):
 
 
     # ------------------------------------------------------
-    # Devolvemos el objeto EmailMessage.
-    #
-    # Esta función no muestra nada en pantalla.
-    #
-    # La función que llame a leer_correo() decidirá qué hacer
-    # con el mensaje recibido.
+    # Devolvemos el mensaje ya interpretado.
     # ------------------------------------------------------
 
     return mensaje
@@ -1111,6 +876,7 @@ def leer_correo(conexion, id_correo):
 # ==========================================================
 # FIN DE LA FUNCIÓN leer_correo()
 # ==========================================================
+
 
 # ==========================================================
 # INICIO DE LA FUNCIÓN obtener_datos_correo()
@@ -1128,18 +894,14 @@ def obtener_datos_correo(mensaje):
     OBJETIVO
     ----------------------------------------------------------
 
-    Extraer los encabezados principales de un correo
-    electrónico.
+    Extraer los encabezados principales de un correo.
 
-    Esta función recibe un objeto EmailMessage y obtiene la
-    información más importante de sus encabezados.
+    Actualmente obtiene:
 
-    Actualmente extrae:
-
-    - Subject (Asunto)
-    - From (Remitente)
-    - To (Destinatario)
-    - Date (Fecha)
+    - Subject.
+    - From.
+    - To.
+    - Date.
 
     ----------------------------------------------------------
     PARÁMETROS
@@ -1147,60 +909,40 @@ def obtener_datos_correo(mensaje):
 
     mensaje:
 
-        Es un objeto EmailMessage devuelto previamente por la
-        función leer_correo().
+        Es un objeto EmailMessage devuelto por leer_correo().
 
     ----------------------------------------------------------
     RETORNA
     ----------------------------------------------------------
 
-    Devuelve un diccionario con los encabezados principales
-    del correo.
+    Devuelve un diccionario con esta estructura:
 
-    Por ejemplo:
-
-    {
-        "Subject": "...",
-        "From": "...",
-        "To": "...",
-        "Date": "..."
-    }
+        {
+            "Subject": "...",
+            "From": "...",
+            "To": "...",
+            "Date": "..."
+        }
 
     ----------------------------------------------------------
     IMPORTANTE
     ----------------------------------------------------------
 
-    Esta función NO imprime información en pantalla.
+    Esta función no imprime los datos.
 
-    Su única responsabilidad consiste en leer los encabezados
-    del mensaje y devolverlos organizados dentro de un
-    diccionario.
+    Tampoco descarga archivos.
 
-    Si algún encabezado no existe, se devuelve un texto
-    descriptivo en su lugar.
+    Su única responsabilidad consiste en extraer y organizar
+    los encabezados principales.
 
     ==========================================================
     """
 
     # ------------------------------------------------------
-    # Los encabezados de un EmailMessage funcionan de manera
-    # parecida a un diccionario.
-    #
-    # Por ejemplo:
-    #
-    # mensaje["Subject"]
-    #
-    # obtiene el asunto del correo.
-    #
-    # Sin embargo, algunos correos pueden no contener alguno
-    # de estos encabezados.
-    #
-    # Para evitar obtener el valor None, utilizamos get(),
-    # que nos permite indicar un valor por defecto.
-    # ------------------------------------------------------
-
-    # ------------------------------------------------------
     # Obtenemos el asunto.
+    #
+    # El segundo argumento de get() es el valor que se
+    # utilizará si el encabezado no existe.
     # ------------------------------------------------------
 
     asunto = mensaje.get(
@@ -1230,7 +972,7 @@ def obtener_datos_correo(mensaje):
 
 
     # ------------------------------------------------------
-    # Obtenemos la fecha del mensaje.
+    # Obtenemos la fecha.
     # ------------------------------------------------------
 
     fecha = mensaje.get(
@@ -1240,41 +982,356 @@ def obtener_datos_correo(mensaje):
 
 
     # ------------------------------------------------------
-    # Creamos un diccionario para agrupar todos los datos.
-    #
-    # Un diccionario es una colección formada por pares:
-    #
-    #     clave : valor
-    #
-    # En este caso utilizamos como claves los nombres reales
-    # de los encabezados del correo electrónico.
+    # Creamos un diccionario para agrupar los datos.
     # ------------------------------------------------------
 
     datos_correo = {
-
         "Subject": asunto,
-
         "From": remitente,
-
         "To": destinatario,
-
         "Date": fecha
-
     }
 
 
     # ------------------------------------------------------
-    # Devolvemos el diccionario completo.
-    #
-    # La función que llame a obtener_datos_correo() decidirá
-    # posteriormente cómo mostrar esta información al usuario.
+    # Devolvemos el diccionario.
     # ------------------------------------------------------
 
     return datos_correo
 
-
 # ==========================================================
 # FIN DE LA FUNCIÓN obtener_datos_correo()
+# ==========================================================
+
+
+# ==========================================================
+# INICIO DE LA FUNCIÓN obtener_adjuntos()
+# ==========================================================
+
+def obtener_adjuntos(mensaje):
+    """
+    ==========================================================
+    FUNCIÓN
+    ==========================================================
+
+    obtener_adjuntos(mensaje)
+
+    ----------------------------------------------------------
+    OBJETIVO
+    ----------------------------------------------------------
+
+    Recorrer las partes internas de un correo electrónico
+    y detectar cuáles representan archivos adjuntos.
+
+    ----------------------------------------------------------
+    PARÁMETROS
+    ----------------------------------------------------------
+
+    mensaje:
+
+        Es un objeto EmailMessage devuelto previamente por:
+
+            leer_correo()
+
+    ----------------------------------------------------------
+    RETORNA
+    ----------------------------------------------------------
+
+    Devuelve una lista de diccionarios.
+
+    Cada diccionario representa un archivo adjunto detectado.
+
+    Por ejemplo:
+
+        [
+            {
+                "nombre": "factura.pdf",
+                "tipo_contenido": "application/pdf",
+                "parte": parte
+            }
+        ]
+
+    Si el correo no contiene adjuntos, devuelve una lista
+    vacía:
+
+        []
+
+    ----------------------------------------------------------
+    INFORMACIÓN GUARDADA
+    ----------------------------------------------------------
+
+    nombre:
+
+        Es el nombre original del archivo adjunto.
+
+        Por ejemplo:
+
+            factura.pdf
+
+    tipo_contenido:
+
+        Es el tipo MIME informado por el correo.
+
+        Por ejemplo:
+
+            application/pdf
+
+            image/jpeg
+
+            application/vnd.ms-excel
+
+    parte:
+
+        Es el objeto MIME que representa el adjunto.
+
+        Por ahora solamente lo guardamos.
+
+        En una futura versión, este objeto nos permitirá
+        obtener el contenido real del archivo mediante:
+
+            parte.get_payload(decode=True)
+
+    ----------------------------------------------------------
+    IMPORTANTE
+    ----------------------------------------------------------
+
+    Esta función NO descarga archivos.
+
+    Esta función NO crea carpetas.
+
+    Esta función NO escribe información en el disco.
+
+    Solamente detecta y organiza información sobre los
+    archivos adjuntos.
+
+    ==========================================================
+    """
+
+    # ------------------------------------------------------
+    # Creamos una lista vacía.
+    #
+    # En esta lista iremos agregando los adjuntos encontrados.
+    #
+    # Si no encontramos ninguno, la lista seguirá vacía y
+    # será devuelta como:
+    #
+    #     []
+    # ------------------------------------------------------
+
+    adjuntos = []
+
+
+    # ------------------------------------------------------
+    # mensaje.walk() recorre todas las partes internas del
+    # correo electrónico.
+    #
+    # Un correo puede contener múltiples elementos:
+    #
+    # - Texto plano.
+    # - Contenido HTML.
+    # - Imágenes insertadas.
+    # - Firmas.
+    # - Archivos PDF.
+    # - Hojas de cálculo.
+    # - Otros adjuntos.
+    #
+    # Cada elemento es representado por una "parte MIME".
+    #
+    # walk() nos entrega cada una de esas partes, una por una.
+    # ------------------------------------------------------
+
+    for parte in mensaje.walk():
+
+        # --------------------------------------------------
+        # multipart significa que esta parte funciona como
+        # un contenedor de otras partes.
+        #
+        # Por ejemplo, un correo podría tener una estructura
+        # parecida a esta:
+        #
+        # correo
+        # ├── texto
+        # ├── HTML
+        # └── adjunto PDF
+        #
+        # El contenedor principal no es un archivo adjunto.
+        #
+        # Por eso, si la parte es multipart, continuamos
+        # directamente con la siguiente.
+        # --------------------------------------------------
+
+        if parte.is_multipart():
+            continue
+
+
+        # --------------------------------------------------
+        # Obtenemos el nombre del archivo.
+        #
+        # get_filename() intenta leer el nombre informado
+        # en los encabezados MIME de esta parte.
+        #
+        # Algunos ejemplos:
+        #
+        #     factura.pdf
+        #     comprobante.jpg
+        #     detalle.xlsx
+        #
+        # Si la parte no tiene nombre de archivo,
+        # get_filename() devuelve None.
+        # --------------------------------------------------
+
+        nombre_archivo = parte.get_filename()
+
+
+        # --------------------------------------------------
+        # Obtenemos la disposición del contenido.
+        #
+        # La disposición nos ayuda a saber cómo pretendía
+        # presentarse esa parte del correo.
+        #
+        # Los valores más habituales son:
+        #
+        # attachment:
+        #     Archivo enviado como adjunto.
+        #
+        # inline:
+        #     Contenido pensado para mostrarse dentro del
+        #     cuerpo del correo, como una imagen de una firma.
+        #
+        # None:
+        #     El correo no informó una disposición.
+        # --------------------------------------------------
+
+        disposicion = parte.get_content_disposition()
+
+
+        # --------------------------------------------------
+        # Determinamos si esta parte debe considerarse
+        # un archivo adjunto.
+        #
+        # Utilizamos dos señales:
+        #
+        # 1. Que Content-Disposition sea "attachment".
+        #
+        # 2. Que exista un nombre de archivo.
+        #
+        # Esta combinación es más flexible que comprobar
+        # únicamente la palabra "attachment", porque algunos
+        # sistemas de facturación generan correos que no están
+        # perfectamente construidos, pero igualmente incluyen
+        # un nombre de archivo válido.
+        # --------------------------------------------------
+
+        es_adjunto = (
+            disposicion == "attachment"
+            or nombre_archivo is not None
+        )
+
+
+        # --------------------------------------------------
+        # Si esta parte no parece ser un adjunto, utilizamos
+        # continue.
+        #
+        # continue significa:
+        #
+        #     "Dejá de procesar esta parte y pasá a la
+        #      siguiente vuelta del for".
+        # --------------------------------------------------
+
+        if not es_adjunto:
+            continue
+
+
+        # --------------------------------------------------
+        # Algunos correos podrían indicar attachment pero no
+        # proporcionar un nombre.
+        #
+        # En ese caso utilizamos un nombre descriptivo para
+        # que el dato nunca quede como None.
+        #
+        # Más adelante podremos mejorar este comportamiento
+        # generando nombres automáticos.
+        # --------------------------------------------------
+
+        if nombre_archivo is None:
+            nombre_archivo = "archivo_sin_nombre"
+
+
+        # --------------------------------------------------
+        # Obtenemos el tipo MIME de la parte.
+        #
+        # get_content_type() devuelve valores como:
+        #
+        #     application/pdf
+        #     image/jpeg
+        #     image/png
+        #     text/plain
+        #
+        # El tipo de contenido será especialmente importante
+        # cuando filtremos solamente archivos PDF.
+        # --------------------------------------------------
+
+        tipo_contenido = parte.get_content_type()
+
+
+        # --------------------------------------------------
+        # Creamos un diccionario con la información del
+        # adjunto actual.
+        #
+        # También guardamos el objeto parte.
+        #
+        # Todavía no descargamos su contenido, pero conservar
+        # esta referencia nos permitirá hacerlo más adelante
+        # sin volver a recorrer todo el mensaje.
+        # --------------------------------------------------
+
+        datos_adjunto = {
+            "nombre": nombre_archivo,
+            "tipo_contenido": tipo_contenido,
+            "parte": parte
+        }
+
+
+        # --------------------------------------------------
+        # Agregamos el diccionario a la lista.
+        #
+        # append() incorpora un nuevo elemento al final de
+        # una lista.
+        #
+        # Si adjuntos era:
+        #
+        #     []
+        #
+        # después de append() será:
+        #
+        #     [
+        #         {
+        #             "nombre": "...",
+        #             "tipo_contenido": "...",
+        #             "parte": ...
+        #         }
+        #     ]
+        # --------------------------------------------------
+
+        adjuntos.append(
+            datos_adjunto
+        )
+
+
+    # ------------------------------------------------------
+    # Cuando el for termina, devolvemos la lista completa.
+    #
+    # Puede contener:
+    #
+    # - Ningún elemento.
+    # - Un adjunto.
+    # - Varios adjuntos.
+    # ------------------------------------------------------
+
+    return adjuntos
+
+# ==========================================================
+# FIN DE LA FUNCIÓN obtener_adjuntos()
 # ==========================================================
 
 
