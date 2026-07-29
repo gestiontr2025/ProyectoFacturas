@@ -202,7 +202,7 @@ PROJECT_NAME = "Proyecto Facturas"
 # y estable, podremos cambiar este valor a 1.0.
 # ----------------------------------------------------------
 
-PROJECT_VERSION = "0.9"
+PROJECT_VERSION = "0.10"
 
 
 # ----------------------------------------------------------
@@ -318,6 +318,15 @@ if not APP_PASSWORD:
         "APP_PASSWORD=tu_contraseña_de_aplicacion"
     )
 
+# ----------------------------------------------------------
+# Cantidad máxima de correos recientes que el programa
+# procesará en cada ejecución.
+#
+# Utilizamos un límite para evitar procesar accidentalmente
+# toda la cuenta de Gmail durante las primeras pruebas.
+# ----------------------------------------------------------
+
+EMAIL_PROCESSING_LIMIT = 10
 
 # ==========================================================
 # CARPETA DONDE SE GUARDARÁN LAS FACTURAS

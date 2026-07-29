@@ -7,7 +7,7 @@ Proyecto Facturas
 
 Versión
 --------
-0.7
+0.10
 
 Archivo
 --------
@@ -24,24 +24,23 @@ definidas en otros módulos.
 Actualmente, el programa realiza los siguientes pasos:
 
 1. Muestra la información general del proyecto.
-2. Muestra parte de la configuración utilizada.
+2. Muestra la configuración utilizada.
 3. Se conecta con Gmail.
 4. Busca todos los correos de la cuenta.
-5. Selecciona el correo más reciente.
-6. Lee el correo completo.
-7. Extrae sus encabezados principales.
-8. Muestra esos encabezados.
-9. Detecta los archivos adjuntos.
-10. Muestra el nombre y el tipo de cada adjunto.
-11. Crea la carpeta principal de destino.
-12. Guarda los archivos adjuntos.
-13. Muestra las rutas de los archivos guardados.
+5. Selecciona una cantidad limitada de correos recientes.
+6. Recorre los correos seleccionados.
+7. Lee cada correo completo.
+8. Extrae sus encabezados principales.
+9. Detecta sus archivos adjuntos.
+10. Filtra únicamente los archivos PDF.
+11. Evita guardar archivos que ya existan.
+12. Guarda los PDF nuevos.
+13. Muestra un resumen final del procesamiento.
 14. Cierra correctamente la conexión con Gmail.
 
-En esta versión se guardan todos los adjuntos encontrados
-en el correo más reciente.
+El límite de correos procesados se configura mediante:
 
-Todavía no se filtran exclusivamente archivos PDF.
+    config.EMAIL_PROCESSING_LIMIT
 
 Autor
 ------
@@ -56,63 +55,12 @@ ChatGPT (mentor técnico)
 # INICIO DEL BLOQUE DE IMPORTACIONES
 # ==========================================================
 
-
-# ----------------------------------------------------------
-# Importamos el módulo config.
-#
-# Desde config.py obtenemos:
-#
-# - El nombre del proyecto.
-# - La versión actual.
-# - El autor.
-# - La cuenta de Gmail.
-# - La carpeta donde se guardarán las facturas.
-#
-# Las credenciales privadas son cargadas desde el archivo
-# .env por config.py.
-# ----------------------------------------------------------
-
 import config
-
-
-# ----------------------------------------------------------
-# Importamos gmail_client.
-#
-# Este módulo contiene las funciones relacionadas con Gmail:
-#
-# - conectar()
-# - encontrar_carpeta_todos()
-# - buscar_todos_los_correos()
-# - leer_correo()
-# - obtener_datos_correo()
-# - obtener_adjuntos()
-# ----------------------------------------------------------
-
-import gmail_client
-
-
-# ----------------------------------------------------------
-# Importamos file_manager.
-#
-# Este módulo contiene las funciones relacionadas con el
-# sistema de archivos:
-#
-# - Crear la carpeta de destino.
-# - Guardar un adjunto.
-# - Guardar todos los adjuntos.
-# - Evitar sobrescribir archivos existentes.
-# ----------------------------------------------------------
-
 import file_manager
-
+import gmail_client
 
 # ==========================================================
 # FIN DEL BLOQUE DE IMPORTACIONES
-# ==========================================================
-
-
-# ==========================================================
-# INICIO DEL BLOQUE DE FUNCIONES
 # ==========================================================
 
 
@@ -122,17 +70,7 @@ import file_manager
 
 def mostrar_informacion_proyecto():
     """
-    Mostrar en la terminal la información general del
-    proyecto.
-
-    Actualmente muestra:
-
-    - Nombre del proyecto.
-    - Versión.
-    - Autor.
-
-    Esta función no recibe parámetros y no devuelve ningún
-    valor.
+    Mostrar la información general del proyecto.
     """
 
     print()
@@ -166,16 +104,9 @@ def mostrar_informacion_proyecto():
 
 def mostrar_configuracion():
     """
-    Mostrar algunos valores de configuración utilizados por
-    el programa.
+    Mostrar los valores públicos de configuración.
 
-    Actualmente muestra:
-
-    - La cuenta de Gmail configurada.
-    - La carpeta donde se guardarán los archivos.
-
-    Esta función nunca debe mostrar la contraseña de
-    aplicación.
+    La contraseña de aplicación nunca debe mostrarse.
     """
 
     print()
@@ -190,6 +121,11 @@ def mostrar_configuracion():
 
     print("Carpeta de destino:")
     print(config.SAVE_FOLDER)
+
+    print()
+
+    print("Límite de correos por ejecución:")
+    print(config.EMAIL_PROCESSING_LIMIT)
 
     print("==================================================")
 
@@ -213,22 +149,18 @@ def mostrar_resultado_busqueda(identificadores_correos):
         Lista de identificadores IMAP devuelta por:
 
             gmail_client.buscar_todos_los_correos()
-
-        Ejemplo:
-
-            [b'1', b'2', b'3']
     """
+
+    cantidad_correos = len(
+        identificadores_correos
+    )
 
     print()
     print("==================================================")
     print("RESULTADO DE LA BÚSQUEDA")
     print("==================================================")
 
-    cantidad_correos = len(
-        identificadores_correos
-    )
-
-    print("Cantidad de correos encontrados:")
+    print("Cantidad total de correos encontrados:")
     print(cantidad_correos)
 
     print("==================================================")
@@ -239,47 +171,131 @@ def mostrar_resultado_busqueda(identificadores_correos):
 
 
 # ==========================================================
-# INICIO DE LA FUNCIÓN mostrar_resultado_lectura()
+# INICIO DE LA FUNCIÓN seleccionar_correos_recientes()
 # ==========================================================
 
-def mostrar_resultado_lectura(id_correo, mensaje):
+def seleccionar_correos_recientes(
+    identificadores_correos,
+    limite
+):
     """
-    Mostrar información técnica básica sobre el correo leído.
+    Seleccionar los correos más recientes.
 
     Parámetros
     ----------
+    identificadores_correos:
+
+        Lista completa de identificadores IMAP.
+
+    limite:
+
+        Cantidad máxima de correos que deseamos procesar.
+
+    Retorna
+    -------
+    list
+
+        Lista con los identificadores seleccionados.
+
+        Los correos se devuelven ordenados desde el más
+        reciente hasta el más antiguo.
+
+    Ejemplo
+    -------
+    Si recibimos:
+
+        [b'1', b'2', b'3', b'4', b'5']
+
+    y el límite es 3, devuelve:
+
+        [b'5', b'4', b'3']
+    """
+
+    # ------------------------------------------------------
+    # Validamos que el límite sea un número entero positivo.
+    # ------------------------------------------------------
+
+    if not isinstance(limite, int):
+        raise TypeError(
+            "EMAIL_PROCESSING_LIMIT debe ser un número "
+            "entero."
+        )
+
+    if limite <= 0:
+        raise ValueError(
+            "EMAIL_PROCESSING_LIMIT debe ser mayor que cero."
+        )
+
+    # ------------------------------------------------------
+    # [-limite:] selecciona los últimos elementos.
+    #
+    # Normalmente, los últimos identificadores corresponden
+    # a los correos más recientes.
+    # ------------------------------------------------------
+
+    correos_recientes = identificadores_correos[
+        -limite:
+    ]
+
+    # ------------------------------------------------------
+    # reversed() invierte el orden.
+    #
+    # De esta manera procesaremos primero el correo más
+    # reciente.
+    # ------------------------------------------------------
+
+    correos_recientes = list(
+        reversed(correos_recientes)
+    )
+
+    return correos_recientes
+
+# ==========================================================
+# FIN DE LA FUNCIÓN seleccionar_correos_recientes()
+# ==========================================================
+
+
+# ==========================================================
+# INICIO DE LA FUNCIÓN mostrar_inicio_procesamiento()
+# ==========================================================
+
+def mostrar_inicio_procesamiento(
+    numero_correo,
+    cantidad_correos,
+    id_correo
+):
+    """
+    Mostrar el comienzo del procesamiento de un correo.
+
+    Parámetros
+    ----------
+    numero_correo:
+
+        Posición actual dentro del recorrido.
+
+    cantidad_correos:
+
+        Cantidad total de correos seleccionados.
+
     id_correo:
 
-        Identificador IMAP del correo.
-
-        Ejemplo:
-
-            b'1332'
-
-    mensaje:
-
-        Objeto EmailMessage devuelto por:
-
-            gmail_client.leer_correo()
+        Identificador IMAP del mensaje actual.
     """
 
     print()
-    print("==================================================")
-    print("RESULTADO DE LA LECTURA")
-    print("==================================================")
+    print()
+    print("##################################################")
+    print(
+        f"PROCESANDO CORREO "
+        f"{numero_correo} DE {cantidad_correos}"
+    )
+    print("##################################################")
 
     print("ID del correo:")
     print(id_correo)
 
-    print()
-
-    print("Tipo de objeto creado:")
-    print(type(mensaje))
-
-    print("==================================================")
-
 # ==========================================================
-# FIN DE LA FUNCIÓN mostrar_resultado_lectura()
+# FIN DE LA FUNCIÓN mostrar_inicio_procesamiento()
 # ==========================================================
 
 
@@ -298,15 +314,6 @@ def mostrar_datos_correo(datos_correo):
         Diccionario devuelto por:
 
             gmail_client.obtener_datos_correo()
-
-        Su estructura esperada es:
-
-            {
-                "Subject": "...",
-                "From": "...",
-                "To": "...",
-                "Date": "..."
-            }
     """
 
     print()
@@ -345,8 +352,7 @@ def mostrar_datos_correo(datos_correo):
 
 def mostrar_adjuntos(adjuntos):
     """
-    Mostrar información sobre los archivos adjuntos
-    detectados dentro de un correo.
+    Mostrar información sobre los adjuntos de un correo.
 
     Parámetros
     ----------
@@ -355,35 +361,19 @@ def mostrar_adjuntos(adjuntos):
         Lista devuelta por:
 
             gmail_client.obtener_adjuntos()
-
-        Cada elemento tiene una estructura parecida a:
-
-            {
-                "nombre": "factura.pdf",
-                "tipo_contenido": "application/pdf",
-                "parte": parte_mime
-            }
-
-    La clave "parte" no se muestra porque contiene el objeto
-    MIME interno del archivo.
     """
+
+    cantidad_adjuntos = len(
+        adjuntos
+    )
 
     print()
     print("==================================================")
     print("ARCHIVOS ADJUNTOS")
     print("==================================================")
 
-    cantidad_adjuntos = len(
-        adjuntos
-    )
-
     print("Cantidad de adjuntos encontrados:")
     print(cantidad_adjuntos)
-
-    # ------------------------------------------------------
-    # Si la lista está vacía, informamos que el correo no
-    # contiene adjuntos y terminamos la función.
-    # ------------------------------------------------------
 
     if not adjuntos:
 
@@ -393,15 +383,6 @@ def mostrar_adjuntos(adjuntos):
         print("==================================================")
 
         return
-
-    # ------------------------------------------------------
-    # enumerate() permite obtener al mismo tiempo:
-    #
-    # - El número del adjunto.
-    # - El diccionario correspondiente al adjunto.
-    #
-    # start=1 hace que la numeración comience desde 1.
-    # ------------------------------------------------------
 
     for numero_adjunto, adjunto in enumerate(
         adjuntos,
@@ -413,16 +394,13 @@ def mostrar_adjuntos(adjuntos):
         print(f"Adjunto número {numero_adjunto}")
         print("--------------------------------")
 
-        nombre_archivo = adjunto["nombre"]
-        tipo_contenido = adjunto["tipo_contenido"]
-
         print("Nombre:")
-        print(nombre_archivo)
+        print(adjunto["nombre"])
 
         print()
 
         print("Tipo de contenido:")
-        print(tipo_contenido)
+        print(adjunto["tipo_contenido"])
 
     print()
     print("==================================================")
@@ -438,7 +416,8 @@ def mostrar_adjuntos(adjuntos):
 
 def mostrar_archivos_guardados(archivos_guardados):
     """
-    Mostrar las rutas de los archivos guardados.
+    Mostrar las rutas de los archivos guardados durante el
+    procesamiento del correo actual.
 
     Parámetros
     ----------
@@ -447,39 +426,35 @@ def mostrar_archivos_guardados(archivos_guardados):
         Lista de objetos Path devuelta por:
 
             file_manager.guardar_adjuntos()
-
-        Cada objeto Path representa la ubicación final de un
-        archivo guardado.
     """
-
-    print()
-    print("==================================================")
-    print("ARCHIVOS GUARDADOS")
-    print("==================================================")
 
     cantidad_archivos = len(
         archivos_guardados
     )
 
-    print("Cantidad de archivos guardados:")
-    print(cantidad_archivos)
+    print()
+    print("==================================================")
+    print("ARCHIVOS NUEVOS GUARDADOS")
+    print("==================================================")
 
-    # ------------------------------------------------------
-    # Si la lista está vacía, no hay rutas para mostrar.
-    # ------------------------------------------------------
+    print("Cantidad de archivos nuevos guardados:")
+    print(cantidad_archivos)
 
     if not archivos_guardados:
 
         print()
-        print("No se guardó ningún archivo.")
+        print(
+            "No se guardó ningún archivo nuevo."
+        )
+
+        print(
+            "El correo puede no contener archivos PDF o "
+            "los archivos pueden existir previamente."
+        )
 
         print("==================================================")
 
         return
-
-    # ------------------------------------------------------
-    # Recorremos las rutas de los archivos guardados.
-    # ------------------------------------------------------
 
     for numero_archivo, ruta_archivo in enumerate(
         archivos_guardados,
@@ -503,6 +478,159 @@ def mostrar_archivos_guardados(archivos_guardados):
 
 
 # ==========================================================
+# INICIO DE LA FUNCIÓN procesar_correo()
+# ==========================================================
+
+def procesar_correo(conexion, id_correo):
+    """
+    Leer y procesar un único correo.
+
+    Parámetros
+    ----------
+    conexion:
+
+        Conexión IMAP activa con Gmail.
+
+    id_correo:
+
+        Identificador IMAP del correo que se procesará.
+
+    Retorna
+    -------
+    list
+
+        Lista con las rutas de los archivos PDF nuevos que
+        fueron guardados.
+
+    Flujo
+    -----
+    1. Leer el correo.
+    2. Obtener sus datos principales.
+    3. Mostrar sus datos.
+    4. Detectar sus adjuntos.
+    5. Mostrar los adjuntos.
+    6. Filtrar y guardar los PDF nuevos.
+    7. Devolver las rutas guardadas.
+    """
+
+    mensaje = gmail_client.leer_correo(
+        conexion,
+        id_correo
+    )
+
+    datos_correo = gmail_client.obtener_datos_correo(
+        mensaje
+    )
+
+    mostrar_datos_correo(
+        datos_correo
+    )
+
+    adjuntos = gmail_client.obtener_adjuntos(
+        mensaje
+    )
+
+    mostrar_adjuntos(
+        adjuntos
+    )
+
+    archivos_guardados = file_manager.guardar_adjuntos(
+        adjuntos,
+        config.SAVE_FOLDER
+    )
+
+    mostrar_archivos_guardados(
+        archivos_guardados
+    )
+
+    return archivos_guardados
+
+# ==========================================================
+# FIN DE LA FUNCIÓN procesar_correo()
+# ==========================================================
+
+
+# ==========================================================
+# INICIO DE LA FUNCIÓN mostrar_resumen_final()
+# ==========================================================
+
+def mostrar_resumen_final(
+    cantidad_seleccionada,
+    cantidad_procesada,
+    cantidad_errores,
+    archivos_guardados
+):
+    """
+    Mostrar un resumen general al finalizar la ejecución.
+
+    Parámetros
+    ----------
+    cantidad_seleccionada:
+
+        Cantidad de correos seleccionados inicialmente.
+
+    cantidad_procesada:
+
+        Cantidad de correos procesados correctamente.
+
+    cantidad_errores:
+
+        Cantidad de correos que produjeron un error.
+
+    archivos_guardados:
+
+        Lista con todas las rutas guardadas durante la
+        ejecución.
+    """
+
+    print()
+    print()
+    print("==================================================")
+    print("RESUMEN FINAL")
+    print("==================================================")
+
+    print("Correos seleccionados:")
+    print(cantidad_seleccionada)
+
+    print()
+
+    print("Correos procesados correctamente:")
+    print(cantidad_procesada)
+
+    print()
+
+    print("Correos con errores:")
+    print(cantidad_errores)
+
+    print()
+
+    print("Total de archivos PDF nuevos guardados:")
+    print(len(archivos_guardados))
+
+    if archivos_guardados:
+
+        print()
+        print("Archivos guardados durante esta ejecución:")
+
+        for numero_archivo, ruta_archivo in enumerate(
+            archivos_guardados,
+            start=1
+        ):
+
+            print()
+            print(
+                f"{numero_archivo}. {ruta_archivo}"
+            )
+
+    print()
+    print("==================================================")
+
+# ==========================================================
+# FIN DE LA FUNCIÓN mostrar_resumen_final()
+# ==========================================================
+
+
+# ==========================================================
 # INICIO DE LA FUNCIÓN main()
 # ==========================================================
 
@@ -510,64 +638,19 @@ def main():
     """
     Coordinar el flujo completo del programa.
 
-    Flujo actual
-    ------------
-    1. Mostrar información del proyecto.
-    2. Mostrar la configuración.
-    3. Conectarse con Gmail.
-    4. Buscar todos los correos.
-    5. Verificar que haya correos.
-    6. Seleccionar el correo más reciente.
-    7. Leer el correo completo.
-    8. Mostrar información técnica de la lectura.
-    9. Extraer los encabezados.
-    10. Mostrar los encabezados.
-    11. Detectar los archivos adjuntos.
-    12. Mostrar información de los adjuntos.
-    13. Crear la carpeta de destino.
-    14. Guardar los adjuntos.
-    15. Mostrar las rutas finales.
-    16. Cerrar la conexión con Gmail.
+    En esta versión se procesan varios correos recientes,
+    según el límite definido en config.py.
     """
-
-    # ------------------------------------------------------
-    # Mostramos la información general antes de conectarnos.
-    # ------------------------------------------------------
 
     mostrar_informacion_proyecto()
 
     mostrar_configuracion()
 
-    # ------------------------------------------------------
-    # Inicializamos la variable con None.
-    #
-    # Si la conexión falla antes de crearse, finalmente
-    # podremos comprobar que no existe una conexión abierta.
-    # ------------------------------------------------------
-
     conexion = None
-
-    # ------------------------------------------------------
-    # El bloque try contiene el flujo principal.
-    #
-    # Si aparece un error, será capturado por except.
-    #
-    # finally intentará cerrar la conexión en todos los
-    # casos.
-    # ------------------------------------------------------
 
     try:
 
-        # --------------------------------------------------
-        # Abrimos la conexión IMAP con Gmail.
-        # --------------------------------------------------
-
         conexion = gmail_client.conectar()
-
-        # --------------------------------------------------
-        # Buscamos todos los correos disponibles dentro de
-        # la carpeta utilizada por gmail_client.
-        # --------------------------------------------------
 
         identificadores_correos = (
             gmail_client.buscar_todos_los_correos(
@@ -575,18 +658,9 @@ def main():
             )
         )
 
-        # --------------------------------------------------
-        # Mostramos la cantidad de mensajes encontrados.
-        # --------------------------------------------------
-
         mostrar_resultado_busqueda(
             identificadores_correos
         )
-
-        # --------------------------------------------------
-        # Si la lista está vacía, no podemos seleccionar un
-        # mensaje.
-        # --------------------------------------------------
 
         if not identificadores_correos:
 
@@ -598,112 +672,118 @@ def main():
             return
 
         # --------------------------------------------------
-        # Seleccionamos el último identificador.
-        #
-        # En Python, [-1] representa el último elemento de
-        # una lista.
-        #
-        # Normalmente será el correo más reciente.
+        # Seleccionamos solamente los correos más recientes
+        # según el límite configurado.
         # --------------------------------------------------
 
-        id_correo_prueba = identificadores_correos[-1]
-
-        # --------------------------------------------------
-        # Leemos el correo completo y lo convertimos en un
-        # objeto EmailMessage.
-        # --------------------------------------------------
-
-        mensaje = gmail_client.leer_correo(
-            conexion,
-            id_correo_prueba
+        correos_seleccionados = (
+            seleccionar_correos_recientes(
+                identificadores_correos,
+                config.EMAIL_PROCESSING_LIMIT
+            )
         )
 
-        # --------------------------------------------------
-        # Mostramos el identificador y el tipo de objeto.
-        # --------------------------------------------------
-
-        mostrar_resultado_lectura(
-            id_correo_prueba,
-            mensaje
+        cantidad_seleccionada = len(
+            correos_seleccionados
         )
 
+        print()
+        print("==================================================")
+        print("CORREOS SELECCIONADOS")
+        print("==================================================")
+
+        print("Cantidad de correos que serán procesados:")
+        print(cantidad_seleccionada)
+
+        print("==================================================")
+
         # --------------------------------------------------
-        # Extraemos los encabezados principales.
+        # Estas variables permiten construir el resumen
+        # general al finalizar.
         # --------------------------------------------------
 
-        datos_correo = gmail_client.obtener_datos_correo(
-            mensaje
+        cantidad_procesada = 0
+        cantidad_errores = 0
+        todos_los_archivos_guardados = []
+
+        # --------------------------------------------------
+        # Recorremos todos los correos seleccionados.
+        # --------------------------------------------------
+
+        for numero_correo, id_correo in enumerate(
+            correos_seleccionados,
+            start=1
+        ):
+
+            mostrar_inicio_procesamiento(
+                numero_correo,
+                cantidad_seleccionada,
+                id_correo
+            )
+
+            # ----------------------------------------------
+            # Cada correo tiene su propio try.
+            #
+            # De esta forma, si un correo produce un error,
+            # el programa informa el problema y continúa con
+            # los demás mensajes.
+            # ----------------------------------------------
+
+            try:
+
+                archivos_guardados = procesar_correo(
+                    conexion,
+                    id_correo
+                )
+
+                todos_los_archivos_guardados.extend(
+                    archivos_guardados
+                )
+
+                cantidad_procesada += 1
+
+            except Exception as error_correo:
+
+                cantidad_errores += 1
+
+                print()
+                print("==================================================")
+                print("ERROR AL PROCESAR EL CORREO")
+                print("==================================================")
+
+                print("ID del correo:")
+                print(id_correo)
+
+                print()
+
+                print("Tipo de error:")
+                print(type(error_correo).__name__)
+
+                print()
+
+                print("Descripción:")
+                print(error_correo)
+
+                print()
+                print(
+                    "El programa continuará con el "
+                    "siguiente correo."
+                )
+
+                print("==================================================")
+
+        mostrar_resumen_final(
+            cantidad_seleccionada,
+            cantidad_procesada,
+            cantidad_errores,
+            todos_los_archivos_guardados
         )
-
-        # --------------------------------------------------
-        # Mostramos los encabezados.
-        # --------------------------------------------------
-
-        mostrar_datos_correo(
-            datos_correo
-        )
-
-        # --------------------------------------------------
-        # Detectamos las partes MIME consideradas adjuntos.
-        #
-        # El resultado será una lista de diccionarios.
-        # --------------------------------------------------
-
-        adjuntos = gmail_client.obtener_adjuntos(
-            mensaje
-        )
-
-        # --------------------------------------------------
-        # Mostramos los adjuntos detectados.
-        # --------------------------------------------------
-
-        mostrar_adjuntos(
-            adjuntos
-        )
-
-        # --------------------------------------------------
-        # Guardamos los adjuntos dentro de la carpeta
-        # configurada en config.py.
-        #
-        # file_manager.guardar_adjuntos() también se ocupa
-        # de crear la carpeta si todavía no existe.
-        #
-        # En esta versión se guardan todos los adjuntos.
-        #
-        # El filtro exclusivo para archivos PDF se añadirá
-        # más adelante.
-        # --------------------------------------------------
-
-        archivos_guardados = file_manager.guardar_adjuntos(
-            adjuntos,
-            config.SAVE_FOLDER
-        )
-
-        # --------------------------------------------------
-        # Mostramos las rutas finales de los archivos
-        # guardados.
-        # --------------------------------------------------
-
-        mostrar_archivos_guardados(
-            archivos_guardados
-        )
-
-    # ------------------------------------------------------
-    # Capturamos cualquier excepción producida durante:
-    #
-    # - La conexión.
-    # - La búsqueda.
-    # - La lectura.
-    # - La detección de adjuntos.
-    # - La creación de la carpeta.
-    # - El guardado de archivos.
-    # ------------------------------------------------------
 
     except Exception as error:
 
         print()
         print("==================================================")
-        print("SE PRODUJO UN ERROR")
+        print("SE PRODUJO UN ERROR GENERAL")
         print("==================================================")
 
         print("Tipo de error:")
@@ -716,26 +796,11 @@ def main():
 
         print("==================================================")
 
-    # ------------------------------------------------------
-    # finally se ejecuta siempre.
-    #
-    # Su objetivo es cerrar la conexión incluso si apareció
-    # un error durante el procesamiento.
-    # ------------------------------------------------------
-
     finally:
-
-        # --------------------------------------------------
-        # Comprobamos que la conexión haya sido creada.
-        # --------------------------------------------------
 
         if conexion is not None:
 
             try:
-
-                # ------------------------------------------
-                # Cerramos correctamente la sesión IMAP.
-                # ------------------------------------------
 
                 conexion.logout()
 
@@ -763,21 +828,8 @@ def main():
 # PUNTO DE ENTRADA DEL PROGRAMA
 # ==========================================================
 
-
-# ----------------------------------------------------------
-# Cuando ejecutamos:
-#
-#     python main.py
-#
-# Python asigna "__main__" a la variable especial __name__.
-#
-# Esta condición evita que main() se ejecute automáticamente
-# si el archivo es importado desde otro módulo.
-# ----------------------------------------------------------
-
 if __name__ == "__main__":
     main()
-
 
 # ==========================================================
 # FIN DEL ARCHIVO
