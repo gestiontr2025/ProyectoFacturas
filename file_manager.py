@@ -7,7 +7,7 @@ Proyecto Facturas
 
 Versión
 --------
-0.7
+0.8
 
 Archivo
 --------
@@ -21,8 +21,10 @@ sistema de archivos.
 Sus responsabilidades actuales son:
 
 - Crear la carpeta principal de destino.
+- Determinar si un archivo adjunto es un PDF.
+- Filtrar los adjuntos que no sean PDF.
 - Obtener el contenido binario de los adjuntos.
-- Guardar los archivos adjuntos.
+- Guardar los archivos PDF.
 - Evitar sobrescribir archivos existentes.
 - Devolver las rutas de los archivos guardados.
 
@@ -31,7 +33,8 @@ módulo tenga una responsabilidad clara.
 
 gmail_client.py se ocupa de Gmail.
 
-file_manager.py se ocupa de carpetas y archivos.
+file_manager.py se ocupa de la validación y del guardado de
+los archivos.
 
 Autor
 ------
@@ -135,6 +138,236 @@ def preparar_carpeta_destino(carpeta_destino):
 
 # ==========================================================
 # FIN DE LA FUNCIÓN preparar_carpeta_destino()
+# ==========================================================
+
+
+# ==========================================================
+# INICIO DE LA FUNCIÓN es_archivo_pdf()
+# ==========================================================
+
+def es_archivo_pdf(adjunto):
+    """
+    Determinar si un archivo adjunto debe considerarse PDF.
+
+    Parámetros
+    ----------
+    adjunto:
+
+        Diccionario creado por:
+
+            gmail_client.obtener_adjuntos()
+
+        Su estructura esperada es:
+
+            {
+                "nombre": "...",
+                "tipo_contenido": "...",
+                "parte": parte_mime
+            }
+
+    Retorna
+    -------
+    bool
+
+        Devuelve True si el archivo parece ser un PDF.
+
+        Devuelve False si el archivo no parece ser un PDF.
+
+    Criterios utilizados
+    --------------------
+    Un archivo será considerado PDF cuando se cumpla al
+    menos una de estas condiciones:
+
+    1. Su tipo de contenido MIME sea:
+
+           application/pdf
+
+    2. Su nombre termine con la extensión:
+
+           .pdf
+
+    Utilizamos ambas comprobaciones porque algunos correos
+    pueden informar incorrectamente el tipo MIME del archivo.
+    """
+
+    # ------------------------------------------------------
+    # Obtenemos el nombre del archivo.
+    #
+    # get() permite proporcionar un valor predeterminado si
+    # la clave no existe.
+    #
+    # En este caso utilizamos una cadena vacía.
+    # ------------------------------------------------------
+
+    nombre_archivo = adjunto.get(
+        "nombre",
+        ""
+    )
+
+
+    # ------------------------------------------------------
+    # Obtenemos el tipo MIME informado por el correo.
+    #
+    # Un PDF normalmente utiliza:
+    #
+    #     application/pdf
+    # ------------------------------------------------------
+
+    tipo_contenido = adjunto.get(
+        "tipo_contenido",
+        ""
+    )
+
+
+    # ------------------------------------------------------
+    # Convertimos ambos valores a texto.
+    #
+    # Esto evita errores en caso de que alguno de los datos
+    # recibidos sea None u otro tipo de valor.
+    # ------------------------------------------------------
+
+    nombre_archivo = str(
+        nombre_archivo
+    )
+
+    tipo_contenido = str(
+        tipo_contenido
+    )
+
+
+    # ------------------------------------------------------
+    # lower() convierte el texto a minúsculas.
+    #
+    # Esto permite reconocer todas estas variantes:
+    #
+    #     factura.pdf
+    #     factura.PDF
+    #     factura.Pdf
+    # ------------------------------------------------------
+
+    nombre_archivo = nombre_archivo.lower()
+
+    tipo_contenido = tipo_contenido.lower()
+
+
+    # ------------------------------------------------------
+    # Primera comprobación:
+    #
+    # Verificamos si el servidor declaró que el archivo
+    # utiliza el tipo MIME application/pdf.
+    # ------------------------------------------------------
+
+    tiene_tipo_mime_pdf = (
+        tipo_contenido == "application/pdf"
+    )
+
+
+    # ------------------------------------------------------
+    # Segunda comprobación:
+    #
+    # endswith(".pdf") verifica si el nombre termina con la
+    # extensión .pdf.
+    # ------------------------------------------------------
+
+    tiene_extension_pdf = nombre_archivo.endswith(
+        ".pdf"
+    )
+
+
+    # ------------------------------------------------------
+    # El operador or devuelve True cuando al menos una de
+    # las dos condiciones es verdadera.
+    #
+    # De esta forma aceptamos:
+    #
+    # - Archivos con tipo MIME correcto.
+    # - Archivos con extensión correcta.
+    #
+    # Esto nos protege frente a correos cuyo tipo MIME haya
+    # sido configurado incorrectamente.
+    # ------------------------------------------------------
+
+    return (
+        tiene_tipo_mime_pdf
+        or
+        tiene_extension_pdf
+    )
+
+# ==========================================================
+# FIN DE LA FUNCIÓN es_archivo_pdf()
+# ==========================================================
+
+
+# ==========================================================
+# INICIO DE LA FUNCIÓN filtrar_archivos_pdf()
+# ==========================================================
+
+def filtrar_archivos_pdf(adjuntos):
+    """
+    Obtener únicamente los adjuntos que sean archivos PDF.
+
+    Parámetros
+    ----------
+    adjuntos:
+
+        Lista de adjuntos devuelta por:
+
+            gmail_client.obtener_adjuntos()
+
+    Retorna
+    -------
+    list
+
+        Nueva lista que contiene solamente los adjuntos
+        considerados PDF.
+
+    Importante
+    ----------
+    Esta función no modifica la lista original.
+
+    Crea y devuelve una lista nueva.
+    """
+
+    # ------------------------------------------------------
+    # Creamos una lista vacía.
+    #
+    # Dentro de ella agregaremos solamente los archivos que
+    # superen la validación de es_archivo_pdf().
+    # ------------------------------------------------------
+
+    archivos_pdf = []
+
+
+    # ------------------------------------------------------
+    # Recorremos todos los adjuntos recibidos.
+    # ------------------------------------------------------
+
+    for adjunto in adjuntos:
+
+        # --------------------------------------------------
+        # Consultamos si el adjunto actual es un PDF.
+        # --------------------------------------------------
+
+        if es_archivo_pdf(adjunto):
+
+            # ----------------------------------------------
+            # Si la condición devuelve True, agregamos el
+            # adjunto a la nueva lista.
+            # ----------------------------------------------
+
+            archivos_pdf.append(
+                adjunto
+            )
+
+
+    # ------------------------------------------------------
+    # Devolvemos únicamente los archivos PDF.
+    # ------------------------------------------------------
+
+    return archivos_pdf
+
+# ==========================================================
+# FIN DE LA FUNCIÓN filtrar_archivos_pdf()
 # ==========================================================
 
 
@@ -388,7 +621,7 @@ def guardar_adjunto(adjunto, carpeta_destino):
 
 def guardar_adjuntos(adjuntos, carpeta_destino):
     """
-    Guardar todos los archivos adjuntos recibidos.
+    Filtrar y guardar únicamente los archivos PDF recibidos.
 
     Parámetros
     ----------
@@ -400,7 +633,7 @@ def guardar_adjuntos(adjuntos, carpeta_destino):
 
     carpeta_destino:
 
-        Ruta principal donde se guardarán los archivos.
+        Ruta principal donde se guardarán los archivos PDF.
 
     Retorna
     -------
@@ -408,11 +641,37 @@ def guardar_adjuntos(adjuntos, carpeta_destino):
 
         Lista de objetos Path.
 
-        Cada Path representa un archivo guardado.
+        Cada Path representa un archivo PDF guardado.
+
+        Si no se encuentra ningún PDF, devuelve una lista
+        vacía.
     """
 
     # ------------------------------------------------------
-    # Primero nos aseguramos de que la carpeta exista.
+    # Filtramos los adjuntos antes de crear archivos.
+    #
+    # La variable archivos_pdf contendrá solamente aquellos
+    # adjuntos que hayan superado la validación.
+    # ------------------------------------------------------
+
+    archivos_pdf = filtrar_archivos_pdf(
+        adjuntos
+    )
+
+
+    # ------------------------------------------------------
+    # Si no encontramos ningún PDF, devolvemos inmediatamente
+    # una lista vacía.
+    #
+    # En este caso no es necesario crear la carpeta.
+    # ------------------------------------------------------
+
+    if not archivos_pdf:
+        return []
+
+
+    # ------------------------------------------------------
+    # Nos aseguramos de que la carpeta de destino exista.
     # ------------------------------------------------------
 
     carpeta_destino = preparar_carpeta_destino(
@@ -430,13 +689,16 @@ def guardar_adjuntos(adjuntos, carpeta_destino):
 
 
     # ------------------------------------------------------
-    # Recorremos todos los adjuntos detectados.
+    # Recorremos únicamente los adjuntos PDF.
+    #
+    # Los adjuntos de otros tipos ya quedaron fuera de esta
+    # lista y no serán guardados.
     # ------------------------------------------------------
 
-    for adjunto in adjuntos:
+    for adjunto in archivos_pdf:
 
         # --------------------------------------------------
-        # Guardamos el adjunto actual.
+        # Guardamos el PDF actual.
         # --------------------------------------------------
 
         ruta_guardada = guardar_adjunto(
@@ -455,7 +717,7 @@ def guardar_adjuntos(adjuntos, carpeta_destino):
 
 
     # ------------------------------------------------------
-    # Devolvemos todas las rutas.
+    # Devolvemos todas las rutas de los PDF guardados.
     # ------------------------------------------------------
 
     return archivos_guardados
