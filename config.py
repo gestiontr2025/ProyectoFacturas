@@ -3,14 +3,10 @@
 PROYECTO
 ==========================================================
 
-ProyectoFacturas
-
-Versión
---------
-0.3
+Proyecto Facturas
 
 Archivo
---------
+-------
 config.py
 
 Descripción
@@ -18,20 +14,27 @@ Descripción
 Este archivo contiene la configuración general del
 proyecto.
 
-Su responsabilidad es centralizar todos aquellos valores
-que podrían cambiar en el futuro.
+Su responsabilidad es centralizar aquellos valores que
+podrían cambiar en el futuro.
 
 Por ejemplo:
 
 - Nombre del proyecto.
-- Versión actual.
 - Autor.
 - Correo electrónico utilizado para acceder a Gmail.
 - Contraseña de aplicación de Gmail.
+- Cantidad de correos procesados por ejecución.
 - Carpeta donde se guardarán las facturas.
 
-Centralizar la configuración evita tener que buscar y
-modificar esos datos en distintos archivos del proyecto.
+La versión del proyecto ya no se encuentra en este archivo.
+
+La versión se guarda exclusivamente en:
+
+    version.py
+
+De esta manera, para actualizarla solamente es necesario
+modificar un archivo cuya única responsabilidad es contener
+la versión actual.
 
 Seguridad
 ---------
@@ -43,27 +46,32 @@ Esos datos se guardan en un archivo privado llamado:
 
     .env
 
-El archivo .env deberá estar incluido dentro de
-.gitignore para evitar que Git lo registre y que las
-credenciales sean publicadas accidentalmente en GitHub.
+El archivo .env deberá estar incluido dentro de:
+
+    .gitignore
+
+Esto evita que Git registre las credenciales y que puedan
+publicarse accidentalmente en GitHub.
 
 Responsabilidades
 -----------------
-✔ Guardar la información general del proyecto.
-✔ Cargar las variables privadas desde el archivo .env.
-✔ Validar que las variables necesarias existan.
-✔ Definir la carpeta principal de almacenamiento.
+- Guardar la información general del proyecto.
+- Cargar las variables privadas desde el archivo .env.
+- Validar que las variables necesarias existan.
+- Definir el límite de correos procesados.
+- Definir la carpeta principal de almacenamiento.
 
 No debe
---------
-✘ Conectarse con Gmail.
-✘ Buscar correos.
-✘ Descargar archivos.
-✘ Crear carpetas mensuales.
-✘ Leer o modificar archivos PDF.
+-------
+- Conectarse con Gmail.
+- Buscar correos.
+- Descargar archivos.
+- Crear carpetas mensuales.
+- Leer o modificar archivos PDF.
+- Guardar la versión del proyecto.
 
 Autor
-------
+-----
 Diego (desarrollador del proyecto)
 ChatGPT (mentor técnico)
 
@@ -72,17 +80,16 @@ ChatGPT (mentor técnico)
 
 
 # ==========================================================
-# IMPORTACIONES
+# INICIO DEL BLOQUE DE IMPORTACIONES
 # ==========================================================
 
 # ----------------------------------------------------------
-# Importamos el módulo "os", incluido en la biblioteca
-# estándar de Python.
+# Importamos el módulo os.
 #
-# Este módulo permite interactuar con ciertas funciones
-# proporcionadas por el sistema operativo.
+# Este módulo forma parte de la biblioteca estándar de
+# Python.
 #
-# En este archivo utilizaremos:
+# En este archivo utilizamos:
 #
 #     os.getenv()
 #
@@ -95,8 +102,8 @@ ChatGPT (mentor técnico)
 #
 # significa:
 #
-#     "Buscá una variable de entorno llamada EMAIL
-#      y devolveme su contenido".
+#     "Buscá una variable de entorno llamada EMAIL y
+#      devolveme su contenido".
 #
 # Si la variable no existe, os.getenv() devuelve None.
 # ----------------------------------------------------------
@@ -112,12 +119,12 @@ import os
 # con rutas de archivos y carpetas.
 #
 # En lugar de construir rutas manualmente utilizando
-# barras invertidas, podremos hacer operaciones como:
+# barras invertidas, podremos realizar operaciones como:
 #
-#     SAVE_FOLDER / "2026" / "Julio"
+#     SAVE_FOLDER / "2026" / "07 - Julio"
 #
 # Path se encargará de formar correctamente la ruta según
-# el sistema operativo que estemos utilizando.
+# el sistema operativo utilizado.
 # ----------------------------------------------------------
 
 from pathlib import Path
@@ -130,30 +137,37 @@ from pathlib import Path
 # Esta biblioteca no viene instalada de manera
 # predeterminada con Python.
 #
-# Para instalarla debemos ejecutar en la terminal:
+# Para instalarla se utiliza:
 #
 #     pip install python-dotenv
 #
-# La función load_dotenv() lee el archivo ".env" y carga
-# sus variables para que puedan ser recuperadas mediante
-# os.getenv().
+# La función load_dotenv() lee el archivo .env y carga sus
+# variables para que puedan recuperarse mediante:
+#
+#     os.getenv()
 # ----------------------------------------------------------
 
 from dotenv import load_dotenv
 
+# ==========================================================
+# FIN DEL BLOQUE DE IMPORTACIONES
+# ==========================================================
+
 
 # ==========================================================
-# CARGAR EL ARCHIVO .ENV
+# INICIO DE LA CARGA DEL ARCHIVO .ENV
 # ==========================================================
 
 # ----------------------------------------------------------
 # Ejecutamos load_dotenv() para buscar y leer el archivo
-# llamado ".env".
+# llamado:
 #
-# El archivo .env debe encontrarse en la carpeta principal
-# del proyecto, junto a config.py y main.py.
+#     .env
 #
-# Su contenido tendrá una estructura parecida a esta:
+# El archivo debe encontrarse en la carpeta principal del
+# proyecto, junto a config.py y main.py.
+#
+# Su contenido deberá tener una estructura parecida a:
 #
 #     EMAIL=tu_correo@gmail.com
 #     APP_PASSWORD=tu_contraseña_de_aplicacion
@@ -164,9 +178,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# ==========================================================
+# FIN DE LA CARGA DEL ARCHIVO .ENV
+# ==========================================================
+
 
 # ==========================================================
-# INFORMACIÓN GENERAL DEL PROYECTO
+# INICIO DE LA INFORMACIÓN GENERAL DEL PROYECTO
 # ==========================================================
 
 # ----------------------------------------------------------
@@ -180,32 +198,6 @@ PROJECT_NAME = "Proyecto Facturas"
 
 
 # ----------------------------------------------------------
-# Versión actual del proyecto.
-#
-# Cambiamos la versión de 0.2 a 0.3 porque incorporamos una
-# nueva mejora:
-#
-# - Las credenciales ya no se guardan directamente dentro
-#   del código.
-# - Ahora se leen desde un archivo privado llamado .env.
-#
-# Mientras el proyecto se encuentre en desarrollo,
-# utilizaremos versiones que comiencen con 0.
-#
-# Por ejemplo:
-#
-#     0.3
-#     0.4
-#     0.5
-#
-# Cuando el programa alcance una primera versión completa
-# y estable, podremos cambiar este valor a 1.0.
-# ----------------------------------------------------------
-
-PROJECT_VERSION = "0.11"
-
-
-# ----------------------------------------------------------
 # Autor principal del proyecto.
 #
 # Este valor es informativo y puede utilizarse en mensajes,
@@ -214,9 +206,13 @@ PROJECT_VERSION = "0.11"
 
 PROJECT_AUTHOR = "Diego"
 
+# ==========================================================
+# FIN DE LA INFORMACIÓN GENERAL DEL PROYECTO
+# ==========================================================
+
 
 # ==========================================================
-# DATOS DE GMAIL
+# INICIO DE LOS DATOS DE GMAIL
 # ==========================================================
 
 # ----------------------------------------------------------
@@ -228,8 +224,9 @@ PROJECT_AUTHOR = "Diego"
 # Esto evita que el dato quede guardado dentro del código
 # fuente o dentro del historial de Git.
 #
-# Si la variable EMAIL no existe, os.getenv() devolverá
-# None.
+# Si la variable EMAIL no existe, os.getenv() devolverá:
+#
+#     None
 # ----------------------------------------------------------
 
 EMAIL = os.getenv("EMAIL")
@@ -246,18 +243,22 @@ EMAIL = os.getenv("EMAIL")
 # de Google.
 #
 # Es una contraseña especial creada para permitir que
-# aplicaciones externas, como este programa, puedan
-# conectarse con Gmail.
+# aplicaciones externas puedan conectarse con Gmail.
 #
-# Si APP_PASSWORD no existe en el entorno, os.getenv()
-# devolverá None.
+# Si APP_PASSWORD no existe, os.getenv() devolverá:
+#
+#     None
 # ----------------------------------------------------------
 
 APP_PASSWORD = os.getenv("APP_PASSWORD")
 
+# ==========================================================
+# FIN DE LOS DATOS DE GMAIL
+# ==========================================================
+
 
 # ==========================================================
-# VALIDACIÓN DE LAS VARIABLES DE ENTORNO
+# INICIO DE LA VALIDACIÓN DE VARIABLES DE ENTORNO
 # ==========================================================
 
 # ----------------------------------------------------------
@@ -271,30 +272,27 @@ APP_PASSWORD = os.getenv("APP_PASSWORD")
 #
 #     "Si EMAIL no contiene un valor válido".
 #
-# Esta condición será verdadera si EMAIL contiene:
+# La condición será verdadera si EMAIL contiene:
 #
 # - None.
-# - Una cadena vacía: "".
+# - Una cadena vacía.
 #
-# Si falta el correo, detenemos el programa utilizando
-# raise ValueError().
+# Si falta el correo, detenemos el programa utilizando:
 #
-# "raise" significa que provocamos deliberadamente una
-# excepción para informar que existe un problema.
+#     raise ValueError()
 #
-# ValueError indica que un valor necesario para ejecutar el
-# programa es incorrecto o no está disponible.
-#
-# Esto es preferible a intentar conectarse con Gmail
-# utilizando un valor vacío, porque el mensaje de error
-# será mucho más claro.
+# Esto permite mostrar un mensaje más claro que el que
+# produciría un intento de conexión con credenciales
+# incompletas.
 # ----------------------------------------------------------
 
 if not EMAIL:
+
     raise ValueError(
         "No se encontró la variable EMAIL. "
         "Verificá que exista el archivo .env y que contenga "
-        "una línea con el formato EMAIL=tu_correo@gmail.com"
+        "una línea con el formato "
+        "EMAIL=tu_correo@gmail.com"
     )
 
 
@@ -302,15 +300,19 @@ if not EMAIL:
 # Comprobamos que la contraseña de aplicación también haya
 # sido encontrada.
 #
-# Si APP_PASSWORD no contiene un valor válido, detenemos el
-# programa y mostramos un mensaje explicativo.
+# La contraseña nunca se incluye dentro del mensaje de
+# error.
 #
-# La contraseña nunca se incluye en el mensaje de error.
-# Tampoco deberíamos imprimirla en la terminal, guardarla
-# en registros ni mostrarla durante las pruebas.
+# Tampoco debe:
+#
+# - Imprimirse en la terminal.
+# - Guardarse en registros.
+# - Incluirse en Git.
+# - Publicarse en GitHub.
 # ----------------------------------------------------------
 
 if not APP_PASSWORD:
+
     raise ValueError(
         "No se encontró la variable APP_PASSWORD. "
         "Verificá que exista el archivo .env y que contenga "
@@ -318,18 +320,36 @@ if not APP_PASSWORD:
         "APP_PASSWORD=tu_contraseña_de_aplicacion"
     )
 
+# ==========================================================
+# FIN DE LA VALIDACIÓN DE VARIABLES DE ENTORNO
+# ==========================================================
+
+
+# ==========================================================
+# INICIO DE LA CONFIGURACIÓN DE PROCESAMIENTO
+# ==========================================================
+
 # ----------------------------------------------------------
 # Cantidad máxima de correos recientes que el programa
 # procesará en cada ejecución.
 #
 # Utilizamos un límite para evitar procesar accidentalmente
-# toda la cuenta de Gmail durante las primeras pruebas.
+# toda la cuenta de Gmail durante las primeras etapas del
+# desarrollo.
+#
+# Actualmente, el programa seleccionará los 10 correos más
+# recientes.
 # ----------------------------------------------------------
 
 EMAIL_PROCESSING_LIMIT = 10
 
 # ==========================================================
-# CARPETA DONDE SE GUARDARÁN LAS FACTURAS
+# FIN DE LA CONFIGURACIÓN DE PROCESAMIENTO
+# ==========================================================
+
+
+# ==========================================================
+# INICIO DE LA CARPETA DE DESTINO
 # ==========================================================
 
 # ----------------------------------------------------------
@@ -339,14 +359,19 @@ EMAIL_PROCESSING_LIMIT = 10
 # Utilizamos Path() para convertir el texto de la ruta en
 # un objeto especializado en rutas de archivos.
 #
-# La letra "r" colocada antes de las comillas significa
-# "raw string" o cadena cruda.
+# La letra r colocada antes de las comillas significa:
+#
+#     raw string
+#
+# o:
+#
+#     cadena cruda
 #
 # Esto le indica a Python que conserve las barras
 # invertidas de Windows exactamente como fueron escritas.
 #
-# Sin la letra "r", algunas combinaciones podrían ser
-# interpretadas como caracteres especiales.
+# Sin la letra r, algunas combinaciones podrían
+# interpretarse como caracteres especiales.
 #
 # Por ejemplo:
 #
@@ -357,15 +382,25 @@ EMAIL_PROCESSING_LIMIT = 10
 # La variable SAVE_FOLDER contiene solamente la carpeta
 # principal.
 #
-# Más adelante, organizer.py utilizará esta ruta para crear
+# invoice_organizer.py utiliza esta ruta para construir
 # carpetas como:
 #
 #     Facturas/
-#     └── 2026/
-#         └── Julio/
-#             └── Nombre del proveedor/
+#     └── Remitente/
+#         └── Año/
+#             └── Número - Mes/
+#                 └── factura.pdf
 # ----------------------------------------------------------
 
 SAVE_FOLDER = Path(
     r"C:\Users\gesti\OneDrive\Documentos\Facturas"
 )
+
+# ==========================================================
+# FIN DE LA CARPETA DE DESTINO
+# ==========================================================
+
+
+# ==========================================================
+# FIN DEL ARCHIVO
+# ==========================================================
