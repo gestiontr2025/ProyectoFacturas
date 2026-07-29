@@ -202,7 +202,7 @@ PROJECT_NAME = "Proyecto Facturas"
 # y estable, podremos cambiar este valor a 1.0.
 # ----------------------------------------------------------
 
-PROJECT_VERSION = "0.8"
+PROJECT_VERSION = "0.9"
 
 
 # ----------------------------------------------------------

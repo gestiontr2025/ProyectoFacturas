@@ -7,7 +7,7 @@ Proyecto Facturas
 
 Versión
 --------
-0.8
+0.9
 
 Archivo
 --------
@@ -23,10 +23,11 @@ Sus responsabilidades actuales son:
 - Crear la carpeta principal de destino.
 - Determinar si un archivo adjunto es un PDF.
 - Filtrar los adjuntos que no sean PDF.
+- Comprobar si un archivo ya fue guardado.
+- Evitar guardar archivos duplicados.
 - Obtener el contenido binario de los adjuntos.
 - Guardar los archivos PDF.
-- Evitar sobrescribir archivos existentes.
-- Devolver las rutas de los archivos guardados.
+- Devolver las rutas de los archivos realmente guardados.
 
 Separar estas tareas de gmail_client.py permite que cada
 módulo tenga una responsabilidad clara.
@@ -49,17 +50,7 @@ ChatGPT (mentor técnico)
 # INICIO DEL BLOQUE DE IMPORTACIONES
 # ==========================================================
 
-
-# ----------------------------------------------------------
-# Importamos Path desde pathlib.
-#
-# Path permite trabajar con rutas de archivos y carpetas de
-# una manera moderna y compatible con distintos sistemas
-# operativos.
-# ----------------------------------------------------------
-
 from pathlib import Path
-
 
 # ==========================================================
 # FIN DEL BLOQUE DE IMPORTACIONES
@@ -80,59 +71,29 @@ def preparar_carpeta_destino(carpeta_destino):
 
         Ruta de la carpeta que deseamos crear.
 
-        En nuestro proyecto será:
-
-            config.SAVE_FOLDER
-
     Retorna
     -------
     Path
 
-        Devuelve la ruta convertida en un objeto Path.
+        Ruta convertida en un objeto Path.
 
     Funcionamiento
     --------------
-    mkdir() crea una carpeta.
+    parents=True permite crear las carpetas superiores que
+    puedan faltar.
 
-    parents=True permite crear también las carpetas
-    superiores que puedan faltar.
-
-    exist_ok=True evita que aparezca un error si la carpeta
-    ya existe.
+    exist_ok=True evita que se produzca un error si la
+    carpeta ya existe.
     """
 
-    # ------------------------------------------------------
-    # Convertimos el valor recibido en un objeto Path.
-    #
-    # Aunque config.SAVE_FOLDER ya es un Path, esta
-    # conversión hace que la función también pueda recibir
-    # una ruta escrita como texto.
-    # ------------------------------------------------------
-
-    carpeta_destino = Path(carpeta_destino)
-
-
-    # ------------------------------------------------------
-    # Creamos la carpeta.
-    #
-    # parents=True:
-    #
-    #     Crea también las carpetas superiores necesarias.
-    #
-    # exist_ok=True:
-    #
-    #     No produce un error si la carpeta ya existe.
-    # ------------------------------------------------------
+    carpeta_destino = Path(
+        carpeta_destino
+    )
 
     carpeta_destino.mkdir(
         parents=True,
         exist_ok=True
     )
-
-
-    # ------------------------------------------------------
-    # Devolvemos la ruta preparada.
-    # ------------------------------------------------------
 
     return carpeta_destino
 
@@ -169,123 +130,45 @@ def es_archivo_pdf(adjunto):
     -------
     bool
 
-        Devuelve True si el archivo parece ser un PDF.
+        True si el archivo parece ser un PDF.
 
-        Devuelve False si el archivo no parece ser un PDF.
+        False si el archivo no parece ser un PDF.
 
     Criterios utilizados
     --------------------
-    Un archivo será considerado PDF cuando se cumpla al
+    Un adjunto será considerado PDF cuando se cumpla al
     menos una de estas condiciones:
 
-    1. Su tipo de contenido MIME sea:
+    1. Su tipo MIME sea application/pdf.
 
-           application/pdf
-
-    2. Su nombre termine con la extensión:
-
-           .pdf
-
-    Utilizamos ambas comprobaciones porque algunos correos
-    pueden informar incorrectamente el tipo MIME del archivo.
+    2. Su nombre termine con la extensión .pdf.
     """
-
-    # ------------------------------------------------------
-    # Obtenemos el nombre del archivo.
-    #
-    # get() permite proporcionar un valor predeterminado si
-    # la clave no existe.
-    #
-    # En este caso utilizamos una cadena vacía.
-    # ------------------------------------------------------
 
     nombre_archivo = adjunto.get(
         "nombre",
         ""
     )
 
-
-    # ------------------------------------------------------
-    # Obtenemos el tipo MIME informado por el correo.
-    #
-    # Un PDF normalmente utiliza:
-    #
-    #     application/pdf
-    # ------------------------------------------------------
-
     tipo_contenido = adjunto.get(
         "tipo_contenido",
         ""
     )
 
-
-    # ------------------------------------------------------
-    # Convertimos ambos valores a texto.
-    #
-    # Esto evita errores en caso de que alguno de los datos
-    # recibidos sea None u otro tipo de valor.
-    # ------------------------------------------------------
-
     nombre_archivo = str(
         nombre_archivo
-    )
+    ).lower()
 
     tipo_contenido = str(
         tipo_contenido
-    )
-
-
-    # ------------------------------------------------------
-    # lower() convierte el texto a minúsculas.
-    #
-    # Esto permite reconocer todas estas variantes:
-    #
-    #     factura.pdf
-    #     factura.PDF
-    #     factura.Pdf
-    # ------------------------------------------------------
-
-    nombre_archivo = nombre_archivo.lower()
-
-    tipo_contenido = tipo_contenido.lower()
-
-
-    # ------------------------------------------------------
-    # Primera comprobación:
-    #
-    # Verificamos si el servidor declaró que el archivo
-    # utiliza el tipo MIME application/pdf.
-    # ------------------------------------------------------
+    ).lower()
 
     tiene_tipo_mime_pdf = (
         tipo_contenido == "application/pdf"
     )
 
-
-    # ------------------------------------------------------
-    # Segunda comprobación:
-    #
-    # endswith(".pdf") verifica si el nombre termina con la
-    # extensión .pdf.
-    # ------------------------------------------------------
-
     tiene_extension_pdf = nombre_archivo.endswith(
         ".pdf"
     )
-
-
-    # ------------------------------------------------------
-    # El operador or devuelve True cuando al menos una de
-    # las dos condiciones es verdadera.
-    #
-    # De esta forma aceptamos:
-    #
-    # - Archivos con tipo MIME correcto.
-    # - Archivos con extensión correcta.
-    #
-    # Esto nos protege frente a correos cuyo tipo MIME haya
-    # sido configurado incorrectamente.
-    # ------------------------------------------------------
 
     return (
         tiene_tipo_mime_pdf
@@ -318,51 +201,22 @@ def filtrar_archivos_pdf(adjuntos):
     -------
     list
 
-        Nueva lista que contiene solamente los adjuntos
-        considerados PDF.
+        Nueva lista que contiene solamente los adjuntos PDF.
 
     Importante
     ----------
     Esta función no modifica la lista original.
-
-    Crea y devuelve una lista nueva.
     """
-
-    # ------------------------------------------------------
-    # Creamos una lista vacía.
-    #
-    # Dentro de ella agregaremos solamente los archivos que
-    # superen la validación de es_archivo_pdf().
-    # ------------------------------------------------------
 
     archivos_pdf = []
 
-
-    # ------------------------------------------------------
-    # Recorremos todos los adjuntos recibidos.
-    # ------------------------------------------------------
-
     for adjunto in adjuntos:
 
-        # --------------------------------------------------
-        # Consultamos si el adjunto actual es un PDF.
-        # --------------------------------------------------
-
         if es_archivo_pdf(adjunto):
-
-            # ----------------------------------------------
-            # Si la condición devuelve True, agregamos el
-            # adjunto a la nueva lista.
-            # ----------------------------------------------
 
             archivos_pdf.append(
                 adjunto
             )
-
-
-    # ------------------------------------------------------
-    # Devolvemos únicamente los archivos PDF.
-    # ------------------------------------------------------
 
     return archivos_pdf
 
@@ -372,12 +226,75 @@ def filtrar_archivos_pdf(adjuntos):
 
 
 # ==========================================================
-# INICIO DE LA FUNCIÓN obtener_ruta_disponible()
+# INICIO DE LA FUNCIÓN construir_ruta_archivo()
 # ==========================================================
 
-def obtener_ruta_disponible(carpeta_destino, nombre_archivo):
+def construir_ruta_archivo(
+    carpeta_destino,
+    nombre_archivo
+):
     """
-    Crear una ruta que no sobrescriba archivos existentes.
+    Construir la ruta completa de un archivo.
+
+    Parámetros
+    ----------
+    carpeta_destino:
+
+        Carpeta donde debería guardarse el archivo.
+
+    nombre_archivo:
+
+        Nombre original del archivo adjunto.
+
+    Retorna
+    -------
+    Path
+
+        Ruta completa formada por la carpeta de destino y el
+        nombre del archivo.
+
+    Ejemplo
+    -------
+    Si recibimos:
+
+        carpeta_destino:
+
+            C:\\Facturas
+
+        nombre_archivo:
+
+            factura.pdf
+
+    la función devolverá:
+
+        C:\\Facturas\\factura.pdf
+    """
+
+    carpeta_destino = Path(
+        carpeta_destino
+    )
+
+    ruta_archivo = (
+        carpeta_destino / nombre_archivo
+    )
+
+    return ruta_archivo
+
+# ==========================================================
+# FIN DE LA FUNCIÓN construir_ruta_archivo()
+# ==========================================================
+
+
+# ==========================================================
+# INICIO DE LA FUNCIÓN archivo_ya_existe()
+# ==========================================================
+
+def archivo_ya_existe(
+    carpeta_destino,
+    nombre_archivo
+):
+    """
+    Comprobar si un archivo ya existe en la carpeta.
 
     Parámetros
     ----------
@@ -387,117 +304,35 @@ def obtener_ruta_disponible(carpeta_destino, nombre_archivo):
 
     nombre_archivo:
 
-        Nombre original del adjunto.
+        Nombre del archivo que deseamos comprobar.
 
     Retorna
     -------
-    Path
+    bool
 
-        Ruta disponible para guardar el archivo.
+        True si el archivo ya existe.
 
-    Ejemplo
-    -------
-    Supongamos que ya existe:
+        False si el archivo todavía no existe.
 
-        factura.pdf
+    Importante
+    ----------
+    En esta primera versión de la detección de duplicados,
+    dos archivos se consideran iguales cuando tienen
+    exactamente el mismo nombre dentro de la misma carpeta.
 
-    La función devolverá:
-
-        factura_1.pdf
-
-    Si también existe factura_1.pdf, devolverá:
-
-        factura_2.pdf
+    Más adelante podremos mejorar esta validación comparando
+    también el contenido de los archivos.
     """
 
-    carpeta_destino = Path(carpeta_destino)
+    ruta_archivo = construir_ruta_archivo(
+        carpeta_destino,
+        nombre_archivo
+    )
 
-
-    # ------------------------------------------------------
-    # Construimos inicialmente la ruta utilizando el nombre
-    # original.
-    # ------------------------------------------------------
-
-    ruta_archivo = carpeta_destino / nombre_archivo
-
-
-    # ------------------------------------------------------
-    # Si la ruta todavía no existe, podemos utilizarla.
-    # ------------------------------------------------------
-
-    if not ruta_archivo.exists():
-        return ruta_archivo
-
-
-    # ------------------------------------------------------
-    # Path.stem contiene el nombre sin la extensión.
-    #
-    # Ejemplo:
-    #
-    #     factura.pdf
-    #
-    # stem:
-    #
-    #     factura
-    # ------------------------------------------------------
-
-    nombre_sin_extension = ruta_archivo.stem
-
-
-    # ------------------------------------------------------
-    # Path.suffix contiene la extensión.
-    #
-    # Ejemplo:
-    #
-    #     .pdf
-    # ------------------------------------------------------
-
-    extension = ruta_archivo.suffix
-
-
-    # ------------------------------------------------------
-    # Comenzamos a buscar nombres alternativos desde 1.
-    # ------------------------------------------------------
-
-    numero_copia = 1
-
-
-    # ------------------------------------------------------
-    # while True crea un ciclo que continúa hasta encontrar
-    # una ruta disponible.
-    #
-    # La función finalizará cuando ejecute return.
-    # ------------------------------------------------------
-
-    while True:
-
-        nombre_alternativo = (
-            f"{nombre_sin_extension}_{numero_copia}"
-            f"{extension}"
-        )
-
-        ruta_alternativa = (
-            carpeta_destino / nombre_alternativo
-        )
-
-
-        # --------------------------------------------------
-        # Si la ruta alternativa no existe, la devolvemos.
-        # --------------------------------------------------
-
-        if not ruta_alternativa.exists():
-            return ruta_alternativa
-
-
-        # --------------------------------------------------
-        # Si ya existe, aumentamos el número y probamos otra
-        # vez.
-        # --------------------------------------------------
-
-        numero_copia += 1
+    return ruta_archivo.exists()
 
 # ==========================================================
-# FIN DE LA FUNCIÓN obtener_ruta_disponible()
+# FIN DE LA FUNCIÓN archivo_ya_existe()
 # ==========================================================
 
 
@@ -507,7 +342,7 @@ def obtener_ruta_disponible(carpeta_destino, nombre_archivo):
 
 def guardar_adjunto(adjunto, carpeta_destino):
     """
-    Guardar un único archivo adjunto.
+    Guardar un único archivo adjunto si todavía no existe.
 
     Parámetros
     ----------
@@ -531,46 +366,34 @@ def guardar_adjunto(adjunto, carpeta_destino):
 
     Retorna
     -------
-    Path
+    Path | None
 
-        Ruta final del archivo guardado.
+        Devuelve un objeto Path si el archivo fue guardado.
+
+        Devuelve None si el archivo ya existía y, por lo
+        tanto, no fue guardado nuevamente.
     """
-
-    # ------------------------------------------------------
-    # Obtenemos el nombre del archivo.
-    # ------------------------------------------------------
 
     nombre_archivo = adjunto["nombre"]
 
-
     # ------------------------------------------------------
-    # Obtenemos la parte MIME.
+    # Antes de recuperar el contenido binario, comprobamos si
+    # el archivo ya existe.
     #
-    # La parte MIME contiene tanto la información técnica
-    # como el contenido real del adjunto.
+    # De esta manera evitamos realizar trabajo innecesario.
     # ------------------------------------------------------
+
+    if archivo_ya_existe(
+        carpeta_destino,
+        nombre_archivo
+    ):
+        return None
 
     parte = adjunto["parte"]
-
-
-    # ------------------------------------------------------
-    # get_payload(decode=True) recupera el contenido real del
-    # adjunto y lo convierte en bytes.
-    #
-    # Los bytes representan el contenido binario del archivo.
-    #
-    # Los PDF, imágenes y otros archivos no se guardan como
-    # texto normal: se guardan como datos binarios.
-    # ------------------------------------------------------
 
     contenido_archivo = parte.get_payload(
         decode=True
     )
-
-
-    # ------------------------------------------------------
-    # Validamos que realmente hayamos obtenido contenido.
-    # ------------------------------------------------------
 
     if contenido_archivo is None:
         raise ValueError(
@@ -578,35 +401,14 @@ def guardar_adjunto(adjunto, carpeta_destino):
             f"archivo adjunto: {nombre_archivo}"
         )
 
-
-    # ------------------------------------------------------
-    # Obtenemos una ruta que no sobrescriba otro archivo.
-    # ------------------------------------------------------
-
-    ruta_destino = obtener_ruta_disponible(
+    ruta_destino = construir_ruta_archivo(
         carpeta_destino,
         nombre_archivo
     )
 
-
-    # ------------------------------------------------------
-    # write_bytes() crea el archivo y escribe los bytes.
-    #
-    # Es equivalente a abrir el archivo en modo binario:
-    #
-    #     open(ruta, "wb")
-    #
-    # pero Path proporciona una sintaxis más sencilla.
-    # ------------------------------------------------------
-
     ruta_destino.write_bytes(
         contenido_archivo
     )
-
-
-    # ------------------------------------------------------
-    # Devolvemos la ubicación final del archivo.
-    # ------------------------------------------------------
 
     return ruta_destino
 
@@ -621,7 +423,7 @@ def guardar_adjunto(adjunto, carpeta_destino):
 
 def guardar_adjuntos(adjuntos, carpeta_destino):
     """
-    Filtrar y guardar únicamente los archivos PDF recibidos.
+    Filtrar y guardar únicamente los archivos PDF nuevos.
 
     Parámetros
     ----------
@@ -641,84 +443,49 @@ def guardar_adjuntos(adjuntos, carpeta_destino):
 
         Lista de objetos Path.
 
-        Cada Path representa un archivo PDF guardado.
+        Cada Path representa un archivo PDF que fue guardado
+        durante la ejecución actual.
 
-        Si no se encuentra ningún PDF, devuelve una lista
+        Los archivos que ya existían no aparecen en esta
+        lista.
+
+        Si no se guarda ningún archivo, devuelve una lista
         vacía.
     """
-
-    # ------------------------------------------------------
-    # Filtramos los adjuntos antes de crear archivos.
-    #
-    # La variable archivos_pdf contendrá solamente aquellos
-    # adjuntos que hayan superado la validación.
-    # ------------------------------------------------------
 
     archivos_pdf = filtrar_archivos_pdf(
         adjuntos
     )
 
-
-    # ------------------------------------------------------
-    # Si no encontramos ningún PDF, devolvemos inmediatamente
-    # una lista vacía.
-    #
-    # En este caso no es necesario crear la carpeta.
-    # ------------------------------------------------------
-
     if not archivos_pdf:
         return []
-
-
-    # ------------------------------------------------------
-    # Nos aseguramos de que la carpeta de destino exista.
-    # ------------------------------------------------------
 
     carpeta_destino = preparar_carpeta_destino(
         carpeta_destino
     )
 
-
-    # ------------------------------------------------------
-    # Creamos una lista vacía.
-    #
-    # Dentro de ella guardaremos las rutas finales.
-    # ------------------------------------------------------
-
     archivos_guardados = []
 
-
-    # ------------------------------------------------------
-    # Recorremos únicamente los adjuntos PDF.
-    #
-    # Los adjuntos de otros tipos ya quedaron fuera de esta
-    # lista y no serán guardados.
-    # ------------------------------------------------------
-
     for adjunto in archivos_pdf:
-
-        # --------------------------------------------------
-        # Guardamos el PDF actual.
-        # --------------------------------------------------
 
         ruta_guardada = guardar_adjunto(
             adjunto,
             carpeta_destino
         )
 
-
         # --------------------------------------------------
-        # Agregamos su ruta a la lista.
+        # guardar_adjunto() devuelve None cuando el archivo
+        # ya existía.
+        #
+        # Solo agregamos la ruta si realmente se guardó un
+        # archivo nuevo.
         # --------------------------------------------------
 
-        archivos_guardados.append(
-            ruta_guardada
-        )
+        if ruta_guardada is not None:
 
-
-    # ------------------------------------------------------
-    # Devolvemos todas las rutas de los PDF guardados.
-    # ------------------------------------------------------
+            archivos_guardados.append(
+                ruta_guardada
+            )
 
     return archivos_guardados
 
