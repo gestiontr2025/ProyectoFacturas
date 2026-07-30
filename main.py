@@ -49,10 +49,14 @@ Actualmente, el programa realiza los siguientes pasos:
 9. Detecta sus archivos adjuntos.
 10. Determina una carpeta según el remitente y la fecha.
 11. Filtra únicamente los archivos PDF.
-12. Evita guardar archivos que ya existan.
+12. Evita volver a guardar archivos que ya existan.
 13. Guarda los PDF nuevos.
-14. Muestra un resumen final.
-15. Cierra correctamente la conexión con Gmail.
+14. Conserva la ruta de los PDF que ya existían.
+15. Lee el contenido interno de todos los PDF encontrados.
+16. Detecta documentos sin texto extraíble.
+17. Muestra una vista previa del texto encontrado.
+18. Muestra un resumen final.
+19. Cierra correctamente la conexión con Gmail.
 
 La estructura de carpetas utilizada es:
 
@@ -80,10 +84,32 @@ import console_output
 import file_manager
 import gmail_client
 import invoice_organizer
+import pdf_reader
 import version
 
 # ==========================================================
 # FIN DEL BLOQUE DE IMPORTACIONES
+# ==========================================================
+
+
+# ==========================================================
+# INICIO DEL BLOQUE DE CONSTANTES
+# ==========================================================
+
+# ----------------------------------------------------------
+# Esta constante determina cuántos caracteres del texto de
+# cada PDF se mostrarán en la consola.
+#
+# El documento se lee completo, pero mostrar todo el texto de
+# muchas facturas produciría una salida demasiado extensa.
+#
+# Más adelante este valor podría trasladarse a config.py.
+# ----------------------------------------------------------
+
+LIMITE_VISTA_PREVIA_PDF = 500
+
+# ==========================================================
+# FIN DEL BLOQUE DE CONSTANTES
 # ==========================================================
 
 
@@ -511,62 +537,113 @@ def mostrar_carpeta_asignada(carpeta_factura):
 
 
 # ==========================================================
-# INICIO DE LA FUNCIÓN mostrar_archivos_guardados()
+# INICIO DE LA FUNCIÓN mostrar_resultados_archivos_pdf()
 # ==========================================================
 
-def mostrar_archivos_guardados(archivos_guardados):
+def mostrar_resultados_archivos_pdf(resultados_archivos):
     """
-    Mostrar las rutas de los archivos guardados durante el
-    procesamiento del correo actual.
+    Mostrar el resultado del guardado de todos los PDF
+    encontrados dentro del correo actual.
+
+    Parámetros
+    ----------
+    resultados_archivos:
+
+        Lista devuelta por:
+
+            file_manager.procesar_adjuntos_pdf()
+
+        Cada elemento informa si el archivo fue guardado o si
+        ya existía previamente.
     """
 
-    cantidad_archivos = len(
-        archivos_guardados
+    cantidad_pdf = len(
+        resultados_archivos
+    )
+
+    cantidad_nuevos = sum(
+        1
+        for resultado in resultados_archivos
+        if resultado["fue_guardado"]
+    )
+
+    cantidad_existentes = sum(
+        1
+        for resultado in resultados_archivos
+        if resultado["ya_existia"]
     )
 
     console_output.linea_en_blanco()
 
     console_output.mostrar_titulo(
-        "ARCHIVOS NUEVOS GUARDADOS"
+        "RESULTADO DE LOS ARCHIVOS PDF"
     )
 
     console_output.mostrar_etiqueta_valor(
-        "Cantidad de archivos nuevos guardados:",
-        cantidad_archivos,
+        "Cantidad de archivos PDF encontrados:",
+        cantidad_pdf
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "Archivos PDF nuevos guardados:",
+        cantidad_nuevos
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "Archivos PDF que ya existían:",
+        cantidad_existentes,
         espacio_despues=False
     )
 
-    if not archivos_guardados:
+    if not resultados_archivos:
 
         console_output.linea_en_blanco()
 
         console_output.mostrar_mensaje(
-            "No se guardó ningún archivo nuevo."
-        )
-
-        console_output.mostrar_mensaje(
-            "El correo puede no contener archivos PDF o "
-            "los archivos pueden existir previamente."
+            "El correo no contiene archivos PDF."
         )
 
         print(console_output.SEPARADOR_PRINCIPAL)
 
         return
 
-    for numero_archivo, ruta_archivo in enumerate(
-        archivos_guardados,
+    for numero_archivo, resultado in enumerate(
+        resultados_archivos,
         start=1
     ):
 
         console_output.linea_en_blanco()
 
         console_output.mostrar_subtitulo(
-            f"Archivo número {numero_archivo}"
+            f"Archivo PDF número {numero_archivo}"
         )
 
         console_output.mostrar_etiqueta_valor(
-            "Guardado en:",
-            ruta_archivo,
+            "Nombre:",
+            resultado["nombre"]
+        )
+
+        console_output.mostrar_etiqueta_valor(
+            "Ruta:",
+            resultado["ruta"]
+        )
+
+        if resultado["fue_guardado"]:
+
+            estado_archivo = (
+                "Archivo nuevo guardado correctamente."
+            )
+
+        else:
+
+            estado_archivo = (
+                "El archivo ya existía y no fue guardado "
+                "nuevamente."
+            )
+
+        console_output.mostrar_etiqueta_valor(
+            "Estado:",
+            estado_archivo,
             espacio_despues=False
         )
 
@@ -575,7 +652,359 @@ def mostrar_archivos_guardados(archivos_guardados):
     print(console_output.SEPARADOR_PRINCIPAL)
 
 # ==========================================================
-# FIN DE LA FUNCIÓN mostrar_archivos_guardados()
+# FIN DE LA FUNCIÓN mostrar_resultados_archivos_pdf()
+# ==========================================================
+
+
+# ==========================================================
+# INICIO DE LA FUNCIÓN crear_vista_previa_texto()
+# ==========================================================
+
+def crear_vista_previa_texto(
+    texto,
+    limite=LIMITE_VISTA_PREVIA_PDF
+):
+    """
+    Crear una versión abreviada del texto de un PDF.
+
+    Parámetros
+    ----------
+    texto:
+
+        Texto completo extraído del documento.
+
+    limite:
+
+        Cantidad máxima de caracteres que se mostrarán.
+
+    Retorna
+    -------
+    str
+
+        Texto abreviado.
+
+        Si el contenido supera el límite, se agregan puntos
+        suspensivos al final.
+
+    Importante
+    ----------
+    El texto completo continúa disponible dentro del
+    resultado devuelto por pdf_reader.leer_pdf().
+
+    Esta función solamente limita lo que aparece en pantalla.
+    """
+
+    if not texto:
+
+        return ""
+
+    texto = str(
+        texto
+    ).strip()
+
+    if len(texto) <= limite:
+
+        return texto
+
+    vista_previa = texto[
+        :limite
+    ].rstrip()
+
+    vista_previa += "\n[...]"
+
+    return vista_previa
+
+# ==========================================================
+# FIN DE LA FUNCIÓN crear_vista_previa_texto()
+# ==========================================================
+
+
+# ==========================================================
+# INICIO DE LA FUNCIÓN leer_archivos_pdf()
+# ==========================================================
+
+def leer_archivos_pdf(resultados_archivos):
+    """
+    Leer todos los archivos PDF detectados en un correo.
+
+    Parámetros
+    ----------
+    resultados_archivos:
+
+        Lista devuelta por:
+
+            file_manager.procesar_adjuntos_pdf()
+
+    Retorna
+    -------
+    list
+
+        Lista de diccionarios.
+
+        Para una lectura correcta:
+
+            {
+                "nombre": "factura.pdf",
+                "ruta": Path(...),
+                "lectura_correcta": True,
+                "contiene_texto": True,
+                "resultado_lectura": {...},
+                "error": None
+            }
+
+        Para una lectura con error:
+
+            {
+                "nombre": "factura.pdf",
+                "ruta": Path(...),
+                "lectura_correcta": False,
+                "contiene_texto": False,
+                "resultado_lectura": None,
+                "error": excepción
+            }
+
+    Comportamiento ante errores
+    ---------------------------
+    Si un PDF individual no puede leerse, el error se guarda
+    dentro del resultado.
+
+    La función continúa procesando los demás documentos.
+    """
+
+    resultados_lectura = []
+
+    for resultado_archivo in resultados_archivos:
+
+        ruta_pdf = resultado_archivo["ruta"]
+
+        try:
+
+            resultado_lectura = pdf_reader.leer_pdf(
+                ruta_pdf
+            )
+
+            informacion = {
+                "nombre": resultado_archivo["nombre"],
+                "ruta": ruta_pdf,
+                "lectura_correcta": True,
+                "contiene_texto": (
+                    resultado_lectura["contiene_texto"]
+                ),
+                "resultado_lectura": resultado_lectura,
+                "error": None
+            }
+
+        except Exception as error:
+
+            informacion = {
+                "nombre": resultado_archivo["nombre"],
+                "ruta": ruta_pdf,
+                "lectura_correcta": False,
+                "contiene_texto": False,
+                "resultado_lectura": None,
+                "error": error
+            }
+
+        resultados_lectura.append(
+            informacion
+        )
+
+    return resultados_lectura
+
+# ==========================================================
+# FIN DE LA FUNCIÓN leer_archivos_pdf()
+# ==========================================================
+
+
+# ==========================================================
+# INICIO DE LA FUNCIÓN mostrar_resultados_lectura_pdf()
+# ==========================================================
+
+def mostrar_resultados_lectura_pdf(resultados_lectura):
+    """
+    Mostrar el resultado de la lectura de los archivos PDF.
+
+    El texto se muestra mediante una vista previa para evitar
+    llenar la consola con documentos completos.
+    """
+
+    cantidad_pdf = len(
+        resultados_lectura
+    )
+
+    lecturas_correctas = sum(
+        1
+        for resultado in resultados_lectura
+        if resultado["lectura_correcta"]
+    )
+
+    lecturas_con_error = sum(
+        1
+        for resultado in resultados_lectura
+        if not resultado["lectura_correcta"]
+    )
+
+    pdf_con_texto = sum(
+        1
+        for resultado in resultados_lectura
+        if (
+            resultado["lectura_correcta"]
+            and
+            resultado["contiene_texto"]
+        )
+    )
+
+    pdf_sin_texto = sum(
+        1
+        for resultado in resultados_lectura
+        if (
+            resultado["lectura_correcta"]
+            and
+            not resultado["contiene_texto"]
+        )
+    )
+
+    console_output.linea_en_blanco()
+
+    console_output.mostrar_titulo(
+        "LECTURA DEL CONTENIDO DE LOS PDF"
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "Cantidad de PDF enviados a lectura:",
+        cantidad_pdf
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "PDF leídos correctamente:",
+        lecturas_correctas
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "PDF con texto extraíble:",
+        pdf_con_texto
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "PDF sin texto extraíble:",
+        pdf_sin_texto
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "PDF con errores de lectura:",
+        lecturas_con_error,
+        espacio_despues=False
+    )
+
+    if not resultados_lectura:
+
+        console_output.linea_en_blanco()
+
+        console_output.mostrar_mensaje(
+            "No hay archivos PDF para leer."
+        )
+
+        print(console_output.SEPARADOR_PRINCIPAL)
+
+        return
+
+    for numero_pdf, resultado in enumerate(
+        resultados_lectura,
+        start=1
+    ):
+
+        console_output.linea_en_blanco()
+
+        console_output.mostrar_subtitulo(
+            f"Lectura del PDF número {numero_pdf}"
+        )
+
+        console_output.mostrar_etiqueta_valor(
+            "Nombre:",
+            resultado["nombre"]
+        )
+
+        console_output.mostrar_etiqueta_valor(
+            "Ruta:",
+            resultado["ruta"]
+        )
+
+        if not resultado["lectura_correcta"]:
+
+            error = resultado["error"]
+
+            console_output.mostrar_etiqueta_valor(
+                "Estado:",
+                "No fue posible leer el documento."
+            )
+
+            console_output.mostrar_etiqueta_valor(
+                "Tipo de error:",
+                type(error).__name__
+            )
+
+            console_output.mostrar_etiqueta_valor(
+                "Descripción:",
+                error,
+                espacio_despues=False
+            )
+
+            continue
+
+        datos_lectura = resultado[
+            "resultado_lectura"
+        ]
+
+        console_output.mostrar_etiqueta_valor(
+            "Estado:",
+            "Documento leído correctamente."
+        )
+
+        console_output.mostrar_etiqueta_valor(
+            "Cantidad de páginas:",
+            datos_lectura["cantidad_paginas"]
+        )
+
+        console_output.mostrar_etiqueta_valor(
+            "Páginas con texto:",
+            datos_lectura["paginas_con_texto"]
+        )
+
+        console_output.mostrar_etiqueta_valor(
+            "Páginas sin texto:",
+            datos_lectura["paginas_sin_texto"]
+        )
+
+        if not datos_lectura["contiene_texto"]:
+
+            console_output.mostrar_etiqueta_valor(
+                "Contenido:",
+                (
+                    "El documento no contiene texto "
+                    "extraíble. Puede tratarse de un PDF "
+                    "escaneado."
+                ),
+                espacio_despues=False
+            )
+
+            continue
+
+        vista_previa = crear_vista_previa_texto(
+            datos_lectura["texto_completo"]
+        )
+
+        console_output.mostrar_etiqueta_valor(
+            "Vista previa del texto extraído:",
+            vista_previa,
+            espacio_despues=False
+        )
+
+    console_output.linea_en_blanco()
+
+    print(console_output.SEPARADOR_PRINCIPAL)
+
+# ==========================================================
+# FIN DE LA FUNCIÓN mostrar_resultados_lectura_pdf()
 # ==========================================================
 
 
@@ -587,8 +1016,21 @@ def procesar_correo(conexion, id_correo):
     """
     Leer y procesar un único correo.
 
-    Retorna una lista con las rutas de los archivos PDF
-    nuevos que fueron guardados.
+    Retorna
+    -------
+    dict
+
+        Diccionario con:
+
+        - Los PDF encontrados.
+        - Los resultados de lectura de esos PDF.
+
+        Su estructura es:
+
+            {
+                "resultados_archivos": [...],
+                "resultados_lectura": [...]
+            }
     """
 
     mensaje = gmail_client.leer_correo(
@@ -623,16 +1065,46 @@ def procesar_correo(conexion, id_correo):
         carpeta_factura
     )
 
-    archivos_guardados = file_manager.guardar_adjuntos(
-        adjuntos,
-        carpeta_factura
+    # ------------------------------------------------------
+    # Esta nueva función devuelve información sobre todos los
+    # PDF encontrados.
+    #
+    # Incluye tanto:
+    #
+    # - Los PDF nuevos.
+    # - Los PDF que ya existían.
+    # ------------------------------------------------------
+
+    resultados_archivos = (
+        file_manager.procesar_adjuntos_pdf(
+            adjuntos,
+            carpeta_factura
+        )
     )
 
-    mostrar_archivos_guardados(
-        archivos_guardados
+    mostrar_resultados_archivos_pdf(
+        resultados_archivos
     )
 
-    return archivos_guardados
+    # ------------------------------------------------------
+    # Una vez que conocemos la ruta de cada PDF, intentamos
+    # leer su contenido.
+    #
+    # Los archivos existentes también serán leídos.
+    # ------------------------------------------------------
+
+    resultados_lectura = leer_archivos_pdf(
+        resultados_archivos
+    )
+
+    mostrar_resultados_lectura_pdf(
+        resultados_lectura
+    )
+
+    return {
+        "resultados_archivos": resultados_archivos,
+        "resultados_lectura": resultados_lectura
+    }
 
 # ==========================================================
 # FIN DE LA FUNCIÓN procesar_correo()
@@ -689,11 +1161,60 @@ def mostrar_resumen_final(
     cantidad_seleccionada,
     cantidad_procesada,
     cantidad_errores,
-    archivos_guardados
+    todos_los_resultados_archivos,
+    todos_los_resultados_lectura
 ):
     """
     Mostrar un resumen general al finalizar la ejecución.
     """
+
+    cantidad_pdf_encontrados = len(
+        todos_los_resultados_archivos
+    )
+
+    cantidad_pdf_nuevos = sum(
+        1
+        for resultado in todos_los_resultados_archivos
+        if resultado["fue_guardado"]
+    )
+
+    cantidad_pdf_existentes = sum(
+        1
+        for resultado in todos_los_resultados_archivos
+        if resultado["ya_existia"]
+    )
+
+    cantidad_lecturas_correctas = sum(
+        1
+        for resultado in todos_los_resultados_lectura
+        if resultado["lectura_correcta"]
+    )
+
+    cantidad_pdf_con_texto = sum(
+        1
+        for resultado in todos_los_resultados_lectura
+        if (
+            resultado["lectura_correcta"]
+            and
+            resultado["contiene_texto"]
+        )
+    )
+
+    cantidad_pdf_sin_texto = sum(
+        1
+        for resultado in todos_los_resultados_lectura
+        if (
+            resultado["lectura_correcta"]
+            and
+            not resultado["contiene_texto"]
+        )
+    )
+
+    cantidad_errores_lectura = sum(
+        1
+        for resultado in todos_los_resultados_lectura
+        if not resultado["lectura_correcta"]
+    )
 
     console_output.linea_en_blanco()
     console_output.linea_en_blanco()
@@ -718,12 +1239,48 @@ def mostrar_resumen_final(
     )
 
     console_output.mostrar_etiqueta_valor(
-        "Total de archivos PDF nuevos guardados:",
-        len(archivos_guardados),
+        "Total de archivos PDF encontrados:",
+        cantidad_pdf_encontrados
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "Archivos PDF nuevos guardados:",
+        cantidad_pdf_nuevos
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "Archivos PDF que ya existían:",
+        cantidad_pdf_existentes
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "PDF leídos correctamente:",
+        cantidad_lecturas_correctas
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "PDF con texto extraíble:",
+        cantidad_pdf_con_texto
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "PDF sin texto extraíble:",
+        cantidad_pdf_sin_texto
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "PDF con errores de lectura:",
+        cantidad_errores_lectura,
         espacio_despues=False
     )
 
-    if archivos_guardados:
+    archivos_nuevos = [
+        resultado["ruta"]
+        for resultado in todos_los_resultados_archivos
+        if resultado["fue_guardado"]
+    ]
+
+    if archivos_nuevos:
 
         console_output.linea_en_blanco()
 
@@ -732,7 +1289,7 @@ def mostrar_resumen_final(
         )
 
         for numero_archivo, ruta_archivo in enumerate(
-            archivos_guardados,
+            archivos_nuevos,
             start=1
         ):
 
@@ -809,7 +1366,9 @@ def main():
 
         cantidad_errores = 0
 
-        todos_los_archivos_guardados = []
+        todos_los_resultados_archivos = []
+
+        todos_los_resultados_lectura = []
 
         for numero_correo, id_correo in enumerate(
             correos_seleccionados,
@@ -824,13 +1383,21 @@ def main():
 
             try:
 
-                archivos_guardados = procesar_correo(
+                resultado_correo = procesar_correo(
                     conexion,
                     id_correo
                 )
 
-                todos_los_archivos_guardados.extend(
-                    archivos_guardados
+                todos_los_resultados_archivos.extend(
+                    resultado_correo[
+                        "resultados_archivos"
+                    ]
+                )
+
+                todos_los_resultados_lectura.extend(
+                    resultado_correo[
+                        "resultados_lectura"
+                    ]
                 )
 
                 cantidad_procesada += 1
@@ -848,7 +1415,8 @@ def main():
             cantidad_seleccionada,
             cantidad_procesada,
             cantidad_errores,
-            todos_los_archivos_guardados
+            todos_los_resultados_archivos,
+            todos_los_resultados_lectura
         )
 
     except Exception as error:

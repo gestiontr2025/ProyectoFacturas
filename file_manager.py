@@ -5,12 +5,8 @@ PROYECTO
 
 Proyecto Facturas
 
-Versión
---------
-0.9
-
 Archivo
---------
+-------
 file_manager.py
 
 Descripción
@@ -20,25 +16,43 @@ sistema de archivos.
 
 Sus responsabilidades actuales son:
 
-- Crear la carpeta principal de destino.
+- Crear las carpetas de destino.
 - Determinar si un archivo adjunto es un PDF.
 - Filtrar los adjuntos que no sean PDF.
+- Construir las rutas de destino.
 - Comprobar si un archivo ya fue guardado.
 - Evitar guardar archivos duplicados.
 - Obtener el contenido binario de los adjuntos.
-- Guardar los archivos PDF.
-- Devolver las rutas de los archivos realmente guardados.
+- Guardar los archivos PDF nuevos.
+- Informar la ruta de todos los PDF encontrados.
+- Diferenciar entre archivos nuevos y existentes.
 
 Separar estas tareas de gmail_client.py permite que cada
-módulo tenga una responsabilidad clara.
+módulo mantenga una responsabilidad clara.
 
-gmail_client.py se ocupa de Gmail.
+gmail_client.py:
 
-file_manager.py se ocupa de la validación y del guardado de
-los archivos.
+    Se ocupa de Gmail y de la estructura de los mensajes.
+
+file_manager.py:
+
+    Se ocupa de la validación y del guardado de archivos.
+
+pdf_reader.py:
+
+    Se ocupa de leer el contenido interno de los PDF.
+
+Importante
+----------
+La versión del proyecto se encuentra centralizada en:
+
+    version.py
+
+Por esa razón, este archivo no incluye un número de versión
+escrito manualmente en su encabezado.
 
 Autor
-------
+-----
 Diego (desarrollador del proyecto)
 ChatGPT (mentor técnico)
 
@@ -70,6 +84,11 @@ def preparar_carpeta_destino(carpeta_destino):
     carpeta_destino:
 
         Ruta de la carpeta que deseamos crear.
+
+        Puede recibirse como:
+
+        - Una cadena de texto.
+        - Un objeto Path.
 
     Retorna
     -------
@@ -316,9 +335,9 @@ def archivo_ya_existe(
 
     Importante
     ----------
-    En esta primera versión de la detección de duplicados,
-    dos archivos se consideran iguales cuando tienen
-    exactamente el mismo nombre dentro de la misma carpeta.
+    En esta versión, dos archivos se consideran iguales
+    cuando tienen exactamente el mismo nombre dentro de la
+    misma carpeta.
 
     Más adelante podremos mejorar esta validación comparando
     también el contenido de los archivos.
@@ -333,6 +352,71 @@ def archivo_ya_existe(
 
 # ==========================================================
 # FIN DE LA FUNCIÓN archivo_ya_existe()
+# ==========================================================
+
+
+# ==========================================================
+# INICIO DE LA FUNCIÓN obtener_contenido_adjunto()
+# ==========================================================
+
+def obtener_contenido_adjunto(adjunto):
+    """
+    Obtener el contenido binario de un archivo adjunto.
+
+    Parámetros
+    ----------
+    adjunto:
+
+        Diccionario creado por:
+
+            gmail_client.obtener_adjuntos()
+
+    Retorna
+    -------
+    bytes
+
+        Contenido binario del archivo adjunto.
+
+    Excepciones
+    -----------
+    ValueError:
+
+        Se produce si el contenido del adjunto no puede ser
+        recuperado.
+    """
+
+    nombre_archivo = adjunto.get(
+        "nombre",
+        "archivo sin nombre"
+    )
+
+    parte = adjunto.get(
+        "parte"
+    )
+
+    if parte is None:
+
+        raise ValueError(
+            "El archivo adjunto no contiene una parte MIME "
+            "válida. "
+            f"Archivo: {nombre_archivo}"
+        )
+
+    contenido_archivo = parte.get_payload(
+        decode=True
+    )
+
+    if contenido_archivo is None:
+
+        raise ValueError(
+            "No fue posible obtener el contenido del "
+            f"archivo adjunto: {nombre_archivo}"
+        )
+
+    return contenido_archivo
+
+# ==========================================================
+# FIN DE LA FUNCIÓN obtener_contenido_adjunto()
 # ==========================================================
 
 
@@ -352,7 +436,7 @@ def guardar_adjunto(adjunto, carpeta_destino):
 
             gmail_client.obtener_adjuntos()
 
-        Su estructura es:
+        Su estructura esperada es:
 
             {
                 "nombre": "...",
@@ -376,30 +460,16 @@ def guardar_adjunto(adjunto, carpeta_destino):
 
     nombre_archivo = adjunto["nombre"]
 
-    # ------------------------------------------------------
-    # Antes de recuperar el contenido binario, comprobamos si
-    # el archivo ya existe.
-    #
-    # De esta manera evitamos realizar trabajo innecesario.
-    # ------------------------------------------------------
-
     if archivo_ya_existe(
         carpeta_destino,
         nombre_archivo
     ):
+
         return None
 
-    parte = adjunto["parte"]
-
-    contenido_archivo = parte.get_payload(
-        decode=True
+    contenido_archivo = obtener_contenido_adjunto(
+        adjunto
     )
-
-    if contenido_archivo is None:
-        raise ValueError(
-            "No fue posible obtener el contenido del "
-            f"archivo adjunto: {nombre_archivo}"
-        )
 
     ruta_destino = construir_ruta_archivo(
         carpeta_destino,
@@ -414,6 +484,186 @@ def guardar_adjunto(adjunto, carpeta_destino):
 
 # ==========================================================
 # FIN DE LA FUNCIÓN guardar_adjunto()
+# ==========================================================
+
+
+# ==========================================================
+# INICIO DE LA FUNCIÓN procesar_adjunto_pdf()
+# ==========================================================
+
+def procesar_adjunto_pdf(
+    adjunto,
+    carpeta_destino
+):
+    """
+    Procesar un único adjunto PDF.
+
+    La función comprueba si el archivo ya existe.
+
+    Si todavía no existe:
+
+        - Recupera su contenido.
+        - Lo guarda en la carpeta correspondiente.
+        - Informa que se trata de un archivo nuevo.
+
+    Si ya existe:
+
+        - No vuelve a guardarlo.
+        - Conserva la ruta del archivo existente.
+        - Informa que se trata de un archivo duplicado.
+
+    Parámetros
+    ----------
+    adjunto:
+
+        Diccionario que representa un adjunto PDF.
+
+    carpeta_destino:
+
+        Carpeta donde debe encontrarse o guardarse el PDF.
+
+    Retorna
+    -------
+    dict
+
+        Diccionario con la siguiente estructura:
+
+            {
+                "nombre": "factura.pdf",
+                "ruta": Path("..."),
+                "fue_guardado": True,
+                "ya_existia": False
+            }
+
+        Cuando el archivo ya existía:
+
+            {
+                "nombre": "factura.pdf",
+                "ruta": Path("..."),
+                "fue_guardado": False,
+                "ya_existia": True
+            }
+    """
+
+    nombre_archivo = adjunto["nombre"]
+
+    ruta_archivo = construir_ruta_archivo(
+        carpeta_destino,
+        nombre_archivo
+    )
+
+    ya_existia = ruta_archivo.exists()
+
+    if ya_existia:
+
+        return {
+            "nombre": nombre_archivo,
+            "ruta": ruta_archivo,
+            "fue_guardado": False,
+            "ya_existia": True
+        }
+
+    ruta_guardada = guardar_adjunto(
+        adjunto,
+        carpeta_destino
+    )
+
+    return {
+        "nombre": nombre_archivo,
+        "ruta": ruta_guardada,
+        "fue_guardado": True,
+        "ya_existia": False
+    }
+
+# ==========================================================
+# FIN DE LA FUNCIÓN procesar_adjunto_pdf()
+# ==========================================================
+
+
+# ==========================================================
+# INICIO DE LA FUNCIÓN procesar_adjuntos_pdf()
+# ==========================================================
+
+def procesar_adjuntos_pdf(
+    adjuntos,
+    carpeta_destino
+):
+    """
+    Procesar todos los archivos PDF de un correo.
+
+    Esta es la función principal que utilizará main.py para
+    obtener información sobre los PDF encontrados.
+
+    Parámetros
+    ----------
+    adjuntos:
+
+        Lista devuelta por:
+
+            gmail_client.obtener_adjuntos()
+
+    carpeta_destino:
+
+        Carpeta correspondiente al remitente y a la fecha del
+        correo.
+
+    Retorna
+    -------
+    list
+
+        Lista de diccionarios.
+
+        Cada diccionario informa:
+
+        - El nombre del PDF.
+        - Su ruta completa.
+        - Si fue guardado durante esta ejecución.
+        - Si ya existía previamente.
+
+        Si el correo no contiene archivos PDF, devuelve una
+        lista vacía.
+
+    Diferencia respecto de guardar_adjuntos()
+    -----------------------------------------
+    guardar_adjuntos() devuelve solamente las rutas de los
+    archivos nuevos.
+
+    procesar_adjuntos_pdf() devuelve información sobre todos
+    los PDF encontrados, incluidos los que ya existían.
+
+    Esto permite que pdf_reader.py pueda leer también los
+    archivos duplicados.
+    """
+
+    archivos_pdf = filtrar_archivos_pdf(
+        adjuntos
+    )
+
+    if not archivos_pdf:
+
+        return []
+
+    carpeta_destino = preparar_carpeta_destino(
+        carpeta_destino
+    )
+
+    resultados = []
+
+    for adjunto in archivos_pdf:
+
+        resultado = procesar_adjunto_pdf(
+            adjunto,
+            carpeta_destino
+        )
+
+        resultados.append(
+            resultado
+        )
+
+    return resultados
+
+# ==========================================================
+# FIN DE LA FUNCIÓN procesar_adjuntos_pdf()
 # ==========================================================
 
 
@@ -451,40 +701,29 @@ def guardar_adjuntos(adjuntos, carpeta_destino):
 
         Si no se guarda ningún archivo, devuelve una lista
         vacía.
+
+    Compatibilidad
+    --------------
+    Esta función se conserva para mantener compatibilidad con
+    las versiones anteriores del proyecto.
+
+    Internamente utiliza procesar_adjuntos_pdf() y selecciona
+    solamente las rutas de los archivos nuevos.
     """
 
-    archivos_pdf = filtrar_archivos_pdf(
-        adjuntos
-    )
-
-    if not archivos_pdf:
-        return []
-
-    carpeta_destino = preparar_carpeta_destino(
+    resultados = procesar_adjuntos_pdf(
+        adjuntos,
         carpeta_destino
     )
 
     archivos_guardados = []
 
-    for adjunto in archivos_pdf:
+    for resultado in resultados:
 
-        ruta_guardada = guardar_adjunto(
-            adjunto,
-            carpeta_destino
-        )
-
-        # --------------------------------------------------
-        # guardar_adjunto() devuelve None cuando el archivo
-        # ya existía.
-        #
-        # Solo agregamos la ruta si realmente se guardó un
-        # archivo nuevo.
-        # --------------------------------------------------
-
-        if ruta_guardada is not None:
+        if resultado["fue_guardado"]:
 
             archivos_guardados.append(
-                ruta_guardada
+                resultado["ruta"]
             )
 
     return archivos_guardados
