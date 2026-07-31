@@ -17,54 +17,21 @@ programa.
 Su responsabilidad consiste en coordinar las funciones
 definidas en los demás módulos.
 
-La versión actual del proyecto no se encuentra escrita
-directamente en este archivo.
+Actualmente, el programa:
 
-Cada vez que el programa se ejecuta, main.py importa:
-
-    version.py
-
-y obtiene el valor de:
-
-    version.PROJECT_VERSION
-
-Esto permite actualizar la versión modificando solamente
-el archivo version.py.
-
-La salida visual de la consola se encuentra centralizada
-parcialmente dentro del módulo:
-
-    console_output.py
-
-Actualmente, el programa realiza los siguientes pasos:
-
-1. Muestra la información general del proyecto.
-2. Muestra la configuración utilizada.
+1. Muestra la información del proyecto.
+2. Muestra la configuración.
 3. Se conecta con Gmail.
-4. Busca todos los correos de la cuenta.
-5. Selecciona una cantidad limitada de correos recientes.
-6. Recorre los correos seleccionados.
-7. Lee cada correo completo.
-8. Extrae sus encabezados principales.
-9. Detecta sus archivos adjuntos.
-10. Determina una carpeta según el remitente y la fecha.
-11. Filtra únicamente los archivos PDF.
-12. Evita volver a guardar archivos que ya existan.
-13. Guarda los PDF nuevos.
-14. Conserva la ruta de los PDF que ya existían.
-15. Lee el contenido interno de todos los PDF encontrados.
-16. Detecta documentos sin texto extraíble.
-17. Muestra una vista previa del texto encontrado.
-18. Muestra un resumen final.
-19. Cierra correctamente la conexión con Gmail.
-
-La estructura de carpetas utilizada es:
-
-    Facturas
-        └── Remitente
-            └── Año
-                └── Número - Mes
-                    └── factura.pdf
+4. Busca y selecciona correos recientes.
+5. Procesa los archivos adjuntos PDF.
+6. Guarda los PDF nuevos.
+7. Reconoce los PDF que ya existían.
+8. Lee el contenido interno de los PDF.
+9. Detecta los documentos sin texto extraíble.
+10. Muestra una vista previa del texto.
+11. Detecta el proveedor de cada factura.
+12. Muestra un resumen final.
+13. Cierra correctamente la conexión con Gmail.
 
 Autor
 -----
@@ -76,7 +43,7 @@ ChatGPT (mentor técnico)
 
 
 # ==========================================================
-# INICIO DEL BLOQUE DE IMPORTACIONES
+# IMPORTACIONES
 # ==========================================================
 
 import config
@@ -85,47 +52,30 @@ import file_manager
 import gmail_client
 import invoice_organizer
 import pdf_reader
+import supplier_detector
 import version
 
-# ==========================================================
-# FIN DEL BLOQUE DE IMPORTACIONES
-# ==========================================================
-
 
 # ==========================================================
-# INICIO DEL BLOQUE DE CONSTANTES
+# CONSTANTES
 # ==========================================================
 
-# ----------------------------------------------------------
-# Esta constante determina cuántos caracteres del texto de
-# cada PDF se mostrarán en la consola.
+# Cantidad máxima de caracteres del texto de cada PDF que
+# serán mostrados en la consola.
 #
-# El documento se lee completo, pero mostrar todo el texto de
-# muchas facturas produciría una salida demasiado extensa.
-#
-# Más adelante este valor podría trasladarse a config.py.
-# ----------------------------------------------------------
+# El PDF se lee completo. Esta constante solamente limita
+# la vista previa que se imprime en pantalla.
 
 LIMITE_VISTA_PREVIA_PDF = 500
 
-# ==========================================================
-# FIN DEL BLOQUE DE CONSTANTES
-# ==========================================================
-
 
 # ==========================================================
-# INICIO DE LA FUNCIÓN mostrar_informacion_proyecto()
+# INFORMACIÓN GENERAL
 # ==========================================================
 
 def mostrar_informacion_proyecto():
     """
     Mostrar la información general del proyecto.
-
-    Actualmente muestra:
-
-    - Nombre del proyecto.
-    - Versión obtenida desde version.py.
-    - Autor.
     """
 
     console_output.linea_en_blanco()
@@ -152,21 +102,13 @@ def mostrar_informacion_proyecto():
 
     print(console_output.SEPARADOR_PRINCIPAL)
 
-# ==========================================================
-# FIN DE LA FUNCIÓN mostrar_informacion_proyecto()
-# ==========================================================
-
-
-# ==========================================================
-# INICIO DE LA FUNCIÓN mostrar_configuracion()
-# ==========================================================
 
 def mostrar_configuracion():
     """
-    Mostrar los valores públicos de configuración utilizados
-    por el programa.
+    Mostrar los valores públicos de configuración.
 
-    La contraseña de aplicación nunca debe mostrarse.
+    La contraseña de aplicación de Gmail nunca debe
+    mostrarse en la consola.
     """
 
     console_output.linea_en_blanco()
@@ -193,26 +135,14 @@ def mostrar_configuracion():
 
     print(console_output.SEPARADOR_PRINCIPAL)
 
-# ==========================================================
-# FIN DE LA FUNCIÓN mostrar_configuracion()
-# ==========================================================
-
 
 # ==========================================================
-# INICIO DE LA FUNCIÓN mostrar_resultado_busqueda()
+# SELECCIÓN DE CORREOS
 # ==========================================================
 
 def mostrar_resultado_busqueda(identificadores_correos):
     """
     Mostrar cuántos correos fueron encontrados.
-
-    Parámetros
-    ----------
-    identificadores_correos:
-
-        Lista de identificadores IMAP devuelta por:
-
-            gmail_client.buscar_todos_los_correos()
     """
 
     cantidad_correos = len(
@@ -233,14 +163,6 @@ def mostrar_resultado_busqueda(identificadores_correos):
 
     print(console_output.SEPARADOR_PRINCIPAL)
 
-# ==========================================================
-# FIN DE LA FUNCIÓN mostrar_resultado_busqueda()
-# ==========================================================
-
-
-# ==========================================================
-# INICIO DE LA FUNCIÓN seleccionar_correos_recientes()
-# ==========================================================
 
 def seleccionar_correos_recientes(
     identificadores_correos,
@@ -252,31 +174,16 @@ def seleccionar_correos_recientes(
     Parámetros
     ----------
     identificadores_correos:
-
         Lista completa de identificadores IMAP.
 
     limite:
-
-        Cantidad máxima de correos que deseamos procesar.
+        Cantidad máxima de correos que serán procesados.
 
     Retorna
     -------
     list
-
-        Lista con los identificadores seleccionados.
-
-        Los correos se devuelven ordenados desde el más
-        reciente hasta el más antiguo.
-
-    Ejemplo
-    -------
-    Si recibimos:
-
-        [b'1', b'2', b'3', b'4', b'5']
-
-    y el límite es 3, devuelve:
-
-        [b'5', b'4', b'3']
+        Lista de identificadores ordenada desde el correo
+        más reciente hasta el más antiguo.
     """
 
     if not isinstance(limite, int):
@@ -302,25 +209,10 @@ def seleccionar_correos_recientes(
 
     return correos_recientes
 
-# ==========================================================
-# FIN DE LA FUNCIÓN seleccionar_correos_recientes()
-# ==========================================================
-
-
-# ==========================================================
-# INICIO DE LA FUNCIÓN mostrar_correos_seleccionados()
-# ==========================================================
 
 def mostrar_correos_seleccionados(cantidad_seleccionada):
     """
     Mostrar la cantidad de correos que serán procesados.
-
-    Parámetros
-    ----------
-    cantidad_seleccionada:
-
-        Cantidad de correos elegidos según el límite
-        configurado.
     """
 
     console_output.linea_en_blanco()
@@ -337,14 +229,6 @@ def mostrar_correos_seleccionados(cantidad_seleccionada):
 
     print(console_output.SEPARADOR_PRINCIPAL)
 
-# ==========================================================
-# FIN DE LA FUNCIÓN mostrar_correos_seleccionados()
-# ==========================================================
-
-
-# ==========================================================
-# INICIO DE LA FUNCIÓN mostrar_inicio_correo()
-# ==========================================================
 
 def mostrar_inicio_correo(
     numero_correo,
@@ -353,20 +237,6 @@ def mostrar_inicio_correo(
 ):
     """
     Mostrar el comienzo del procesamiento de un correo.
-
-    Parámetros
-    ----------
-    numero_correo:
-
-        Posición actual dentro del recorrido.
-
-    cantidad_correos:
-
-        Cantidad total de correos seleccionados.
-
-    id_correo:
-
-        Identificador IMAP del correo actual.
     """
 
     console_output.linea_en_blanco()
@@ -383,26 +253,14 @@ def mostrar_inicio_correo(
         espacio_despues=False
     )
 
-# ==========================================================
-# FIN DE LA FUNCIÓN mostrar_inicio_correo()
-# ==========================================================
-
 
 # ==========================================================
-# INICIO DE LA FUNCIÓN mostrar_datos_correo()
+# INFORMACIÓN DEL CORREO
 # ==========================================================
 
 def mostrar_datos_correo(datos_correo):
     """
     Mostrar los encabezados principales de un correo.
-
-    Parámetros
-    ----------
-    datos_correo:
-
-        Diccionario devuelto por:
-
-            gmail_client.obtener_datos_correo()
     """
 
     console_output.linea_en_blanco()
@@ -434,19 +292,10 @@ def mostrar_datos_correo(datos_correo):
 
     print(console_output.SEPARADOR_PRINCIPAL)
 
-# ==========================================================
-# FIN DE LA FUNCIÓN mostrar_datos_correo()
-# ==========================================================
-
-
-# ==========================================================
-# INICIO DE LA FUNCIÓN mostrar_adjuntos()
-# ==========================================================
 
 def mostrar_adjuntos(adjuntos):
     """
-    Mostrar información sobre los archivos adjuntos
-    detectados dentro de un correo.
+    Mostrar los archivos adjuntos detectados en un correo.
     """
 
     cantidad_adjuntos = len(
@@ -503,14 +352,6 @@ def mostrar_adjuntos(adjuntos):
 
     print(console_output.SEPARADOR_PRINCIPAL)
 
-# ==========================================================
-# FIN DE LA FUNCIÓN mostrar_adjuntos()
-# ==========================================================
-
-
-# ==========================================================
-# INICIO DE LA FUNCIÓN mostrar_carpeta_asignada()
-# ==========================================================
 
 def mostrar_carpeta_asignada(carpeta_factura):
     """
@@ -531,30 +372,21 @@ def mostrar_carpeta_asignada(carpeta_factura):
 
     print(console_output.SEPARADOR_PRINCIPAL)
 
-# ==========================================================
-# FIN DE LA FUNCIÓN mostrar_carpeta_asignada()
-# ==========================================================
-
 
 # ==========================================================
-# INICIO DE LA FUNCIÓN mostrar_resultados_archivos_pdf()
+# PROCESAMIENTO DE ARCHIVOS PDF
 # ==========================================================
 
 def mostrar_resultados_archivos_pdf(resultados_archivos):
     """
-    Mostrar el resultado del guardado de todos los PDF
-    encontrados dentro del correo actual.
+    Mostrar el resultado del procesamiento de los PDF.
 
-    Parámetros
-    ----------
-    resultados_archivos:
+    La función informa:
 
-        Lista devuelta por:
-
-            file_manager.procesar_adjuntos_pdf()
-
-        Cada elemento informa si el archivo fue guardado o si
-        ya existía previamente.
+    - Cuántos PDF fueron encontrados.
+    - Cuántos fueron guardados.
+    - Cuántos ya existían.
+    - La ruta de cada documento.
     """
 
     cantidad_pdf = len(
@@ -651,13 +483,9 @@ def mostrar_resultados_archivos_pdf(resultados_archivos):
 
     print(console_output.SEPARADOR_PRINCIPAL)
 
-# ==========================================================
-# FIN DE LA FUNCIÓN mostrar_resultados_archivos_pdf()
-# ==========================================================
-
 
 # ==========================================================
-# INICIO DE LA FUNCIÓN crear_vista_previa_texto()
+# LECTURA DE ARCHIVOS PDF
 # ==========================================================
 
 def crear_vista_previa_texto(
@@ -667,31 +495,9 @@ def crear_vista_previa_texto(
     """
     Crear una versión abreviada del texto de un PDF.
 
-    Parámetros
-    ----------
-    texto:
-
-        Texto completo extraído del documento.
-
-    limite:
-
-        Cantidad máxima de caracteres que se mostrarán.
-
-    Retorna
-    -------
-    str
-
-        Texto abreviado.
-
-        Si el contenido supera el límite, se agregan puntos
-        suspensivos al final.
-
-    Importante
-    ----------
-    El texto completo continúa disponible dentro del
-    resultado devuelto por pdf_reader.leer_pdf().
-
-    Esta función solamente limita lo que aparece en pantalla.
+    El texto completo continúa disponible en el resultado de
+    pdf_reader.leer_pdf(). Esta función solamente limita el
+    contenido mostrado en la consola.
     """
 
     if not texto:
@@ -714,61 +520,14 @@ def crear_vista_previa_texto(
 
     return vista_previa
 
-# ==========================================================
-# FIN DE LA FUNCIÓN crear_vista_previa_texto()
-# ==========================================================
-
-
-# ==========================================================
-# INICIO DE LA FUNCIÓN leer_archivos_pdf()
-# ==========================================================
 
 def leer_archivos_pdf(resultados_archivos):
     """
     Leer todos los archivos PDF detectados en un correo.
 
-    Parámetros
-    ----------
-    resultados_archivos:
-
-        Lista devuelta por:
-
-            file_manager.procesar_adjuntos_pdf()
-
-    Retorna
-    -------
-    list
-
-        Lista de diccionarios.
-
-        Para una lectura correcta:
-
-            {
-                "nombre": "factura.pdf",
-                "ruta": Path(...),
-                "lectura_correcta": True,
-                "contiene_texto": True,
-                "resultado_lectura": {...},
-                "error": None
-            }
-
-        Para una lectura con error:
-
-            {
-                "nombre": "factura.pdf",
-                "ruta": Path(...),
-                "lectura_correcta": False,
-                "contiene_texto": False,
-                "resultado_lectura": None,
-                "error": excepción
-            }
-
-    Comportamiento ante errores
-    ---------------------------
-    Si un PDF individual no puede leerse, el error se guarda
-    dentro del resultado.
-
-    La función continúa procesando los demás documentos.
+    Si un PDF individual produce un error, el error se guarda
+    dentro de su resultado y el programa continúa con los
+    demás documentos.
     """
 
     resultados_lectura = []
@@ -811,21 +570,10 @@ def leer_archivos_pdf(resultados_archivos):
 
     return resultados_lectura
 
-# ==========================================================
-# FIN DE LA FUNCIÓN leer_archivos_pdf()
-# ==========================================================
-
-
-# ==========================================================
-# INICIO DE LA FUNCIÓN mostrar_resultados_lectura_pdf()
-# ==========================================================
 
 def mostrar_resultados_lectura_pdf(resultados_lectura):
     """
     Mostrar el resultado de la lectura de los archivos PDF.
-
-    El texto se muestra mediante una vista previa para evitar
-    llenar la consola con documentos completos.
     """
 
     cantidad_pdf = len(
@@ -1003,13 +751,391 @@ def mostrar_resultados_lectura_pdf(resultados_lectura):
 
     print(console_output.SEPARADOR_PRINCIPAL)
 
+
 # ==========================================================
-# FIN DE LA FUNCIÓN mostrar_resultados_lectura_pdf()
+# DETECCIÓN DE PROVEEDORES
 # ==========================================================
+
+def detectar_proveedores_pdf(resultados_lectura):
+    """
+    Intentar detectar el proveedor de cada PDF leído.
+
+    Parámetros
+    ----------
+    resultados_lectura:
+        Lista devuelta por leer_archivos_pdf().
+
+    Retorna
+    -------
+    list
+        Lista con un resultado de detección por cada PDF.
+
+    Casos posibles
+    --------------
+    1. El PDF fue leído, contiene texto y la detección pudo
+       realizarse.
+
+    2. El PDF fue leído, pero no contiene texto extraíble.
+
+    3. El PDF no pudo leerse.
+
+    4. Se produjo un error específico durante la detección.
+
+    Un error en un documento no detiene el procesamiento de
+    los demás PDF.
+    """
+
+    resultados_proveedores = []
+
+    for resultado_lectura in resultados_lectura:
+
+        nombre = resultado_lectura["nombre"]
+        ruta = resultado_lectura["ruta"]
+
+        # --------------------------------------------------
+        # Si el PDF no pudo leerse, tampoco podemos analizar
+        # su texto para detectar un proveedor.
+        # --------------------------------------------------
+
+        if not resultado_lectura["lectura_correcta"]:
+
+            informacion = {
+                "nombre": nombre,
+                "ruta": ruta,
+                "deteccion_realizada": False,
+                "motivo_no_realizada": (
+                    "El PDF no pudo ser leído."
+                ),
+                "resultado_proveedor": None,
+                "error": None
+            }
+
+            resultados_proveedores.append(
+                informacion
+            )
+
+            continue
+
+        # --------------------------------------------------
+        # Si el documento fue leído pero no tiene texto,
+        # supplier_detector no dispone de contenido sobre el
+        # cual realizar la búsqueda.
+        # --------------------------------------------------
+
+        if not resultado_lectura["contiene_texto"]:
+
+            informacion = {
+                "nombre": nombre,
+                "ruta": ruta,
+                "deteccion_realizada": False,
+                "motivo_no_realizada": (
+                    "El PDF no contiene texto extraíble."
+                ),
+                "resultado_proveedor": None,
+                "error": None
+            }
+
+            resultados_proveedores.append(
+                informacion
+            )
+
+            continue
+
+        try:
+
+            datos_lectura = resultado_lectura[
+                "resultado_lectura"
+            ]
+
+            texto_completo = datos_lectura[
+                "texto_completo"
+            ]
+
+            resultado_proveedor = (
+                supplier_detector.detectar_proveedor(
+                    texto_completo
+                )
+            )
+
+            informacion = {
+                "nombre": nombre,
+                "ruta": ruta,
+                "deteccion_realizada": True,
+                "motivo_no_realizada": None,
+                "resultado_proveedor": resultado_proveedor,
+                "error": None
+            }
+
+        except Exception as error:
+
+            informacion = {
+                "nombre": nombre,
+                "ruta": ruta,
+                "deteccion_realizada": False,
+                "motivo_no_realizada": (
+                    "Se produjo un error durante la "
+                    "detección del proveedor."
+                ),
+                "resultado_proveedor": None,
+                "error": error
+            }
+
+        resultados_proveedores.append(
+            informacion
+        )
+
+    return resultados_proveedores
+
+
+def mostrar_resultados_proveedores(
+    resultados_proveedores
+):
+    """
+    Mostrar los resultados de la detección de proveedores.
+    """
+
+    cantidad_documentos = len(
+        resultados_proveedores
+    )
+
+    cantidad_detecciones_realizadas = sum(
+        1
+        for resultado in resultados_proveedores
+        if resultado["deteccion_realizada"]
+    )
+
+    cantidad_proveedores_detectados = sum(
+        1
+        for resultado in resultados_proveedores
+        if (
+            resultado["deteccion_realizada"]
+            and
+            resultado["resultado_proveedor"][
+                "proveedor_detectado"
+            ]
+        )
+    )
+
+    cantidad_proveedores_no_detectados = sum(
+        1
+        for resultado in resultados_proveedores
+        if (
+            resultado["deteccion_realizada"]
+            and
+            not resultado["resultado_proveedor"][
+                "proveedor_detectado"
+            ]
+        )
+    )
+
+    cantidad_no_analizados = sum(
+        1
+        for resultado in resultados_proveedores
+        if not resultado["deteccion_realizada"]
+    )
+
+    cantidad_errores = sum(
+        1
+        for resultado in resultados_proveedores
+        if resultado["error"] is not None
+    )
+
+    console_output.linea_en_blanco()
+
+    console_output.mostrar_titulo(
+        "DETECCIÓN DE PROVEEDORES"
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "Cantidad de PDF recibidos:",
+        cantidad_documentos
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "Detecciones realizadas:",
+        cantidad_detecciones_realizadas
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "Proveedores detectados:",
+        cantidad_proveedores_detectados
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "Proveedores no reconocidos:",
+        cantidad_proveedores_no_detectados
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "Documentos no analizados:",
+        cantidad_no_analizados
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "Errores de detección:",
+        cantidad_errores,
+        espacio_despues=False
+    )
+
+    if not resultados_proveedores:
+
+        console_output.linea_en_blanco()
+
+        console_output.mostrar_mensaje(
+            "No hay archivos PDF para analizar."
+        )
+
+        print(console_output.SEPARADOR_PRINCIPAL)
+
+        return
+
+    for numero_pdf, resultado in enumerate(
+        resultados_proveedores,
+        start=1
+    ):
+
+        console_output.linea_en_blanco()
+
+        console_output.mostrar_subtitulo(
+            f"Proveedor del PDF número {numero_pdf}"
+        )
+
+        console_output.mostrar_etiqueta_valor(
+            "Nombre del archivo:",
+            resultado["nombre"]
+        )
+
+        console_output.mostrar_etiqueta_valor(
+            "Ruta:",
+            resultado["ruta"]
+        )
+
+        if not resultado["deteccion_realizada"]:
+
+            console_output.mostrar_etiqueta_valor(
+                "Estado:",
+                "La detección no pudo realizarse."
+            )
+
+            console_output.mostrar_etiqueta_valor(
+                "Motivo:",
+                resultado["motivo_no_realizada"]
+            )
+
+            if resultado["error"] is not None:
+
+                error = resultado["error"]
+
+                console_output.mostrar_etiqueta_valor(
+                    "Tipo de error:",
+                    type(error).__name__
+                )
+
+                console_output.mostrar_etiqueta_valor(
+                    "Descripción:",
+                    error,
+                    espacio_despues=False
+                )
+
+            else:
+
+                console_output.mostrar_etiqueta_valor(
+                    "Error:",
+                    "No se produjo un error técnico.",
+                    espacio_despues=False
+                )
+
+            continue
+
+        resultado_proveedor = resultado[
+            "resultado_proveedor"
+        ]
+
+        if not resultado_proveedor[
+            "proveedor_detectado"
+        ]:
+
+            console_output.mostrar_etiqueta_valor(
+                "Estado:",
+                "Proveedor no reconocido."
+            )
+
+            console_output.mostrar_etiqueta_valor(
+                "Método de detección:",
+                resultado_proveedor[
+                    "metodo_deteccion"
+                ]
+            )
+
+            console_output.mostrar_etiqueta_valor(
+                "Nivel de confianza:",
+                resultado_proveedor[
+                    "nivel_confianza"
+                ]
+            )
+
+            console_output.mostrar_etiqueta_valor(
+                "Puntaje:",
+                resultado_proveedor["puntaje"],
+                espacio_despues=False
+            )
+
+            continue
+
+        console_output.mostrar_etiqueta_valor(
+            "Estado:",
+            "Proveedor detectado correctamente."
+        )
+
+        console_output.mostrar_etiqueta_valor(
+            "Identificador interno:",
+            resultado_proveedor["identificador"]
+        )
+
+        console_output.mostrar_etiqueta_valor(
+            "Nombre del proveedor:",
+            resultado_proveedor["nombre_proveedor"]
+        )
+
+        console_output.mostrar_etiqueta_valor(
+            "Razón social encontrada:",
+            resultado_proveedor[
+                "razon_social_encontrada"
+            ]
+        )
+
+        console_output.mostrar_etiqueta_valor(
+            "CUIT encontrado:",
+            resultado_proveedor["cuit_encontrado"]
+        )
+
+        console_output.mostrar_etiqueta_valor(
+            "Método de detección:",
+            resultado_proveedor[
+                "metodo_deteccion"
+            ]
+        )
+
+        console_output.mostrar_etiqueta_valor(
+            "Nivel de confianza:",
+            resultado_proveedor[
+                "nivel_confianza"
+            ]
+        )
+
+        console_output.mostrar_etiqueta_valor(
+            "Puntaje:",
+            resultado_proveedor["puntaje"],
+            espacio_despues=False
+        )
+
+    console_output.linea_en_blanco()
+
+    print(console_output.SEPARADOR_PRINCIPAL)
 
 
 # ==========================================================
-# INICIO DE LA FUNCIÓN procesar_correo()
+# PROCESAMIENTO DE UN CORREO
 # ==========================================================
 
 def procesar_correo(conexion, id_correo):
@@ -1019,18 +1145,11 @@ def procesar_correo(conexion, id_correo):
     Retorna
     -------
     dict
-
         Diccionario con:
 
-        - Los PDF encontrados.
-        - Los resultados de lectura de esos PDF.
-
-        Su estructura es:
-
-            {
-                "resultados_archivos": [...],
-                "resultados_lectura": [...]
-            }
+        - Los resultados del procesamiento de archivos.
+        - Los resultados de lectura de los PDF.
+        - Los resultados de detección de proveedores.
     """
 
     mensaje = gmail_client.leer_correo(
@@ -1065,15 +1184,8 @@ def procesar_correo(conexion, id_correo):
         carpeta_factura
     )
 
-    # ------------------------------------------------------
-    # Esta nueva función devuelve información sobre todos los
-    # PDF encontrados.
-    #
-    # Incluye tanto:
-    #
-    # - Los PDF nuevos.
-    # - Los PDF que ya existían.
-    # ------------------------------------------------------
+    # Procesar tanto los PDF nuevos como aquellos que ya
+    # existían previamente.
 
     resultados_archivos = (
         file_manager.procesar_adjuntos_pdf(
@@ -1086,12 +1198,7 @@ def procesar_correo(conexion, id_correo):
         resultados_archivos
     )
 
-    # ------------------------------------------------------
-    # Una vez que conocemos la ruta de cada PDF, intentamos
-    # leer su contenido.
-    #
-    # Los archivos existentes también serán leídos.
-    # ------------------------------------------------------
+    # Leer el contenido de todos los PDF encontrados.
 
     resultados_lectura = leer_archivos_pdf(
         resultados_archivos
@@ -1101,24 +1208,31 @@ def procesar_correo(conexion, id_correo):
         resultados_lectura
     )
 
+    # Detectar el proveedor utilizando el texto extraído de
+    # cada documento.
+
+    resultados_proveedores = detectar_proveedores_pdf(
+        resultados_lectura
+    )
+
+    mostrar_resultados_proveedores(
+        resultados_proveedores
+    )
+
     return {
         "resultados_archivos": resultados_archivos,
-        "resultados_lectura": resultados_lectura
+        "resultados_lectura": resultados_lectura,
+        "resultados_proveedores": resultados_proveedores
     }
 
-# ==========================================================
-# FIN DE LA FUNCIÓN procesar_correo()
-# ==========================================================
-
 
 # ==========================================================
-# INICIO DE LA FUNCIÓN mostrar_error_correo()
+# ERRORES DE CORREOS
 # ==========================================================
 
 def mostrar_error_correo(id_correo, error_correo):
     """
-    Mostrar información sobre un error producido al procesar
-    un correo específico.
+    Mostrar un error producido al procesar un correo.
     """
 
     console_output.linea_en_blanco()
@@ -1148,13 +1262,9 @@ def mostrar_error_correo(id_correo, error_correo):
 
     print(console_output.SEPARADOR_PRINCIPAL)
 
-# ==========================================================
-# FIN DE LA FUNCIÓN mostrar_error_correo()
-# ==========================================================
-
 
 # ==========================================================
-# INICIO DE LA FUNCIÓN mostrar_resumen_final()
+# RESUMEN FINAL
 # ==========================================================
 
 def mostrar_resumen_final(
@@ -1162,7 +1272,8 @@ def mostrar_resumen_final(
     cantidad_procesada,
     cantidad_errores,
     todos_los_resultados_archivos,
-    todos_los_resultados_lectura
+    todos_los_resultados_lectura,
+    todos_los_resultados_proveedores
 ):
     """
     Mostrar un resumen general al finalizar la ejecución.
@@ -1214,6 +1325,48 @@ def mostrar_resumen_final(
         1
         for resultado in todos_los_resultados_lectura
         if not resultado["lectura_correcta"]
+    )
+
+    cantidad_detecciones_realizadas = sum(
+        1
+        for resultado in todos_los_resultados_proveedores
+        if resultado["deteccion_realizada"]
+    )
+
+    cantidad_proveedores_detectados = sum(
+        1
+        for resultado in todos_los_resultados_proveedores
+        if (
+            resultado["deteccion_realizada"]
+            and
+            resultado["resultado_proveedor"][
+                "proveedor_detectado"
+            ]
+        )
+    )
+
+    cantidad_proveedores_no_detectados = sum(
+        1
+        for resultado in todos_los_resultados_proveedores
+        if (
+            resultado["deteccion_realizada"]
+            and
+            not resultado["resultado_proveedor"][
+                "proveedor_detectado"
+            ]
+        )
+    )
+
+    cantidad_detecciones_no_realizadas = sum(
+        1
+        for resultado in todos_los_resultados_proveedores
+        if not resultado["deteccion_realizada"]
+    )
+
+    cantidad_errores_deteccion = sum(
+        1
+        for resultado in todos_los_resultados_proveedores
+        if resultado["error"] is not None
     )
 
     console_output.linea_en_blanco()
@@ -1270,7 +1423,32 @@ def mostrar_resumen_final(
 
     console_output.mostrar_etiqueta_valor(
         "PDF con errores de lectura:",
-        cantidad_errores_lectura,
+        cantidad_errores_lectura
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "Detecciones de proveedor realizadas:",
+        cantidad_detecciones_realizadas
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "Proveedores detectados:",
+        cantidad_proveedores_detectados
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "Proveedores no reconocidos:",
+        cantidad_proveedores_no_detectados
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "Detecciones de proveedor no realizadas:",
+        cantidad_detecciones_no_realizadas
+    )
+
+    console_output.mostrar_etiqueta_valor(
+        "Errores durante la detección de proveedores:",
+        cantidad_errores_deteccion,
         espacio_despues=False
     )
 
@@ -1303,13 +1481,9 @@ def mostrar_resumen_final(
 
     print(console_output.SEPARADOR_PRINCIPAL)
 
-# ==========================================================
-# FIN DE LA FUNCIÓN mostrar_resumen_final()
-# ==========================================================
-
 
 # ==========================================================
-# INICIO DE LA FUNCIÓN main()
+# FUNCIÓN PRINCIPAL
 # ==========================================================
 
 def main():
@@ -1363,12 +1537,11 @@ def main():
         )
 
         cantidad_procesada = 0
-
         cantidad_errores = 0
 
         todos_los_resultados_archivos = []
-
         todos_los_resultados_lectura = []
+        todos_los_resultados_proveedores = []
 
         for numero_correo, id_correo in enumerate(
             correos_seleccionados,
@@ -1400,6 +1573,12 @@ def main():
                     ]
                 )
 
+                todos_los_resultados_proveedores.extend(
+                    resultado_correo[
+                        "resultados_proveedores"
+                    ]
+                )
+
                 cantidad_procesada += 1
 
             except Exception as error_correo:
@@ -1416,7 +1595,8 @@ def main():
             cantidad_procesada,
             cantidad_errores,
             todos_los_resultados_archivos,
-            todos_los_resultados_lectura
+            todos_los_resultados_lectura,
+            todos_los_resultados_proveedores
         )
 
     except Exception as error:
@@ -1453,13 +1633,9 @@ def main():
                     error_cierre
                 )
 
-# ==========================================================
-# FIN DE LA FUNCIÓN main()
-# ==========================================================
-
 
 # ==========================================================
-# PUNTO DE ENTRADA DEL PROGRAMA
+# PUNTO DE ENTRADA
 # ==========================================================
 
 if __name__ == "__main__":
