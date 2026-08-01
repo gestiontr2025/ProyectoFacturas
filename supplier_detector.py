@@ -736,6 +736,23 @@ def es_alias_razon_social(
     if alias_sin_espacios == razon_sin_espacios:
         return True
 
+    # Un nombre comercial puede coincidir con la razón social sin su sufijo
+    # jurídico. Por ejemplo, el archivo puede decir ``FRIGORIFICO LOS PRADOS``
+    # mientras el catálogo guarda ``FRIGORIFICO LOS PRADOS SA``. Aceptamos
+    # esa variante solamente cuando conserva al menos dos palabras y diez
+    # caracteres, para no convertir alias demasiado genéricos en evidencia.
+    razon_sin_tipo = re.sub(
+        r"\s+(?:S\s*A\s*U?|S\s*R\s*L|S\s*A\s*S)$",
+        "",
+        razon_normalizada,
+    ).strip()
+    if (
+        alias == razon_sin_tipo
+        and len(alias) >= 10
+        and len(alias.split()) >= 2
+    ):
+        return True
+
     palabras_juridicas = {
         "SRL",
         "SA",

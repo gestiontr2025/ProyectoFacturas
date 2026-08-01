@@ -1336,10 +1336,14 @@ def detectar_tipo_comprobante(
         return None
 
     for tipo in TIPOS_COMPROBANTE_VALIDOS:
-
         if tipo in texto_busqueda:
-
             return tipo
+
+    # Algunos extractores separan las letras de títulos grandes impresos,
+    # por ejemplo ``FA C T U R A``. Reconocemos esa variante únicamente como
+    # respaldo, después de intentar las formas normales.
+    if re.search(r"F\s*A\s*C\s*T\s*U\s*R\s*A", texto_busqueda):
+        return "FACTURA"
 
     return None
 
@@ -1355,199 +1359,112 @@ def detectar_tipo_comprobante(
 def detectar_letra_comprobante(
     texto: str
 ) -> Optional[str]:
+    """Detectar la letra fiscal del comprobante.
+
+    Los extractores de PDF no siempre conservan el diseño visual. Por eso la
+    letra puede aparecer en la misma línea que ``FACTURA``, en la línea
+    siguiente o inmediatamente antes del número del comprobante.
+
+    La función busca primero patrones explícitos y después usa un respaldo
+    limitado al entorno cercano de la palabra ``FACTURA``. Esta segunda etapa
+    evita tomar cualquier letra aislada del documento como letra fiscal.
     """
-    Detectar la letra del comprobante.
-
-    Ejemplos:
-
-        FACTURA A
-        FACTURA B
-        FACTURA C
-        NOTA DE CREDITO A
-
-    Retorna
-    -------
-    str | None
-
-        Letra detectada o None.
-    """
-
-    texto_busqueda = normalizar_texto_para_busqueda(
-        texto
-    )
-
+    texto_busqueda = normalizar_texto_para_busqueda(texto)
     if not texto_busqueda:
         return None
 
-    patrones = (
+    patrones_explicitos = (
         r"\bFACTURA\s*[-:]?\s*([ABCEMT])\b",
-        (
-            r"\bNOTA\s+DE\s+CREDITO"
-            r"\s*[-:]?\s*([ABCEMT])\b"
-        ),
-        (
-            r"\bNOTA\s+DE\s+DEBITO"
-            r"\s*[-:]?\s*([ABCEMT])\b"
-        ),
+        r"\bNOTA\s+DE\s+CREDITO\s*[-:]?\s*([ABCEMT])\b",
+        r"\bNOTA\s+DE\s+DEBITO\s*[-:]?\s*([ABCEMT])\b",
         r"\bCOMPROBANTE\s*[-:]?\s*([ABCEMT])\b",
         r"\bLETRA\s*[:\-]?\s*([ABCEMT])\b",
     )
 
-    for patron in patrones:
+    for patron in patrones_explicitos:
+        coincidencia = re.search(patron, texto_busqueda)
+        if coincidencia and coincidencia.group(1) in LETRAS_COMPROBANTE_VALIDAS:
+            return coincidencia.group(1)
 
+    # Respaldo: cuando existe evidencia clara de que el documento es una
+    # factura, la letra puede aparecer unida al número en otra zona de la
+    # página. Algunos extractores alteran el orden visual y colocan
+    # ``A 00020-00047658`` bastante antes de ``FA C T U R A``.
+    hay_factura = bool(re.search(r"F\s*A\s*C\s*T\s*U\s*R\s*A", texto_busqueda))
+    if hay_factura:
         coincidencia = re.search(
-            patron,
-            texto_busqueda
+            r"\b([ABCEMT])\s+(\d{1,5})\s*[-/]\s*(\d{1,8})\b",
+            texto_busqueda,
         )
-
-        if not coincidencia:
-            continue
-
-        letra = coincidencia.group(1)
-
-        if letra in LETRAS_COMPROBANTE_VALIDAS:
-
-            return letra
+        if coincidencia and coincidencia.group(1) in LETRAS_COMPROBANTE_VALIDAS:
+            return coincidencia.group(1)
 
     return None
 
-# ----------------------------------------------------------
-# FIN DE LA FUNCIÓN detectar_letra_comprobante()
-# ----------------------------------------------------------
-
-
-# ----------------------------------------------------------
-# INICIO DE LA FUNCIÓN detectar_numero_comprobante()
-# ----------------------------------------------------------
 
 def detectar_numero_comprobante(
     texto: str
 ) -> Optional[str]:
+    """Detectar y normalizar punto de venta y número de comprobante.
+
+    ``normalizar_texto`` convierte símbolos como ``Nº`` en ``No``. Por eso
+    los patrones aceptan ``NO``, ``NRO``, ``NUMERO`` y las variantes con
+    símbolos. También se acepta el formato ``A 00020-00047658`` cuando existe
+    evidencia cercana de que el documento es una factura.
     """
-    Detectar el número completo del comprobante.
-
-    Formatos reconocidos:
-
-        Comp. Nro: 00003-00001234
-        Comprobante Nro. 00003-00001234
-        Factura N° 00003-00001234
-        Nº 0009 - 00722964
-
-    Retorna
-    -------
-    str | None
-
-        Número normalizado o None.
-    """
-
-    texto_busqueda = normalizar_texto_para_busqueda(
-        texto
-    )
-
+    texto_busqueda = normalizar_texto_para_busqueda(texto)
     if not texto_busqueda:
         return None
 
+    etiqueta_numero = r"(?:NRO\.?|NUMERO|NO\.?|N[°º])"
     patrones_numero_completo = (
-        (
-            r"\bCOMP(?:ROBANTE)?\.?"
-            r"\s*(?:NRO\.?|NUMERO|N[°º])"
-            r"\s*[:\-]?\s*"
-            r"(\d{1,5}\s*[-/]\s*\d{1,8})"
-        ),
-        (
-            r"\bFACTURA"
-            r"(?:\s+[ABCEMT])?"
-            r"\s*(?:NRO\.?|NUMERO|N[°º])"
-            r"\s*[:\-]?\s*"
-            r"(\d{1,5}\s*[-/]\s*\d{1,8})"
-        ),
-        (
-            r"\b(?:NRO\.?|NUMERO|N[°º])"
-            r"\s*[:\-]?\s*"
-            r"(\d{1,5}\s*[-/]\s*\d{1,8})"
-        ),
+        rf"\bCOMP(?:ROBANTE)?\.?\s*{etiqueta_numero}\s*[:\-]?\s*(\d{{1,5}}\s*[-/]\s*\d{{1,8}})",
+        rf"\bFACTURA(?:\s+[ABCEMT])?\s*{etiqueta_numero}\s*[:\-]?\s*(\d{{1,5}}\s*[-/]\s*\d{{1,8}})",
+        rf"\b{etiqueta_numero}\s*[:\-]?\s*(\d{{1,5}}\s*[-/]\s*\d{{1,8}})",
     )
 
     for patron in patrones_numero_completo:
-
-        coincidencia = re.search(
-            patron,
-            texto_busqueda
-        )
-
+        coincidencia = re.search(patron, texto_busqueda)
         if coincidencia:
-
-            numero_normalizado = limpiar_numero_comprobante(
-                coincidencia.group(1)
-            )
-
-            if numero_normalizado:
-
-                return numero_normalizado
+            numero = limpiar_numero_comprobante(coincidencia.group(1))
+            if numero:
+                return numero
 
     patron_separado = (
-        r"(?:PTO\.?\s*(?:DE\s*)?VTA\.?"
-        r"|PUNTO\s+DE\s+VENTA)"
-        r"\s*[:\-]?\s*"
-        r"(\d{1,5})"
-        r".{0,150}?"
-        r"(?:COMP(?:ROBANTE)?\.?\s*)?"
-        r"(?:NRO\.?|NUMERO|N[°º])"
-        r"\s*[:\-]?\s*"
-        r"(\d{1,8})"
+        r"(?:PTO\.?\s*(?:DE\s*)?VTA\.?|PUNTO\s+DE\s+VENTA)"
+        r"\s*[:\-]?\s*(\d{1,5}).{0,150}?"
+        rf"(?:COMP(?:ROBANTE)?\.?\s*)?{etiqueta_numero}"
+        r"\s*[:\-]?\s*(\d{1,8})"
     )
+    coincidencia = re.search(patron_separado, texto_busqueda, flags=re.DOTALL)
+    if coincidencia:
+        return f"{coincidencia.group(1).zfill(5)}-{coincidencia.group(2).zfill(8)}"
 
-    coincidencia_separada = re.search(
-        patron_separado,
-        texto_busqueda,
-        flags=re.DOTALL
-    )
-
-    if coincidencia_separada:
-
-        punto_venta = coincidencia_separada.group(
-            1
-        ).zfill(5)
-
-        numero = coincidencia_separada.group(
-            2
-        ).zfill(8)
-
-        return (
-            f"{punto_venta}-"
-            f"{numero}"
+    # Respaldo defensivo para diseños donde la letra y el número aparecen antes
+    # de ``FACTURA``. Solo se activa cuando el documento contiene esa palabra.
+    hay_factura = bool(re.search(r"F\s*A\s*C\s*T\s*U\s*R\s*A", texto_busqueda))
+    if hay_factura:
+        coincidencia = re.search(
+            r"\b[ABCEMT]\s+(\d{1,5}\s*[-/]\s*\d{1,8})\b",
+            texto_busqueda,
         )
+        if coincidencia:
+            return limpiar_numero_comprobante(coincidencia.group(1))
 
     return None
 
-# ----------------------------------------------------------
-# FIN DE LA FUNCIÓN detectar_numero_comprobante()
-# ----------------------------------------------------------
-
-
-# ----------------------------------------------------------
-# INICIO DE LA FUNCIÓN detectar_fecha_emision()
-# ----------------------------------------------------------
 
 def detectar_fecha_emision(
     texto: str
 ) -> Optional[str]:
+    """Detectar la fecha de emisión sin confundirla con cualquier fecha.
+
+    Primero se buscan etiquetas explícitas. Como respaldo, si el documento
+    contiene evidencia clara de ser una factura, se toma la primera fecha
+    válida del texto. Esta regla permite procesar diseños visuales donde la
+    fecha aparece sin etiqueta, pero no se aplica a listas de precios.
     """
-    Detectar la fecha de emisión.
-
-    Reconoce años de dos y cuatro dígitos.
-
-    Retorna
-    -------
-    str | None
-
-        Fecha normalizada o None.
-    """
-
-    texto_busqueda = normalizar_texto_para_busqueda(
-        texto
-    )
-
+    texto_busqueda = normalizar_texto_para_busqueda(texto)
     if not texto_busqueda:
         return None
 
@@ -1557,42 +1474,20 @@ def detectar_fecha_emision(
         r"\bFECHA\s+DEL\s+COMPROBANTE\b",
         r"\bFECHA\b",
     )
-
     for etiqueta in etiquetas:
-
-        patron_completo = (
-            etiqueta
-            +
-            r"\s*[:\-]?\s*"
-            +
-            PATRON_FECHA
-        )
-
-        coincidencia = re.search(
-            patron_completo,
-            texto_busqueda
-        )
-
+        coincidencia = re.search(etiqueta + r"\s*[:\-]?\s*" + PATRON_FECHA, texto_busqueda)
         if coincidencia:
+            fecha = limpiar_fecha(coincidencia.group(1))
+            if fecha:
+                return fecha
 
-            fecha_normalizada = limpiar_fecha(
-                coincidencia.group(1)
-            )
-
-            if fecha_normalizada:
-
-                return fecha_normalizada
+    hay_factura = bool(re.search(r"F\s*A\s*C\s*T\s*U\s*R\s*A", texto_busqueda))
+    if hay_factura:
+        coincidencia = re.search(PATRON_FECHA, texto_busqueda)
+        if coincidencia:
+            return limpiar_fecha(coincidencia.group(1))
 
     return None
-
-# ----------------------------------------------------------
-# FIN DE LA FUNCIÓN detectar_fecha_emision()
-# ----------------------------------------------------------
-
-
-# ----------------------------------------------------------
-# INICIO DE LA FUNCIÓN detectar_cuits_factura()
-# ----------------------------------------------------------
 
 def detectar_cuits_factura(
     texto: str

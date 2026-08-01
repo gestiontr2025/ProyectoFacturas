@@ -1761,6 +1761,15 @@ PROVEEDORES: dict[str, Proveedor] = {
 
 _ALIAS_ESPECIALES: dict[str, tuple[str, ...]] = {
 
+    # El encabezado de algunos PDF de Frigorífico Los Prados no se puede
+    # extraer como texto. Sin embargo, el nombre del adjunto suele contener
+    # claramente el nombre comercial. Este alias permite reconocerlo sin
+    # reemplazar la razón social canónica guardada en el catálogo.
+    "frigorifico_los_prados": (
+        "FRIGORIFICO LOS PRADOS",
+        "LOS PRADOS",
+    ),
+
     # ------------------------------------------------------
     # Arta puede aparecer en el texto extraído como AARTA.
     #
