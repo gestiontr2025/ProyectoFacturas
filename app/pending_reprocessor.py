@@ -12,7 +12,7 @@ import pdf_reader
 import supplier_detector
 
 from documents import TipoDocumento, clasificar_documento
-from documents.organizer import archivar_lista_precios
+from documents.organizer import archivar_otro_documento
 from invoices.processor import procesar_factura
 
 
@@ -29,13 +29,27 @@ def reprocesar_pendientes() -> list[dict]:
             texto = lectura.get("texto_completo", "")
             clasificacion = clasificar_documento(texto, ruta_pdf.name)
 
-            if clasificacion.tipo is TipoDocumento.LISTA_PRECIOS:
-                ruta_final = archivar_lista_precios(ruta_pdf, config.SAVE_FOLDER)
+            if clasificacion.tipo in {
+                TipoDocumento.LISTA_PRECIOS,
+                TipoDocumento.COMPROBANTE_PAGO,
+                TipoDocumento.ORDEN_PAGO,
+            }:
+                archivo = archivar_otro_documento(
+                    ruta_pdf, config.SAVE_FOLDER, clasificacion.tipo
+                )
+                estados = {
+                    TipoDocumento.LISTA_PRECIOS: "lista_archivada",
+                    TipoDocumento.COMPROBANTE_PAGO: "comprobante_pago_archivado",
+                    TipoDocumento.ORDEN_PAGO: "orden_pago_archivada",
+                }
+                detalle = clasificacion.motivo
+                if archivo.detail:
+                    detalle = f"{detalle} {archivo.detail}"
                 resultados.append({
                     "nombre": ruta_pdf.name,
-                    "estado": "lista_archivada",
-                    "ruta_final": ruta_final,
-                    "motivo": clasificacion.motivo,
+                    "estado": estados[clasificacion.tipo],
+                    "ruta_final": archivo.destination,
+                    "motivo": detalle,
                 })
                 continue
 

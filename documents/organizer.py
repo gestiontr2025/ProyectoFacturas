@@ -1,19 +1,40 @@
-"""Archivo seguro de documentos que no pertenecen al flujo de facturas."""
+"""Archivo seguro de documentos que no pertenecen al flujo fiscal."""
 
 from pathlib import Path
-import shutil
+
+from documents.classifier import TipoDocumento
+from storage import FileMoveResult, safe_archive_file
+
+
+FOLDERS_BY_TYPE = {
+    TipoDocumento.LISTA_PRECIOS: "Listas_de_precios",
+    TipoDocumento.COMPROBANTE_PAGO: "Comprobantes_de_pago",
+    TipoDocumento.ORDEN_PAGO: "Ordenes_de_pago",
+}
+
+
+def archivar_otro_documento(
+    ruta_pdf: Path | str,
+    carpeta_raiz: Path | str,
+    tipo: TipoDocumento,
+) -> FileMoveResult:
+    """Archivar un documento no fiscal aplicando deduplicación por contenido.
+
+    La función solo admite categorías con una carpeta definida. Un documento
+    desconocido debe permanecer en ``_Pendientes`` para revisión humana.
+    """
+
+    folder = FOLDERS_BY_TYPE.get(tipo)
+    if folder is None:
+        raise ValueError(f"No existe una carpeta configurada para {tipo!s}.")
+
+    destination = Path(carpeta_raiz) / "_OtrosDocumentos" / folder
+    return safe_archive_file(ruta_pdf, destination)
 
 
 def archivar_lista_precios(ruta_pdf, carpeta_raiz) -> Path:
-    """Mover una lista de precios fuera de ``_Pendientes`` sin sobrescribirla."""
+    """Compatibilidad con código anterior que espera únicamente una ruta."""
 
-    origen = Path(ruta_pdf)
-    destino_dir = Path(carpeta_raiz) / "_OtrosDocumentos" / "Listas_de_precios"
-    destino_dir.mkdir(parents=True, exist_ok=True)
-    destino = destino_dir / origen.name
-
-    if destino.exists():
-        return destino
-
-    shutil.move(str(origen), str(destino))
-    return destino
+    return archivar_otro_documento(
+        ruta_pdf, carpeta_raiz, TipoDocumento.LISTA_PRECIOS
+    ).destination

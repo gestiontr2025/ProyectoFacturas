@@ -1,8 +1,8 @@
 """Clasificación defensiva de documentos PDF.
 
-No todo PDF adjunto a un correo administrativo es una factura. También pueden
-llegar listas de precios, catálogos o material informativo. Este módulo decide
-qué recorrido debe seguir cada documento antes de ejecutar el parser fiscal.
+No todo PDF administrativo es un comprobante fiscal. Clasificar antes de usar
+el parser de facturas mantiene ``_Pendientes`` reservado para casos realmente
+ambiguos y permite archivar material auxiliar en carpetas comprensibles.
 """
 
 from dataclasses import dataclass
@@ -16,6 +16,8 @@ class TipoDocumento(str, Enum):
 
     FACTURA = "factura"
     LISTA_PRECIOS = "lista_de_precios"
+    COMPROBANTE_PAGO = "comprobante_de_pago"
+    ORDEN_PAGO = "orden_de_pago"
     DESCONOCIDO = "desconocido"
 
 
@@ -38,20 +40,18 @@ def _normalizar(texto: str) -> str:
 
 
 def clasificar_documento(texto: str, nombre_archivo: str = "") -> ResultadoClasificacion:
-    """Clasificar un PDF utilizando varias señales, no una única palabra.
+    """Clasificar un PDF usando varias señales y prioridades explícitas.
 
-    La clasificación usa puntajes para evitar decisiones frágiles. La palabra
-    ``IVA``, por ejemplo, puede aparecer tanto en una factura como en una lista
-    de precios; en cambio, la combinación ``FACTURA`` + número fiscal + fecha
-    ofrece evidencia mucho más fuerte.
+    El nombre aporta evidencia secundaria, mientras que el contenido es la
+    fuente principal. Una señal fiscal fuerte siempre tiene prioridad para no
+    confundir el detalle de una factura con una lista comercial.
     """
 
     contenido = _normalizar(f"{texto}\n{nombre_archivo}")
-
     puntaje_factura = 0
     puntaje_lista = 0
 
-    if re.search(r"F\s*A\s*C\s*T\s*U\s*R\s*A", contenido):
+    if re.search(r"F\s*A\s*C\s*T\s*U\s*R\s*A|NOTA\s+DE\s+(?:CREDITO|DEBITO)", contenido):
         puntaje_factura += 5
     if re.search(r"\b[ABCEMT]\s+\d{1,5}\s*[-/]\s*\d{1,8}\b", contenido):
         puntaje_factura += 4
@@ -61,38 +61,38 @@ def clasificar_documento(texto: str, nombre_archivo: str = "") -> ResultadoClasi
         puntaje_factura += 1
 
     indicadores_lista = (
-        "LISTA",
-        "CODIGO",
-        "PRESENTACION",
-        "PRECIO",
-        "PRECIO SUGERIDO",
-        "$ X BOT",
-        "$ X BOTELLA",
-        "$ X UNID",
+        "LISTA", "CODIGO", "PRESENTACION", "PRECIO", "PRECIO SUGERIDO",
+        "$ X BOT", "$ X BOTELLA", "$ X UNID",
     )
     puntaje_lista += sum(1 for indicador in indicadores_lista if indicador in contenido)
 
-    # Una factura claramente identificada siempre tiene prioridad sobre señales
-    # comerciales secundarias que también podrían aparecer en su detalle.
     if puntaje_factura >= 5:
         return ResultadoClasificacion(
-            tipo=TipoDocumento.FACTURA,
-            puntaje_factura=puntaje_factura,
-            puntaje_lista=puntaje_lista,
-            motivo="El documento contiene evidencia fiscal suficiente.",
+            TipoDocumento.FACTURA, puntaje_factura, puntaje_lista,
+            "El documento contiene evidencia fiscal suficiente.",
+        )
+
+    # Estas categorías se evalúan después de descartar una factura clara. Una
+    # orden de pago puede mencionar facturas imputadas, pero no es una factura.
+    if re.search(r"\bORDEN(?:\s+DE)?\s+PAGO\b|\bOP\s*\d{1,5}\s*[-/]\s*\d+|OP\d{1,5}-\d+", contenido):
+        return ResultadoClasificacion(
+            TipoDocumento.ORDEN_PAGO, puntaje_factura, puntaje_lista,
+            "El contenido o el nombre identifica una orden de pago.",
+        )
+
+    if re.search(r"\bCOMPROBANTE\s+DE\s+PAGO\b|COMPROBANTEDEPAGO|\bPAGO\s+REALIZADO\b|\bIMPORTE\s+PAGADO\b", contenido):
+        return ResultadoClasificacion(
+            TipoDocumento.COMPROBANTE_PAGO, puntaje_factura, puntaje_lista,
+            "El contenido o el nombre identifica un comprobante de pago.",
         )
 
     if puntaje_lista >= 4 and puntaje_factura < 3:
         return ResultadoClasificacion(
-            tipo=TipoDocumento.LISTA_PRECIOS,
-            puntaje_factura=puntaje_factura,
-            puntaje_lista=puntaje_lista,
-            motivo="Predominan señales de una lista comercial y no de una factura.",
+            TipoDocumento.LISTA_PRECIOS, puntaje_factura, puntaje_lista,
+            "Predominan señales de una lista comercial y no de una factura.",
         )
 
     return ResultadoClasificacion(
-        tipo=TipoDocumento.DESCONOCIDO,
-        puntaje_factura=puntaje_factura,
-        puntaje_lista=puntaje_lista,
-        motivo="No existe evidencia suficiente para clasificar automáticamente.",
+        TipoDocumento.DESCONOCIDO, puntaje_factura, puntaje_lista,
+        "No existe evidencia suficiente para clasificar automáticamente.",
     )

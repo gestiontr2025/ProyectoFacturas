@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any, Mapping, Optional
 
+from suppliers.folder_names import get_canonical_folder_name
+
 
 @dataclass
 class Supplier:
@@ -49,8 +51,17 @@ class Supplier:
 
     @property
     def folder_name(self) -> str:
-        """Elegir el nombre legible usado para la carpeta del proveedor."""
-        return str(self.display_name or self.legal_name or "PROVEEDOR_DESCONOCIDO").strip()
+        """Return the single canonical folder assigned to this supplier.
+
+        Detection aliases and legal names may vary between invoices. The
+        internal identifier is stable, so it has priority when choosing the
+        physical folder.
+        """
+        return get_canonical_folder_name(
+            self.identifier,
+            self.display_name,
+            self.legal_name,
+        )
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

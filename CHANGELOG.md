@@ -58,3 +58,26 @@
 - El organizador adapta progresivamente las estructuras históricas a modelos tipados.
 - Se mantiene compatibilidad con las APIs anteriores para reducir el riesgo de regresiones.
 - Se agregaron pruebas de validación, adaptación y estados de procesamiento.
+
+## Etapa 4.2 - Identidad canónica de carpetas
+
+- Se centralizó el nombre físico de carpeta por identificador de proveedor.
+- ARTA utiliza siempre `ARTA_VERDULEROS`.
+- El Criollo utiliza siempre `EL_CRIOLLO`.
+- Colppy utiliza siempre `COLPPY`.
+- Se agregó `--normalize-supplier-folders` para migrar carpetas históricas sin sobrescribir archivos.
+
+## Etapa 4.3
+
+- Se agregaron categorías para comprobantes y órdenes de pago.
+- El reprocesamiento elimina copias redundantes solo después de verificar SHA-256.
+- Los archivos con igual nombre y contenido diferente se conservan con sufijo.
+- La lógica de duplicados se centralizó en el paquete `storage`.
+
+## Etapa 4.4 — Deduplicación de facturas organizadas
+
+- Se evita crear una nueva copia cuando una factura idéntica ya existe en la carpeta del proveedor.
+- Se compara el contenido mediante SHA-256 antes de eliminar la copia temporal.
+- Si la identidad fiscal coincide pero el contenido es diferente, se conservan ambas versiones y se informa un conflicto.
+- Se agregó `python main.py --deduplicate-invoices` como vista previa segura.
+- La eliminación real requiere confirmación explícita con `--apply`.

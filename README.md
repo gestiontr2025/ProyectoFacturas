@@ -93,3 +93,42 @@ lo cual permite mejorar la arquitectura sin romper el flujo ya probado.
 - `FiscalDocument`: datos fiscales y validación de campos obligatorios.
 - `Supplier`: identidad fiscal y nombre comercial del proveedor.
 - `ProcessingResult`: estado uniforme de una operación sobre un documento.
+
+### Normalizar carpetas históricas de proveedores
+
+Si versiones anteriores crearon dos carpetas para la misma empresa, ejecute:
+
+```powershell
+python main.py --normalize-supplier-folders
+```
+
+El comando conoce alias históricos, mueve los archivos a la carpeta canónica,
+compara duplicados idénticos mediante SHA-256 y nunca sobrescribe un archivo
+diferente: ante un conflicto agrega un sufijo como `_2`.
+
+### Documentos administrativos y duplicados
+
+El comando `python main.py --reprocess-pending` también reconoce listas de
+precios, comprobantes de pago y órdenes de pago. Estos documentos se archivan
+dentro de `_OtrosDocumentos`.
+
+Antes de eliminar una copia de `_Pendientes`, el programa compara el contenido
+mediante SHA-256. Un archivo solo se elimina cuando ya existe otra copia
+idéntica. Si dos documentos tienen el mismo nombre pero contenido diferente,
+ambos se conservan agregando un sufijo numérico.
+
+### Limpiar facturas duplicadas
+
+La búsqueda de duplicados funciona primero como **vista previa**:
+
+```powershell
+python main.py --deduplicate-invoices
+```
+
+El comando informa qué copia conservaría, pero no elimina archivos. Después de revisar el resultado, la limpieza se confirma de forma explícita:
+
+```powershell
+python main.py --deduplicate-invoices --apply
+```
+
+Solo se elimina una copia cuando ambas producen exactamente la misma huella SHA-256. Si dos archivos comparten número fiscal pero su contenido es diferente, el proyecto conserva ambos para revisión manual.

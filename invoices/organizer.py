@@ -1,10 +1,10 @@
 """Creación de carpetas y movimiento seguro de facturas."""
 
 from pathlib import Path
-import shutil
 
 from invoices.filename_builder import convertir_fecha
 from invoices.text_normalization import normalizar_componente_ruta
+from storage import safe_move_invoice
 
 
 def construir_carpeta_final(raiz, razon_social_proveedor: str, fecha_emision: str) -> Path:
@@ -14,30 +14,13 @@ def construir_carpeta_final(raiz, razon_social_proveedor: str, fecha_emision: st
     return Path(raiz) / proveedor / f"{fecha:%Y}" / f"{fecha:%m}"
 
 
-def obtener_ruta_sin_colision(ruta_deseada: Path) -> Path:
-    """Evitar sobrescribir un archivo diferente que tenga el mismo nombre.
+def mover_a_destino_final(ruta_actual, carpeta_final, nombre_final):
+    """Mover una factura aplicando deduplicación por contenido e identidad.
 
-    Si el nombre ya existe, se agregan sufijos ``_2``, ``_3`` y así
-    sucesivamente. Preservar ambos documentos es más seguro que reemplazar uno
-    silenciosamente.
+    La función conserva la API histórica y devuelve solamente la ruta final.
+    Internamente delega en ``storage.safe_move_invoice``, que elimina una copia
+    temporal solo cuando existe otra copia binariamente idéntica.
     """
-    if not ruta_deseada.exists():
-        return ruta_deseada
 
-    contador = 2
-    while True:
-        candidata = ruta_deseada.with_name(
-            f"{ruta_deseada.stem}_{contador}{ruta_deseada.suffix}"
-        )
-        if not candidata.exists():
-            return candidata
-        contador += 1
-
-
-def mover_a_destino_final(ruta_actual, carpeta_final, nombre_final) -> Path:
-    """Mover el PDF desde `_Pendientes` hasta su ubicación definitiva."""
-    origen = Path(ruta_actual)
-    destino_dir = Path(carpeta_final)
-    destino_dir.mkdir(parents=True, exist_ok=True)
-    destino = obtener_ruta_sin_colision(destino_dir / nombre_final)
-    return Path(shutil.move(str(origen), str(destino)))
+    result = safe_move_invoice(ruta_actual, carpeta_final, nombre_final)
+    return result.destination
