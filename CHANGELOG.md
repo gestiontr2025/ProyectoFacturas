@@ -1,3 +1,12 @@
+
+## Etapa 3.5 - Formatos ARCA/Colppy y nombres comerciales
+
+- Se reconocen letras ubicadas antes del tipo, como `C FACTURA`.
+- Se interpretan códigos ARCA/AFIP (`COD 01`, `COD 011`) como evidencia fiscal.
+- Se detectan números separados como `Punto de Venta ... Comp. Nro ...`.
+- Se separa la razón social fiscal del nombre usado para la carpeta.
+- All Online Solutions S. A. U. se archiva bajo la carpeta comercial `COLPPY`.
+- Se agregan regresiones para diseños reales de ARCA y Colppy.
 # Historial de cambios
 
 ## Etapa 2 — Modularización de Gmail

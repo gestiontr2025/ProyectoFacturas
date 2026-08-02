@@ -11,6 +11,10 @@ from documents.organizer import archivar_lista_precios
 from invoices.filename_builder import construir_nombre_factura
 from invoices.filename_evidence import extraer_evidencia_nombre_archivo
 from invoices.organizer import construir_carpeta_final, mover_a_destino_final
+from invoices.supplier_naming import (
+    obtener_nombre_para_carpeta,
+    obtener_razon_social_fiscal,
+)
 
 
 @dataclass
@@ -95,10 +99,14 @@ def procesar_factura(ruta_pdf, texto: str, resultado_proveedor: dict, carpeta_ra
             motivo_pendiente="Faltan: " + ", ".join(faltantes),
         )
 
-    razon_social = resultado_proveedor["razon_social_encontrada"]
+    # La razón social fiscal se conserva dentro del nombre del archivo. Para
+    # la carpeta preferimos el nombre de fantasía cuando existe: es más breve
+    # y reconocible para el usuario (por ejemplo, ``Colppy``).
+    razon_social = obtener_razon_social_fiscal(resultado_proveedor)
+    nombre_carpeta = obtener_nombre_para_carpeta(resultado_proveedor)
     nombre_final = construir_nombre_factura(datos, razon_social)
     carpeta_final = construir_carpeta_final(
-        carpeta_raiz, razon_social, datos.fecha_emision
+        carpeta_raiz, nombre_carpeta, datos.fecha_emision
     )
     ruta_final = mover_a_destino_final(ruta_pdf, carpeta_final, nombre_final)
 

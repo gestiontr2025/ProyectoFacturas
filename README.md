@@ -74,3 +74,11 @@ La detección fiscal está separada en el paquete `fiscal/`:
 El proyecto contempla estas combinaciones: FCA, FCB, FCC, NCA, NCB, NCC,
 NDA, NDB y NDC. El contenido del PDF tiene prioridad; el nombre del archivo
 solo funciona como evidencia secundaria cuando faltan datos.
+
+### Razón social y nombre comercial
+
+El proyecto distingue la identidad fiscal del proveedor de su nombre de
+fantasía. La razón social se conserva en el nombre del PDF, mientras que la
+carpeta puede usar el nombre comercial para resultar más fácil de reconocer.
+Por ejemplo, `ALL ONLINE SOLUTIONS S. A. U.` se organiza dentro de la carpeta
+`COLPPY`.
