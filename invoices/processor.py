@@ -75,6 +75,9 @@ def procesar_factura(ruta_pdf, texto: str, resultado_proveedor: dict, carpeta_ra
     # la factura, porque el contenido fiscal tiene mayor autoridad.
     evidencia_nombre = extraer_evidencia_nombre_archivo(ruta_pdf.name)
 
+    if not datos.tipo_comprobante and evidencia_nombre.tipo_comprobante:
+        datos.tipo_comprobante = evidencia_nombre.tipo_comprobante
+
     if not datos.letra_comprobante and evidencia_nombre.letra_comprobante:
         datos.letra_comprobante = evidencia_nombre.letra_comprobante
 

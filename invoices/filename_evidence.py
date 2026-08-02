@@ -28,18 +28,29 @@ from typing import Optional
 class EvidenciaNombreArchivo:
     """Datos fiscales que pudieron inferirse del nombre del archivo."""
 
+    tipo_comprobante: Optional[str] = None
     letra_comprobante: Optional[str] = None
     numero_comprobante: Optional[str] = None
     metodo: Optional[str] = None
 
 
-# Códigos de comprobante AFIP que aparecen en nombres generados por algunos
-# sistemas. Solo incluimos códigos conocidos y usados por este proyecto.
-CODIGO_AFIP_A_LETRA = {
-    "001": "A",  # Factura A
-    "006": "B",  # Factura B
-    "011": "C",  # Factura C
+# Relación oficial entre códigos AFIP y comprobantes comunes A, B y C.
+#
+# Guardamos tipo y letra por separado porque el resto del proyecto trabaja con
+# esos conceptos de forma independiente. Esto permite construir FCA, NCB o NDC
+# sin duplicar lógica ni depender de nueve casos especiales.
+CODIGO_AFIP_A_COMPROBANTE = {
+    "001": ("FACTURA", "A"),
+    "002": ("NOTA DE DEBITO", "A"),
+    "003": ("NOTA DE CREDITO", "A"),
+    "006": ("FACTURA", "B"),
+    "007": ("NOTA DE DEBITO", "B"),
+    "008": ("NOTA DE CREDITO", "B"),
+    "011": ("FACTURA", "C"),
+    "012": ("NOTA DE DEBITO", "C"),
+    "013": ("NOTA DE CREDITO", "C"),
 }
+
 
 
 def _normalizar_numero(punto_venta: str, numero: str) -> str:
@@ -61,19 +72,25 @@ def extraer_evidencia_nombre_archivo(nombre_archivo: str) -> EvidenciaNombreArch
     #   FC A 0003-00025066 ...
     #   FA-A 00040-00069092
     #   FCA000600343487
-    patrones_letra_y_numero = (
-        r"\bF(?:ACTURA|C|A)?\s*[-_ ]*([ABC])\s*[-_ ]*(\d{1,5})\s*[-_]\s*(\d{1,8})\b",
-        r"\bFC([ABC])(\d{4,5})(\d{8})\b",
+    patrones_tipo_letra_numero = (
+        # Formatos espaciados: FC A 0003-00025066, NC B ..., ND C ...
+        r"\b(FC|NC|ND)\s*[-_ ]*([ABC])\s*[-_ ]*(\d{1,5})\s*[-_]\s*(\d{1,8})\b",
+        # Formatos compactos: FCA000600343487, NCB000300001234...
+        r"\b(FC|NC|ND)([ABC])(\d{4,5})(\d{8})\b",
+        # Variante histórica FA-A usada por algunos emisores.
+        r"\b(FA)\s*[-_ ]*([ABC])\s*[-_ ]*(\d{1,5})\s*[-_]\s*(\d{1,8})\b",
     )
+    prefijos = {"FC": "FACTURA", "FA": "FACTURA", "NC": "NOTA DE CREDITO", "ND": "NOTA DE DEBITO"}
 
-    for patron in patrones_letra_y_numero:
+    for patron in patrones_tipo_letra_numero:
         coincidencia = re.search(patron, nombre)
         if coincidencia:
-            letra, punto_venta, numero = coincidencia.groups()
+            prefijo, letra, punto_venta, numero = coincidencia.groups()
             return EvidenciaNombreArchivo(
+                tipo_comprobante=prefijos[prefijo],
                 letra_comprobante=letra,
                 numero_comprobante=_normalizar_numero(punto_venta, numero),
-                metodo="nombre_con_letra_y_numero",
+                metodo="nombre_con_tipo_letra_y_numero",
             )
 
     # Formato habitual de ciertos comprobantes electrónicos:
@@ -86,11 +103,14 @@ def extraer_evidencia_nombre_archivo(nombre_archivo: str) -> EvidenciaNombreArch
     )
     if coincidencia:
         codigo_afip, punto_venta, numero = coincidencia.groups()
-        letra = CODIGO_AFIP_A_LETRA.get(codigo_afip)
+        tipo_y_letra = CODIGO_AFIP_A_COMPROBANTE.get(codigo_afip)
+        tipo = tipo_y_letra[0] if tipo_y_letra else None
+        letra = tipo_y_letra[1] if tipo_y_letra else None
 
-        # Si el código no está en la tabla, no inferimos la letra. El número sí
-        # puede recuperarse porque su estructura es inequívoca.
+        # Si el código no está en la tabla, no inferimos tipo ni letra. El
+        # número sí puede recuperarse porque su estructura es inequívoca.
         return EvidenciaNombreArchivo(
+            tipo_comprobante=tipo,
             letra_comprobante=letra,
             numero_comprobante=_normalizar_numero(punto_venta, numero),
             metodo="nombre_con_codigo_afip",

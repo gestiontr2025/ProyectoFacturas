@@ -33,3 +33,12 @@
 - El código AFIP `011` se interpreta como Factura C.
 - Los datos del nombre solo completan campos faltantes; nunca reemplazan datos detectados dentro del PDF.
 - Se agregaron pruebas de regresión para archivos de ARTA y otros formatos reales.
+
+## Etapa 3.4 - Motor fiscal modular
+
+- Se creó el paquete `fiscal/` para separar detección de tipo, letra, número y fecha.
+- `invoice_parser.py` conserva su API pública y delega al nuevo motor.
+- Se agregó soporte probado para FCA, FCB, FCC, NCA, NCB, NCC, NDA, NDB y NDC.
+- La evidencia del nombre de archivo ahora reconoce tipo, letra y número.
+- Se incorporó la tabla de códigos AFIP 001/002/003, 006/007/008 y 011/012/013.
+- Se agregaron pruebas de regresión; la suite alcanza 22 pruebas exitosas.

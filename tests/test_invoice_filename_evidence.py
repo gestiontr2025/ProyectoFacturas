@@ -29,3 +29,19 @@ def test_nombre_factura_sin_letra_no_inventa_letra():
     evidencia = extraer_evidencia_nombre_archivo("Factura 0004-00219487.pdf")
     assert evidencia.letra_comprobante is None
     assert evidencia.numero_comprobante == "00004-00219487"
+
+
+def test_codigo_afip_nota_credito_a():
+    evidencia = extraer_evidencia_nombre_archivo(
+        "20123456789_003_00004_00000125.pdf"
+    )
+    assert evidencia.tipo_comprobante == "NOTA DE CREDITO"
+    assert evidencia.letra_comprobante == "A"
+    assert evidencia.numero_comprobante == "00004-00000125"
+
+
+def test_nombre_compacto_nota_debito_c():
+    evidencia = extraer_evidencia_nombre_archivo("NDC000400000125.pdf")
+    assert evidencia.tipo_comprobante == "NOTA DE DEBITO"
+    assert evidencia.letra_comprobante == "C"
+    assert evidencia.numero_comprobante == "00004-00000125"

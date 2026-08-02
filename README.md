@@ -61,3 +61,16 @@ python main.py --reprocess-pending
 Las facturas completas se moverán a su carpeta final. Las listas de precios se
 archivarán en `_OtrosDocumentos/Listas_de_precios`. Solo los documentos dudosos
 permanecerán en `_Pendientes`.
+
+## Motor de comprobantes fiscales
+
+La detección fiscal está separada en el paquete `fiscal/`:
+
+- `type_detector.py`: distingue factura, nota de crédito y nota de débito.
+- `letter.py`: detecta las letras A, B y C con contexto fiscal.
+- `number.py`: normaliza punto de venta y número como `00000-00000000`.
+- `issue_date.py`: detecta y valida la fecha de emisión.
+
+El proyecto contempla estas combinaciones: FCA, FCB, FCC, NCA, NCB, NCC,
+NDA, NDB y NDC. El contenido del PDF tiene prioridad; el nombre del archivo
+solo funciona como evidencia secundaria cuando faltan datos.
