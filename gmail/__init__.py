@@ -18,6 +18,7 @@ from gmail.mailboxes import encontrar_carpeta_todos
 from gmail.messages import (
     buscar_todos_los_correos,
     leer_correo,
+    obtener_identidad_correo,
     obtener_datos_correo,
 )
 
@@ -26,6 +27,7 @@ __all__ = [
     "encontrar_carpeta_todos",
     "buscar_todos_los_correos",
     "leer_correo",
+    "obtener_identidad_correo",
     "obtener_datos_correo",
     "obtener_adjuntos",
 ]

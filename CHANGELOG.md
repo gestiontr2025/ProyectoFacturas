@@ -1,4 +1,12 @@
 
+## Etapa 4.5 - Logging y documentación operativa
+
+- Se agregó logging diario configurable mediante `LOG_LEVEL` y `LOG_FOLDER`.
+- Se incorporó `COMMANDS.txt` con comandos, efectos y precauciones.
+- Se separaron dependencias de desarrollo en `requirements-dev.txt`.
+- Se agregó `pytest.ini` y pruebas para la configuración del logger.
+- Los paquetes de entrega ya no incluyen cachés generadas por Python o pytest.
+
 ## Etapa 3.5 - Formatos ARCA/Colppy y nombres comerciales
 
 - Se reconocen letras ubicadas antes del tipo, como `C FACTURA`.
@@ -81,3 +89,14 @@
 - Si la identidad fiscal coincide pero el contenido es diferente, se conservan ambas versiones y se informa un conflicto.
 - Se agregó `python main.py --deduplicate-invoices` como vista previa segura.
 - La eliminación real requiere confirmación explícita con `--apply`.
+
+## Etapa 4.6 — Historial incremental de Gmail
+
+- Se incorporó SQLite para recordar correos procesados entre ejecuciones.
+- Gmail usa `X-GM-MSGID` como identidad persistente y `Message-ID` como respaldo.
+- La ejecución normal omite correos ya completados.
+- Los correos que fallan quedan en estado `error` y pueden reintentarse.
+- Se agregó `--full-scan` para recorrer todo el buzón de forma reanudable.
+- Se agregó `--email-history` para consultar el estado local.
+- Se agregó `--reset-email-history` con confirmación obligatoria mediante `--apply`.
+- Los comandos locales pueden ejecutarse aunque las credenciales Gmail todavía no estén configuradas.

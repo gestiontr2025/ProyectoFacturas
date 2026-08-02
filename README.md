@@ -132,3 +132,53 @@ python main.py --deduplicate-invoices --apply
 ```
 
 Solo se elimina una copia cuando ambas producen exactamente la misma huella SHA-256. Si dos archivos comparten número fiscal pero su contenido es diferente, el proyecto conserva ambos para revisión manual.
+
+## Registro de actividad
+
+El proyecto conserva un log diario en `logs/YYYY-MM-DD.log` de forma predeterminada.
+El nivel y la ubicación pueden configurarse con `LOG_LEVEL` y `LOG_FOLDER` en `.env`.
+La referencia completa de comandos está disponible en `COMMANDS.txt`.
+
+## Historial incremental de Gmail
+
+El proyecto guarda en SQLite una identidad estable por correo procesado. Gmail
+expone `X-GM-MSGID`, que permanece estable aunque cambie la posición del mensaje
+en el buzón. Gracias a este historial, la ejecución diaria no vuelve a abrir los
+mismos correos una y otra vez.
+
+Estados principales:
+
+- `processed`: correo procesado con uno o más PDF.
+- `no_pdf`: correo revisado sin adjuntos PDF.
+- `error`: intento fallido que debe volver a intentarse.
+
+La ejecución normal usa `EMAIL_PROCESSING_LIMIT` y omite los correos completados:
+
+```powershell
+python main.py
+```
+
+Para la primera reconstrucción completa:
+
+```powershell
+python main.py --full-scan
+```
+
+El progreso se confirma después de cada correo. Si la computadora se apaga o la
+conexión falla, la siguiente ejecución continúa omitiendo lo ya completado.
+
+Para consultar el estado local:
+
+```powershell
+python main.py --email-history
+```
+
+El reinicio del historial requiere una confirmación explícita:
+
+```powershell
+python main.py --reset-email-history
+python main.py --reset-email-history --apply
+```
+
+Eliminar la carpeta `Facturas` no reinicia automáticamente el historial. Para
+reconstruir todo desde Gmail deben reiniciarse ambas cosas de manera consciente.

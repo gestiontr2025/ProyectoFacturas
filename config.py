@@ -55,6 +55,23 @@ SAVE_FOLDER = obtener_ruta_desde_entorno(
     DEFAULT_SAVE_FOLDER,
 )
 
+# Los logs se guardan fuera de la carpeta de facturas para que una tarea de
+# organización o deduplicación nunca los confunda con documentos comerciales.
+DEFAULT_LOG_FOLDER = PROJECT_ROOT / "logs"
+LOG_FOLDER = obtener_ruta_desde_entorno(
+    "LOG_FOLDER",
+    DEFAULT_LOG_FOLDER,
+)
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").strip().upper()
+
+# La base de estado se guarda fuera de Facturas. De esta manera, eliminar la
+# carpeta documental no borra accidentalmente el historial de Gmail.
+DEFAULT_STATE_DB_PATH = PROJECT_ROOT / "data" / "project_state.sqlite3"
+STATE_DB_PATH = obtener_ruta_desde_entorno(
+    "STATE_DB_PATH",
+    DEFAULT_STATE_DB_PATH,
+)
+
 
 def validar_configuracion() -> None:
     """Detectar configuraciones inválidas antes de conectarse a Gmail."""
@@ -79,5 +96,9 @@ def validar_configuracion() -> None:
             "EMAIL_PROCESSING_LIMIT debe ser un número mayor que cero."
         )
 
+    niveles_validos = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
+    if LOG_LEVEL not in niveles_validos:
+        raise ValueError(
+            "LOG_LEVEL debe ser DEBUG, INFO, WARNING, ERROR o CRITICAL."
+        )
 
-validar_configuracion()

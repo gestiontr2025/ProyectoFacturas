@@ -35,7 +35,7 @@ rutas ni otras configuraciones.
 # VERSIÓN ACTUAL DEL PROYECTO
 # ==========================================================
 
-PROJECT_VERSION = "0.14"
+PROJECT_VERSION = "0.15"
 
 
 # ==========================================================
