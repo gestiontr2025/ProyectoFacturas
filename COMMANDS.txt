@@ -243,3 +243,20 @@ Aplicar correcciones confirmadas:
 Revisa facturas con el formato estándar del proyecto. Si la fecha de emisión
 del PDF no coincide con la carpeta y el prefijo del archivo, propone o realiza
 el movimiento. Nunca reemplaza un archivo existente.
+
+14. EXPORTAR PERFIL IMPOSITIVO DE PROVEEDORES
+----------------------------------------------
+
+    python main.py --export-supplier-tax-profile
+
+Recorre las facturas ya organizadas, agrupa los resultados por CUIT y crea en
+el Escritorio un archivo llamado:
+
+    Perfil_Impositivo_Proveedores_AAAA-MM-DD.xlsx
+
+El Excel no muestra importes. Indica con Sí/No si en alguna factura del
+proveedor se observaron IVA 27%, IVA 21%, IVA 10,5%, percepción de IVA,
+percepción de IIBB CABA, percepción de IIBB Buenos Aires e impuestos internos.
+Un proveedor puede tener simultáneamente varias alícuotas de IVA marcadas como
+Sí. Los documentos de _Pendientes y _OtrosDocumentos no forman parte del
+reporte.

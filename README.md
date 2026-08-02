@@ -288,3 +288,14 @@ formen parte del catálogo recurrente. Sus apariciones se guardan localmente en
 `suppliers/data/supplier_catalog.json` y evita promover automáticamente compras
 únicas. A partir de tres comprobantes distintos se marca al emisor como candidato
 para revisión manual.
+
+## Exportar el perfil impositivo de proveedores
+
+```powershell
+python main.py --export-supplier-tax-profile
+```
+
+El comando analiza las facturas organizadas y crea en el Escritorio un Excel
+con una única fila por CUIT. Para cada proveedor indica si se observó alguna
+vez IVA 27%, IVA 21%, IVA 10,5%, percepción de IVA, percepción de IIBB CABA,
+percepción de IIBB Buenos Aires o impuestos internos. No exporta importes.

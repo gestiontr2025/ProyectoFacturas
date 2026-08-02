@@ -197,3 +197,12 @@
 - Las fechas asociadas a `F.VTO`, vencimiento o CAE permanecen excluidas.
 - Parser y auditor continúan usando el mismo extractor compartido.
 - Se agregaron pruebas de regresión con el caso real de Herrajes San Martín.
+
+## Etapa 5.9 — Perfil impositivo de proveedores
+
+- Se agregó `--export-supplier-tax-profile` para generar un Excel en el Escritorio.
+- El archivo contiene una sola fila por CUIT, sin duplicar proveedores.
+- Las alícuotas IVA 27%, 21% y 10,5% se acumulan de manera independiente entre todas las facturas del proveedor.
+- Se detecta presencia de percepción IVA, IIBB CABA, IIBB Buenos Aires e impuestos internos.
+- El reporte no suma ni expone importes: solo indica `Sí` o `No` para cada concepto observado.
+- La extracción tributaria se aisló en el paquete `taxes` y se agregaron pruebas de regresión.

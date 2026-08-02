@@ -17,6 +17,7 @@ from app.gmail_workflow import run_gmail_processing
 from app.pending_reprocessor import mostrar_resumen_reprocesamiento, reprocesar_pendientes
 from suppliers import normalize_supplier_folders
 from storage import audit_organized_invoice_dates, cleanup_exact_invoice_duplicates
+from taxes import export_supplier_tax_profile
 
 logger = get_logger(__name__)
 
@@ -48,6 +49,11 @@ def _crear_argumentos() -> argparse.Namespace:
         "--audit-organized-dates",
         action="store_true",
         help="Revisa fechas de facturas organizadas; requiere --apply para mover archivos.",
+    )
+    modes.add_argument(
+        "--export-supplier-tax-profile",
+        action="store_true",
+        help="Genera en el Escritorio un Excel con los impuestos observados por proveedor.",
     )
     modes.add_argument(
         "--email-history",
@@ -87,6 +93,10 @@ def main() -> None:
 
     if argumentos.audit_organized_dates:
         _run_date_audit(apply=argumentos.apply)
+        return
+
+    if argumentos.export_supplier_tax_profile:
+        _run_supplier_tax_profile_export()
         return
 
     history = EmailHistory(config.STATE_DB_PATH)
@@ -189,3 +199,16 @@ def _run_date_audit(*, apply: bool) -> None:
         if resultado.detail:
             print(f"Detalle: {resultado.detail}")
     print("\n" + "=" * 50)
+
+
+def _run_supplier_tax_profile_export() -> None:
+    """Generar el perfil impositivo acumulado de proveedores organizados."""
+    result = export_supplier_tax_profile(config.SAVE_FOLDER)
+    print("\n" + "=" * 50)
+    print("EXPORTACIÓN DEL PERFIL IMPOSITIVO")
+    print("=" * 50)
+    print(f"Facturas analizadas: {result.invoices_analyzed}")
+    print(f"Proveedores únicos: {result.suppliers}")
+    print(f"PDF omitidos por datos insuficientes o error: {result.invoices_skipped}")
+    print(f"Archivo generado: {result.output_path}")
+    print("=" * 50)
