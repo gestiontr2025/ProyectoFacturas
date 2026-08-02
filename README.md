@@ -82,3 +82,14 @@ fantasía. La razón social se conserva en el nombre del PDF, mientras que la
 carpeta puede usar el nombre comercial para resultar más fácil de reconocer.
 Por ejemplo, `ALL ONLINE SOLUTIONS S. A. U.` se organiza dentro de la carpeta
 `COLPPY`.
+
+## Modelos de dominio
+
+El proyecto utiliza modelos tipados dentro de `models/` para transportar datos
+entre módulos sin depender de diccionarios con claves escritas manualmente.
+La migración es progresiva: los adaptadores aceptan las estructuras históricas,
+lo cual permite mejorar la arquitectura sin romper el flujo ya probado.
+
+- `FiscalDocument`: datos fiscales y validación de campos obligatorios.
+- `Supplier`: identidad fiscal y nombre comercial del proveedor.
+- `ProcessingResult`: estado uniforme de una operación sobre un documento.

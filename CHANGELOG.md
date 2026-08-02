@@ -51,3 +51,10 @@
 - La evidencia del nombre de archivo ahora reconoce tipo, letra y número.
 - Se incorporó la tabla de códigos AFIP 001/002/003, 006/007/008 y 011/012/013.
 - Se agregaron pruebas de regresión; la suite alcanza 22 pruebas exitosas.
+
+## Etapa 4.1 - Modelos de dominio tipados
+
+- Se incorporaron `FiscalDocument`, `Supplier` y `ProcessingResult`.
+- El organizador adapta progresivamente las estructuras históricas a modelos tipados.
+- Se mantiene compatibilidad con las APIs anteriores para reducir el riesgo de regresiones.
+- Se agregaron pruebas de validación, adaptación y estados de procesamiento.
