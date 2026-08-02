@@ -129,6 +129,11 @@ from pypdf import PdfReader
 
 from pypdf.errors import PdfReadError
 
+try:
+    import fitz  # PyMuPDF: lector de respaldo para PDFs estructuralmente atípicos.
+except ImportError:  # La dependencia se valida solo cuando realmente hace falta.
+    fitz = None
+
 # ==========================================================
 # FIN DEL BLOQUE DE IMPORTACIONES
 # ==========================================================
@@ -444,9 +449,18 @@ def extraer_paginas_pdf(ruta_pdf):
         "texto" será una cadena vacía.
     """
 
-    lector = abrir_pdf(
-        ruta_pdf
-    )
+    try:
+        lector = abrir_pdf(ruta_pdf)
+    except PdfReadError:
+        if fitz is None:
+            raise
+        # PyMuPDF tolera algunos PDFs que pypdf rechaza por tablas xref o
+        # trailers no estándar. Es un respaldo textual, no OCR.
+        documento = fitz.open(str(validar_ruta_pdf(ruta_pdf)))
+        return [
+            {"numero": indice + 1, "texto": (pagina.get_text("text") or "").strip()}
+            for indice, pagina in enumerate(documento)
+        ]
 
     paginas_extraidas = []
 

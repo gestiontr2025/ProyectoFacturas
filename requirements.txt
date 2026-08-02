@@ -1,0 +1,5 @@
+python-dotenv
+pypdf
+openpyxl
+
+PyMuPDF>=1.24

@@ -116,3 +116,16 @@ venv/
 
 #ignorar carepotas facturas
 Facturas/
+# Registros generados durante la ejecución.
+logs/
+
+# Caché local de pytest.
+.pytest_cache/
+
+# Estado local de correos procesados. Cada instalación mantiene su propia base.
+data/*.sqlite3
+data/*.sqlite3-shm
+data/*.sqlite3-wal
+
+# Registro local y regenerable de proveedores ocasionales.
+data/supplier_candidates.json

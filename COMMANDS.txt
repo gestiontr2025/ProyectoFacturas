@@ -1,0 +1,262 @@
+PROYECTO FACTURAS - GUÍA DE COMANDOS
+====================================
+
+Este archivo resume los comandos disponibles, qué hace cada uno y si modifica
+archivos. Ejecutalos desde la carpeta raíz del proyecto.
+
+
+1. INSTALACIÓN INICIAL
+----------------------
+
+Crear un entorno virtual:
+
+    python -m venv .venv
+
+Activarlo en PowerShell:
+
+    .venv\Scripts\Activate.ps1
+
+Instalar dependencias de uso normal:
+
+    python -m pip install -r requirements.txt
+
+Instalar también herramientas de desarrollo y pruebas:
+
+    python -m pip install -r requirements-dev.txt
+
+Crear la configuración local a partir de la plantilla:
+
+    Copy-Item .env.example .env
+
+Después hay que editar .env y completar EMAIL y APP_PASSWORD.
+
+
+2. EJECUCIÓN NORMAL
+-------------------
+
+    python main.py
+
+Se conecta a Gmail, revisa la cantidad de correos definida mediante
+EMAIL_PROCESSING_LIMIT, descarga PDFs, los clasifica y organiza las facturas.
+Puede crear, mover y renombrar archivos.
+
+
+3. REPROCESAR DOCUMENTOS PENDIENTES
+-----------------------------------
+
+    python main.py --reprocess-pending
+
+Analiza nuevamente los PDFs que ya están en Facturas/_Pendientes. No se conecta
+a Gmail. Puede organizar facturas, archivar otros documentos o eliminar una
+copia temporal solamente cuando existe otra copia idéntica verificada por hash.
+
+
+4. NORMALIZAR CARPETAS DE PROVEEDORES
+-------------------------------------
+
+    python main.py --normalize-supplier-folders
+
+Reúne carpetas históricas que representan al mismo proveedor, por ejemplo
+DISTRIBUIDORA_EL_CRIOLLO_SRL y EL_CRIOLLO. No sobrescribe archivos distintos.
+
+
+5. BUSCAR FACTURAS DUPLICADAS - VISTA PREVIA
+--------------------------------------------
+
+    python main.py --deduplicate-invoices
+
+Busca PDFs idénticos mediante SHA-256 y muestra qué copia conservaría. Este modo
+NO elimina ningún archivo.
+
+
+6. ELIMINAR FACTURAS DUPLICADAS CONFIRMADAS
+-------------------------------------------
+
+    python main.py --deduplicate-invoices --apply
+
+Aplica la limpieza mostrada en la vista previa. Solo elimina archivos cuyo
+contenido sea exactamente idéntico a otra copia conservada.
+
+
+7. PRUEBAS AUTOMÁTICAS
+----------------------
+
+Ejecutar la suite completa:
+
+    python -m pytest -q
+
+Mostrar más detalle:
+
+    python -m pytest -v
+
+Ejecutar un archivo de pruebas específico:
+
+    python -m pytest tests/test_invoice_deduplication.py -v
+
+
+8. LOGS
+-------
+
+Cada ejecución crea o actualiza un archivo diario en la carpeta configurada por
+LOG_FOLDER. Si la variable está vacía, se usa:
+
+    <carpeta_del_proyecto>/logs/YYYY-MM-DD.log
+
+LOG_LEVEL controla el detalle: DEBUG, INFO, WARNING, ERROR o CRITICAL.
+
+
+9. COMANDOS GIT HABITUALES
+--------------------------
+
+Ver el estado actual:
+
+    git status
+
+Preparar todos los cambios:
+
+    git add .
+
+Crear un commit:
+
+    git commit -m "tipo: descripción clara del cambio"
+
+Subir la rama actual:
+
+    git push origin feature/invoice-parser
+
+Ver los últimos commits:
+
+    git log --oneline -5
+
+
+10. ORDEN SEGURO RECOMENDADO
+----------------------------
+
+Antes de confirmar una actualización:
+
+    python -m pytest -q
+    git status
+    git add .
+    git commit -m "tipo: descripción"
+    git push origin feature/invoice-parser
+
+Antes de eliminar duplicados:
+
+    python main.py --deduplicate-invoices
+    python main.py --deduplicate-invoices --apply
+
+11. HISTORIAL PERSISTENTE DE CORREOS
+------------------------------------
+
+Ejecución diaria incremental:
+
+    python main.py
+
+Revisa únicamente la ventana definida por EMAIL_PROCESSING_LIMIT y omite los
+correos que ya terminaron correctamente en una ejecución anterior. Los errores
+quedan registrados y pueden volver a intentarse automáticamente.
+
+Escaneo completo de Gmail:
+
+    python main.py --full-scan
+
+Recorre todo el historial de correos, desde el más reciente al más antiguo, y
+omite los mensajes ya completados. El progreso se guarda después de cada correo,
+por lo que una interrupción no obliga a comenzar otra vez desde cero.
+
+Mostrar el estado del historial:
+
+    python main.py --email-history
+
+Este comando no modifica archivos ni se conecta a Gmail.
+
+Vista previa del reinicio:
+
+    python main.py --reset-email-history
+
+Reiniciar realmente el historial:
+
+    python main.py --reset-email-history --apply
+
+ADVERTENCIA: después de reiniciar, el programa considerará nuevos todos los
+correos. La deduplicación protege los PDFs idénticos, pero la próxima ejecución
+puede tardar bastante más.
+
+Para reconstruir Facturas desde cero:
+
+    1. Ejecutar --reset-email-history y revisar la vista previa.
+    2. Ejecutar --reset-email-history --apply.
+    3. Eliminar o respaldar manualmente la carpeta Facturas.
+    4. Ejecutar python main.py --full-scan.
+
+La base se guarda por defecto en:
+
+    <proyecto>/data/project_state.sqlite3
+
+No debe subirse a GitHub porque pertenece a una instalación concreta.
+
+12. CLASIFICACIÓN AMPLIADA DE PENDIENTES
+-----------------------------------------
+
+    python main.py --reprocess-pending
+
+Además de facturas, listas y pagos, este comando reconoce documentos de Recursos
+Humanos, retenciones, estados de cuenta, menús, instructivos y administrativos.
+Solo archiva automáticamente cuando la evidencia es alta y no ambigua. Al final
+muestra un resumen agrupado por estado.
+
+13. ACTUALIZAR EL CATÁLOGO DE PROVEEDORES DESDE AFIP/ARCA
+---------------------------------------------------------
+
+Instalar primero las dependencias actualizadas:
+
+    python -m pip install -r requirements.txt
+
+Generar el catálogo desde un Excel de comprobantes recibidos:
+
+    python tools/import_afip_suppliers.py "C:\ruta\Mis Comprobantes Recibidos.xlsx"
+
+El importador incluye por defecto únicamente emisores con dos o más
+comprobantes. El Excel no necesita quedar dentro del proyecto. El programa
+principal utiliza después:
+
+    suppliers/data/supplier_catalog.json
+
+Para utilizar otro mínimo:
+
+    python tools/import_afip_suppliers.py "C:\ruta\archivo.xlsx" --min-occurrences 3
+
+Después de actualizar el catálogo:
+
+    python -m pytest -q
+    python main.py --reprocess-pending
+
+
+AUDITORÍA DE FECHAS YA ORGANIZADAS
+----------------------------------
+Vista previa segura:
+    python main.py --audit-organized-dates
+
+Aplicar correcciones confirmadas:
+    python main.py --audit-organized-dates --apply
+
+Revisa facturas con el formato estándar del proyecto. Si la fecha de emisión
+del PDF no coincide con la carpeta y el prefijo del archivo, propone o realiza
+el movimiento. Nunca reemplaza un archivo existente.
+
+14. EXPORTAR PERFIL IMPOSITIVO DE PROVEEDORES
+----------------------------------------------
+
+    python main.py --export-supplier-tax-profile
+
+Recorre las facturas ya organizadas, agrupa los resultados por CUIT y crea en
+el Escritorio un archivo llamado:
+
+    Perfil_Impositivo_Proveedores_AAAA-MM-DD.xlsx
+
+El Excel no muestra importes. Indica con Sí/No si en alguna factura del
+proveedor se observaron IVA 27%, IVA 21%, IVA 10,5%, percepción de IVA,
+percepción de IIBB CABA, percepción de IIBB Buenos Aires e impuestos internos.
+Un proveedor puede tener simultáneamente varias alícuotas de IVA marcadas como
+Sí. Los documentos de _Pendientes y _OtrosDocumentos no forman parte del
+reporte.
