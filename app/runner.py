@@ -16,7 +16,7 @@ import config
 from app.gmail_workflow import run_gmail_processing
 from app.pending_reprocessor import mostrar_resumen_reprocesamiento, reprocesar_pendientes
 from suppliers import normalize_supplier_folders
-from storage import cleanup_exact_invoice_duplicates
+from storage import audit_organized_invoice_dates, cleanup_exact_invoice_duplicates
 
 logger = get_logger(__name__)
 
@@ -43,6 +43,11 @@ def _crear_argumentos() -> argparse.Namespace:
         "--deduplicate-invoices",
         action="store_true",
         help="Busca copias idénticas entre facturas ya organizadas.",
+    )
+    modes.add_argument(
+        "--audit-organized-dates",
+        action="store_true",
+        help="Revisa fechas de facturas organizadas; requiere --apply para mover archivos.",
     )
     modes.add_argument(
         "--email-history",
@@ -78,6 +83,10 @@ def main() -> None:
 
     if argumentos.normalize_supplier_folders:
         _run_supplier_normalization()
+        return
+
+    if argumentos.audit_organized_dates:
+        _run_date_audit(apply=argumentos.apply)
         return
 
     history = EmailHistory(config.STATE_DB_PATH)
@@ -157,6 +166,26 @@ def _run_supplier_normalization() -> None:
         print(f"\nEstado: {resultado.status}")
         print(f"Origen: {resultado.source}")
         print(f"Destino: {resultado.destination}")
+        if resultado.detail:
+            print(f"Detalle: {resultado.detail}")
+    print("\n" + "=" * 50)
+
+
+def _run_date_audit(*, apply: bool) -> None:
+    resultados = audit_organized_invoice_dates(config.SAVE_FOLDER, apply=apply)
+    print("\n" + "=" * 50)
+    print("AUDITORÍA DE FECHAS ORGANIZADAS")
+    print("=" * 50)
+    if not resultados:
+        print("No se encontraron facturas con fechas inconsistentes.")
+    elif not apply:
+        print("Modo vista previa: no se movió ningún archivo.")
+        print("Usá --audit-organized-dates --apply para confirmar.")
+    for resultado in resultados:
+        print(f"\nEstado: {resultado.status}")
+        print(f"Origen: {resultado.source}")
+        if resultado.destination:
+            print(f"Destino: {resultado.destination}")
         if resultado.detail:
             print(f"Detalle: {resultado.detail}")
     print("\n" + "=" * 50)

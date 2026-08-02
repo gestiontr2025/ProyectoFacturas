@@ -46,3 +46,23 @@ def test_same_name_different_content_keeps_both(tmp_path: Path):
     assert result.destination.name == "orden_2.pdf"
     assert result.destination.read_bytes() == b"new order"
     assert existing.read_bytes() == b"old order"
+
+
+def test_archiva_documento_rrhh_en_subcarpeta_especifica(tmp_path: Path):
+    pending = tmp_path / "_Pendientes"
+    pending.mkdir()
+    document = pending / "liquidacion.pdf"
+    document.write_bytes(b"payroll")
+
+    result = archivar_otro_documento(
+        document, tmp_path, TipoDocumento.RRHH_LIQUIDACIONES
+    )
+
+    assert result.destination == (
+        tmp_path
+        / "_OtrosDocumentos"
+        / "Recursos_Humanos"
+        / "Liquidaciones"
+        / "liquidacion.pdf"
+    )
+    assert result.destination.exists()

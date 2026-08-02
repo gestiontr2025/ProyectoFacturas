@@ -7,6 +7,9 @@ nuevos resultados para la siguiente etapa del proceso.
 
 import pdf_reader
 import supplier_detector
+import supplier_catalog
+from suppliers.filename_evidence import detectar_identificador_por_nombre
+from suppliers.content_evidence import detectar_identificador_por_contenido
 
 LIMITE_VISTA_PREVIA_PDF = 500
 
@@ -195,6 +198,33 @@ def detectar_proveedores_pdf(resultados_lectura):
                 f"{texto_completo}\n\n"
                 f"NOMBRE ORIGINAL DEL ARCHIVO: {nombre}"
             )
+
+            # Algunos encabezados son gráficos y no llegan al texto extraído.
+            # Una regla de nombre altamente específica puede aportar el alias
+            # canónico, sin reemplazar evidencia fiscal presente en el PDF.
+            identificador_nombre = detectar_identificador_por_nombre(nombre)
+            if identificador_nombre:
+                proveedor_nombre = supplier_catalog.obtener_proveedor_por_identificador(
+                    identificador_nombre
+                )
+                if proveedor_nombre:
+                    texto_para_deteccion += (
+                        f"\nEVIDENCIA CANONICA POR NOMBRE: "
+                        f"{proveedor_nombre.razon_social}"
+                    )
+
+            identificador_contenido = detectar_identificador_por_contenido(
+                texto_completo
+            )
+            if identificador_contenido:
+                proveedor_contenido = supplier_catalog.obtener_proveedor_por_identificador(
+                    identificador_contenido
+                )
+                if proveedor_contenido:
+                    texto_para_deteccion += (
+                        f"\nEVIDENCIA CANONICA POR FIRMA TEXTUAL: "
+                        f"{proveedor_contenido.razon_social}"
+                    )
             resultado_proveedor = supplier_detector.detectar_proveedor(
                 texto_para_deteccion
             )

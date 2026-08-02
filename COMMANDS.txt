@@ -194,3 +194,52 @@ La base se guarda por defecto en:
     <proyecto>/data/project_state.sqlite3
 
 No debe subirse a GitHub porque pertenece a una instalación concreta.
+
+12. CLASIFICACIÓN AMPLIADA DE PENDIENTES
+-----------------------------------------
+
+    python main.py --reprocess-pending
+
+Además de facturas, listas y pagos, este comando reconoce documentos de Recursos
+Humanos, retenciones, estados de cuenta, menús, instructivos y administrativos.
+Solo archiva automáticamente cuando la evidencia es alta y no ambigua. Al final
+muestra un resumen agrupado por estado.
+
+13. ACTUALIZAR EL CATÁLOGO DE PROVEEDORES DESDE AFIP/ARCA
+---------------------------------------------------------
+
+Instalar primero las dependencias actualizadas:
+
+    python -m pip install -r requirements.txt
+
+Generar el catálogo desde un Excel de comprobantes recibidos:
+
+    python tools/import_afip_suppliers.py "C:\ruta\Mis Comprobantes Recibidos.xlsx"
+
+El importador incluye por defecto únicamente emisores con dos o más
+comprobantes. El Excel no necesita quedar dentro del proyecto. El programa
+principal utiliza después:
+
+    suppliers/data/supplier_catalog.json
+
+Para utilizar otro mínimo:
+
+    python tools/import_afip_suppliers.py "C:\ruta\archivo.xlsx" --min-occurrences 3
+
+Después de actualizar el catálogo:
+
+    python -m pytest -q
+    python main.py --reprocess-pending
+
+
+AUDITORÍA DE FECHAS YA ORGANIZADAS
+----------------------------------
+Vista previa segura:
+    python main.py --audit-organized-dates
+
+Aplicar correcciones confirmadas:
+    python main.py --audit-organized-dates --apply
+
+Revisa facturas con el formato estándar del proyecto. Si la fecha de emisión
+del PDF no coincide con la carpeta y el prefijo del archivo, propone o realiza
+el movimiento. Nunca reemplaza un archivo existente.

@@ -13,6 +13,7 @@ from datetime import datetime
 
 import business_config
 
+from fiscal.definitions import build_fiscal_code
 from invoices.text_normalization import normalizar_componente_ruta, quitar_tipo_societario
 
 FORMATOS_FECHA_ADMITIDOS = ("%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d")
@@ -34,23 +35,18 @@ def construir_codigo_comprobante(tipo: str, letra: str, numero: str) -> str:
     ``invoice_parser`` suele devolver ``FACTURA``, ``A`` y
     ``00006-00343487``. El código esperado es ``FCA00006-00343487``.
     """
-    abreviaturas = {
-        "FACTURA": "FC",
-        "NOTA DE CREDITO": "NC",
-        "NOTA DE DÉBITO": "ND",
-        "NOTA DE DEBITO": "ND",
-        "RECIBO": "RC",
-    }
-    tipo_normalizado = normalizar_componente_ruta(tipo, "")
-    tipo_legible = tipo_normalizado.replace("_", " ")
-    prefijo = abreviaturas.get(tipo_legible, tipo_normalizado.replace("_", ""))
+    tipo_normalizado = normalizar_componente_ruta(tipo, "").replace("_", " ")
     letra_limpia = normalizar_componente_ruta(letra, "").replace("_", "")
     numero_limpio = str(numero or "").strip().replace(" ", "")
+    codigo_fiscal = build_fiscal_code(tipo_normalizado, letra_limpia)
 
-    if not prefijo or not letra_limpia or not numero_limpio:
-        raise ValueError("Faltan datos para construir el código del comprobante.")
+    if not codigo_fiscal or not numero_limpio:
+        raise ValueError(
+            "El tipo, la letra y el número no forman un comprobante fiscal "
+            "soportado por el proyecto."
+        )
 
-    return f"{prefijo}{letra_limpia}{numero_limpio}"
+    return f"{codigo_fiscal}{numero_limpio}"
 
 
 def construir_nombre_factura(datos_factura, razon_social_proveedor: str) -> str:

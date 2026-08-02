@@ -9,9 +9,14 @@ import invoice_parser
 from documents import TipoDocumento, clasificar_documento
 from documents.organizer import archivar_lista_precios
 from invoices.filename_builder import construir_nombre_factura
+from fiscal.issue_date import detectar_fecha_emision
 from invoices.filename_evidence import extraer_evidencia_nombre_archivo
+from invoices.validated_file_overrides import get_validated_issue_date
 from invoices.organizer import construir_carpeta_final, mover_a_destino_final
 from models import FiscalDocument, Supplier
+
+from suppliers.ad_hoc import detectar_emisor_no_recurrente
+from suppliers.candidates import registrar_proveedor_ocasional
 
 from invoices.supplier_naming import (
     obtener_nombre_para_carpeta,
@@ -83,20 +88,79 @@ def procesar_factura(ruta_pdf, texto: str, resultado_proveedor: dict, carpeta_ra
     documento = FiscalDocument.from_legacy(datos)
     proveedor = Supplier.from_detection_result(resultado_proveedor)
 
+    # Una compra ocasional no debe incorporarse al catálogo recurrente, pero
+    # una factura válida tampoco debe quedar bloqueada. Si el detector normal
+    # no encontró proveedor, usamos únicamente firmas inequívocas del
+    # encabezado fiscal y construimos una identidad efímera.
+    if not proveedor.detected:
+        resultado_ocasional = detectar_emisor_no_recurrente(
+            texto,
+            datos.cuit_emisor,
+            ruta_pdf.name,
+        )
+        if resultado_ocasional is not None:
+            resultado_proveedor = resultado_ocasional
+            proveedor = Supplier.from_detection_result(resultado_proveedor)
+
     # El contenido del PDF es la fuente principal. Solo cuando el parser no
     # pudo obtener la letra o el número consultamos el nombre original como
     # evidencia secundaria. Nunca reemplazamos un dato ya detectado dentro de
     # la factura, porque el contenido fiscal tiene mayor autoridad.
     evidencia_nombre = extraer_evidencia_nombre_archivo(ruta_pdf.name)
 
-    if not datos.tipo_comprobante and evidencia_nombre.tipo_comprobante:
+    # Los métodos siguientes corresponden a nombres generados por sistemas de
+    # facturación y contienen de forma explícita tipo, letra, punto de venta y
+    # número. Cuando el PDF produce una capa de texto vertical, los detectores
+    # genéricos pueden leer falsos positivos; en esos casos la evidencia
+    # estructurada del nombre tiene mayor confiabilidad y puede corregirlos.
+    metodos_nombre_estructurado = {
+        "nombre_con_tipo_letra_y_numero",
+        "nombre_fac_compacto",
+        "nombre_factura_descriptiva",
+        "nombre_fcvta",
+        "nombre_nota_descriptiva",
+        "nombre_nd_compacto",
+        "nombre_con_codigo_afip",
+        "nombre_fact_sap_compacto",
+    }
+    nombre_es_estructurado = evidencia_nombre.metodo in metodos_nombre_estructurado
+
+    if evidencia_nombre.tipo_comprobante and (
+        nombre_es_estructurado or not datos.tipo_comprobante
+    ):
         datos.tipo_comprobante = evidencia_nombre.tipo_comprobante
 
-    if not datos.letra_comprobante and evidencia_nombre.letra_comprobante:
+    if evidencia_nombre.letra_comprobante and (
+        nombre_es_estructurado or not datos.letra_comprobante
+    ):
         datos.letra_comprobante = evidencia_nombre.letra_comprobante
 
-    if not datos.numero_comprobante and evidencia_nombre.numero_comprobante:
+    if evidencia_nombre.numero_comprobante and (
+        nombre_es_estructurado or not datos.numero_comprobante
+    ):
         datos.numero_comprobante = evidencia_nombre.numero_comprobante
+
+    # Algunos sistemas dibujan el encabezado como imagen. El texto extraído
+    # conserva la fecha, pero pierde la palabra FACTURA. Si el nombre ya aportó
+    # tipo, letra y número de manera inequívoca, habilitamos un último respaldo
+    # para recuperar la primera fecha válida del contenido.
+    if (
+        not datos.fecha_emision
+        and datos.tipo_comprobante
+        and datos.letra_comprobante
+        and datos.numero_comprobante
+    ):
+        datos.fecha_emision = detectar_fecha_emision(
+            texto,
+            contexto_fiscal_confirmado=True,
+        )
+
+    # Una capa de texto vertical puede conservar únicamente el vencimiento y
+    # perder la etiqueta de emisión. Las excepciones verificadas manualmente
+    # tienen prioridad sobre una fecha secundaria extraída automáticamente.
+    fecha_validada = get_validated_issue_date(ruta_pdf.name)
+    if fecha_validada:
+        datos.fecha_emision = fecha_validada
 
     # La evidencia del nombre puede completar campos del objeto histórico.
     # Reconstruimos el modelo para que refleje esos cambios antes de validar.
@@ -124,6 +188,29 @@ def procesar_factura(ruta_pdf, texto: str, resultado_proveedor: dict, carpeta_ra
         carpeta_raiz, nombre_carpeta, datos.fecha_emision
     )
     ruta_final = mover_a_destino_final(ruta_pdf, carpeta_final, nombre_final)
+
+    # Los emisores ocasionales se registran en un archivo auxiliar separado del
+    # catálogo canónico. El identificador fiscal evita contar dos veces el
+    # mismo comprobante si se vuelve a ejecutar el reprocesamiento.
+    if proveedor.detection_method in {
+        "encabezado_fiscal_no_persistente",
+        "nombre_archivo_validado_no_persistente",
+    } and proveedor.cuit:
+        document_key = "|".join(
+            value or ""
+            for value in (
+                documento.issue_date,
+                documento.document_type,
+                documento.fiscal_letter,
+                documento.document_number,
+            )
+        )
+        registrar_proveedor_ocasional(
+            cuit=proveedor.cuit,
+            business_name=proveedor.legal_name or proveedor.display_name or "PROVEEDOR OCASIONAL",
+            document_key=document_key,
+            folder_name=nombre_carpeta,
+        )
 
     return ResultadoOrganizacion(
         organizada=True,

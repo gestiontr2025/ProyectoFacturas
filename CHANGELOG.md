@@ -1,3 +1,55 @@
+## Etapa 5.8
+
+- Corregida la auditoría de fechas para PDF cuyo texto expone un carácter por línea.
+- La fecha compacta inmediatamente posterior a la identidad fiscal ahora tiene prioridad sobre F.VTO/CAE.
+- Agregada prueba de regresión basada en la extracción real de Herrajes San Martín.
+
+## 0.21 — Etapa 5.4: cierre defensivo de pendientes
+
+- Se dio precedencia a documentos no fiscales explícitos antes del parser de facturas.
+- Los recibos X `RDRC`, transferencias, instructivos y listas verticales se archivan correctamente.
+- Se agregó soporte para nombres SAP `FACT_A002600360215`.
+- Las fechas textuales, como `12 DE MAYO DE 2026`, se normalizan como emisión.
+- Se excluyen fechas de inicio de actividades, vencimiento, CAE y entrega.
+- Los códigos `TIPO 01/06/11` pueden aportar la letra fiscal cuando el tipo ya fue confirmado.
+- Se incorporó `--audit-organized-dates` para detectar y reparar fechas históricas incorrectas de forma segura.
+- Suite validada con 116 pruebas automatizadas.
+
+
+## Etapa 5.3 — cierre de familias pendientes
+
+- Proveedores recurrentes nuevos: Souverain/Buenos Ayres Vinos, Fratelli Branca y La Agrícola.
+- Emisores ocasionales se reconocen desde el encabezado sin incorporarlos al catálogo JSON.
+- Clasificación de ABL, instructivos, documentos operativos, consorcio, recibos y transferencias.
+- Segundo lector PDF con PyMuPDF para estructuras que pypdf rechaza.
+- Nuevas familias: El Nuevo Emporio FACA/NCB y FCVTA de Souverain.
+
+# Changelog
+
+## 0.20 — Etapa 5.1
+
+- Se agregó recuperación defensiva de fechas en PDF cuya capa de texto separa cada carácter por saltos de línea.
+- Los nombres fiscales estructurados ahora pueden corregir falsos positivos de tipo, letra y número detectados en texto degradado.
+- Se incorporó soporte para las familias FACA de GIFEL, FACB de El Nuevo Emporio y CA de Frigorífico Los Prados.
+- Se agregó GIFEL S.R.L. al catálogo JSON como proveedor recurrente validado.
+- Los documentos `INV-*` con `Recibo X` se archivan como remitos/recibos no fiscales.
+- Las comunicaciones institucionales se archivan en `_OtrosDocumentos/Comunicaciones`.
+- Se reforzó la detección de altas ARCA con varios empleados.
+- Se eliminaron patrones demasiado amplios de `N C` y `N D` que podían generar falsos positivos en texto vertical.
+- Suite validada con 95 pruebas automatizadas.
+
+# Historial de cambios
+
+## Etapa 5.0 — Definiciones fiscales y coordinador único
+
+- Se centralizaron las nueve combinaciones prioritarias: FCA, FCB, FCC, NCA, NCB, NCC, NDA, NDB y NDC.
+- Se creó `fiscal/definitions.py` como fuente única de letras, tipos, prefijos y códigos AFIP/ARCA.
+- Se incorporó `FiscalHeaderAnalysis`, que reúne tipo, letra, número, fecha, código fiscal y advertencias.
+- `invoice_parser.py` utiliza ahora un coordinador fiscal único en vez de ejecutar cuatro detectores desconectados.
+- `FiscalDocument`, `filename_builder.py` y la evidencia por nombre comparten las mismas definiciones centrales.
+- Se reforzó el reconocimiento de abreviaturas compactas como FCA, FCB, FCC, NCA, NCB y NDC.
+- Se mantuvieron las fachadas históricas para evitar romper imports existentes.
+- La suite alcanza 88 pruebas automáticas exitosas.
 
 ## Etapa 4.5 - Logging y documentación operativa
 
@@ -100,3 +152,48 @@
 - Se agregó `--email-history` para consultar el estado local.
 - Se agregó `--reset-email-history` con confirmación obligatoria mediante `--apply`.
 - Los comandos locales pueden ejecutarse aunque las credenciales Gmail todavía no estén configuradas.
+
+## Etapa 4.7 — Clasificación documental ampliada
+
+- El clasificador se dividió en reglas modulares para Recursos Humanos, documentos comerciales y administrativos.
+- Se agregaron categorías para altas y bajas, liquidaciones, recibos/legajos, retenciones, estados de cuenta, menús/cartas, instructivos y documentos administrativos.
+- Las decisiones automáticas usan puntajes, umbral mínimo y margen de separación para evitar clasificaciones ambiguas.
+- `_Pendientes` queda reservado para facturas incompletas, documentos desconocidos y errores reales.
+- `--reprocess-pending` muestra ahora un resumen agrupado por resultado.
+- La suite alcanza 62 pruebas automáticas.
+
+
+## Etapa 4.8 — Nuevas familias fiscales reales
+
+- Se agregaron proveedores Bartoszuk Gonzalo Andrés y Establecimiento Don Pacho 2024.
+- Se corrigió el CUIT canónico de Cantine S.R.L. según una factura real y se agregó el alias IVINI.
+- Se incorporaron patrones para FACA, FACB, factura ARCA, FCVTA y notas de débito/crédito descriptivas.
+- Se agregó evidencia modular por nombre para la familia de adjuntos de Frigorífico Los Prados cuyo encabezado no es extraíble.
+- El OCR de documentos escaneados continúa como fallback futuro; no se introdujo una dependencia externa en esta etapa.
+- Se añadieron pruebas de regresión basadas en las familias encontradas durante el escaneo completo.
+
+## Etapa 5.5 — Bandeja manual y proveedores ocasionales
+
+- Se completó la detección de CEAMSE y Herrajes San Martín como emisores ocasionales.
+- `_Pendientes` continúa funcionando como bandeja manual: cualquier PDF copiado allí puede reprocesarse sin haber pasado por Gmail.
+- Se agregó un registro local de candidatos en `data/supplier_candidates.json`.
+- El registro evita contar dos veces el mismo comprobante y sugiere revisión al alcanzar tres apariciones.
+- Los candidatos no se incorporan automáticamente a `supplier_catalog.json`.
+- Se añadieron pruebas defensivas para CUIT, encabezados y conteo idempotente.
+
+
+## Etapa 5.6 — Corrección final de CEAMSE
+
+- La detección de proveedores ocasionales ahora busca el CUIT canónico en todo el texto del PDF.
+- Se corrige el caso en que el parser fiscal invierte emisor y receptor porque el diseño imprime primero los datos del cliente.
+- CEAMSE se reconoce por CUIT exacto o razón social normalizada aunque `cuit_emisor` contenga temporalmente el CUIT de Madero Roof.
+- Se agregó una prueba de regresión basada en el recorrido real de `48850 (2).pdf`.
+
+
+## Etapa 5.7 — Auditoría conservadora de fechas
+
+- Se corrigió la lectura de comprobantes legacy cuya fecha de emisión aparece sin etiqueta inmediatamente después de la identidad fiscal.
+- El patrón `B 00021-00001477 08 07 25` se interpreta como emisión 08/07/2025.
+- Las fechas asociadas a `F.VTO`, vencimiento o CAE permanecen excluidas.
+- Parser y auditor continúan usando el mismo extractor compartido.
+- Se agregaron pruebas de regresión con el caso real de Herrajes San Martín.

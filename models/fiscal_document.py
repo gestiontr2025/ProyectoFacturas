@@ -15,14 +15,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import Any, Mapping, Optional
 
-
-_TIPO_A_PREFIJO = {
-    "FACTURA": "FC",
-    "NOTA DE CREDITO": "NC",
-    "NOTA DE DÉBITO": "ND",
-    "NOTA DE DEBITO": "ND",
-    "RECIBO": "RC",
-}
+from fiscal.definitions import SUPPORTED_LETTERS, build_fiscal_code
 
 
 @dataclass
@@ -104,12 +97,7 @@ class FiscalDocument:
     @property
     def fiscal_code(self) -> Optional[str]:
         """Construir FCA, NCB, NDC, etc., cuando tipo y letra son válidos."""
-        tipo = str(self.document_type or "").strip().upper()
-        letra = str(self.fiscal_letter or "").strip().upper()
-        prefijo = _TIPO_A_PREFIJO.get(tipo)
-        if not prefijo or letra not in {"A", "B", "C"}:
-            return None
-        return f"{prefijo}{letra}"
+        return build_fiscal_code(self.document_type, self.fiscal_letter)
 
     def missing_required_fields(self, *, require_supplier: bool = False, supplier_present: bool = False) -> list[str]:
         """Enumerar campos obligatorios ausentes para organizar el archivo."""
@@ -129,7 +117,7 @@ class FiscalDocument:
     def validate_values(self) -> list[str]:
         """Detectar valores presentes pero inválidos sin lanzar excepciones."""
         errores: list[str] = []
-        if self.fiscal_letter and self.fiscal_letter.upper() not in {"A", "B", "C"}:
+        if self.fiscal_letter and self.fiscal_letter.upper() not in SUPPORTED_LETTERS:
             errores.append(f"Letra fiscal no admitida: {self.fiscal_letter!r}")
         if self.issue_date:
             formatos = ("%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d")

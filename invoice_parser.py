@@ -91,6 +91,7 @@ from datetime import datetime
 from typing import Optional
 
 from fiscal import (
+    analizar_encabezado_fiscal as _analizar_encabezado_fiscal,
     detectar_fecha_emision as _detectar_fecha_fiscal,
     detectar_letra_comprobante as _detectar_letra_fiscal,
     detectar_numero_comprobante as _detectar_numero_fiscal,
@@ -311,6 +312,7 @@ class ResultadoParseoFactura:
     datos: DatosFactura
     mensaje: str
     texto_normalizado: str = ""
+    analisis_fiscal: object | None = None
 
 
     # ------------------------------------------------------
@@ -334,6 +336,11 @@ class ResultadoParseoFactura:
             "mensaje": self.mensaje,
             "datos": self.datos.convertir_a_diccionario(),
             "texto_normalizado": self.texto_normalizado,
+            "analisis_fiscal": (
+                self.analisis_fiscal.to_dict()
+                if hasattr(self.analisis_fiscal, "to_dict")
+                else self.analisis_fiscal
+            ),
         }
 
     # ------------------------------------------------------
@@ -1837,19 +1844,17 @@ def extraer_datos_factura(
         texto_normalizado
     )
 
+    # Tipo, letra, número y fecha forman un mismo encabezado fiscal.
+    # Se analizan mediante un coordinador único para que el resto del parser
+    # reciba un resultado coherente y pueda conocer advertencias o el nombre
+    # de la estrategia utilizada sin volver a ejecutar detectores dispersos.
+    analisis_fiscal = _analizar_encabezado_fiscal(texto_normalizado)
+
     datos = DatosFactura(
-        tipo_comprobante=detectar_tipo_comprobante(
-            texto_normalizado
-        ),
-        letra_comprobante=detectar_letra_comprobante(
-            texto_normalizado
-        ),
-        numero_comprobante=detectar_numero_comprobante(
-            texto_normalizado
-        ),
-        fecha_emision=detectar_fecha_emision(
-            texto_normalizado
-        ),
+        tipo_comprobante=analisis_fiscal.document_type,
+        letra_comprobante=analisis_fiscal.fiscal_letter,
+        numero_comprobante=analisis_fiscal.document_number,
+        fecha_emision=analisis_fiscal.issue_date,
         cuit_emisor=cuit_emisor,
         cuit_receptor=cuit_receptor,
         moneda=detectar_moneda(
@@ -1899,6 +1904,7 @@ def extraer_datos_factura(
         datos=datos,
         mensaje=mensaje,
         texto_normalizado=texto_normalizado,
+        analisis_fiscal=analisis_fiscal,
     )
 
 # ----------------------------------------------------------

@@ -1,0 +1,2531 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-02",
+  "source": {
+    "type": "AFIP_ARCA_RECEIVED_DOCUMENTS_XLSX",
+    "receiver_cuit": "30-71834746-3",
+    "minimum_occurrences": 2,
+    "source_rows": 1700,
+    "unique_emitters": 185,
+    "included_suppliers": 114,
+    "excluded_single_occurrence_emitters": 72
+  },
+  "suppliers": [
+    {
+      "identifier": "acerolatina_s_a",
+      "legal_name": "ACEROLATINA S.A.",
+      "display_name": null,
+      "cuit": "30-71216798-6",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "adserco_s_a",
+      "legal_name": "ADSERCO S.A.",
+      "display_name": null,
+      "cuit": "30-70929433-0",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "alen_federico_hernan",
+      "legal_name": "ALEN FEDERICO HERNAN",
+      "display_name": null,
+      "cuit": "20-38358039-1",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 4
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "all_online_solutions",
+      "legal_name": "ALL ONLINE SOLUTIONS S. A. U.",
+      "display_name": "Colppy",
+      "cuit": "30-71246122-1",
+      "folder_name": "Colppy",
+      "aliases": [
+        "ALL ONLINE SOLUTIONS S. A. U.",
+        "ALL ONLINE SOLUTIONS SAU",
+        "COLPPY",
+        "COLPPY ALL ONLINE SOLUTIONS"
+      ],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 7
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "alvarez_florencia_romina",
+      "legal_name": "ALVAREZ FLORENCIA ROMINA",
+      "display_name": null,
+      "cuit": "27-31604960-0",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C",
+          "13 - Nota de Crédito C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 6
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "arta_verduleros",
+      "legal_name": "ARTA DE GONZALEZ S.R.L.",
+      "display_name": "Arta Verduleros",
+      "cuit": "30-71867492-8",
+      "folder_name": "Arta Verduleros",
+      "aliases": [
+        "AARTA DE GONZALEZ S.R.L.",
+        "AARTA DE GONZALEZ SRL",
+        "ARTA DE GONZALEZ S.R.L.",
+        "ARTA DE GONZALEZ SRL",
+        "ARTA VERDULEROS"
+      ],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          10.5
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 132
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "ayres_it_s_r_l",
+      "legal_name": "AYRES IT S.R.L.",
+      "display_name": null,
+      "cuit": "30-71516351-5",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 9
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "bartoszuk_gonzalo_andres",
+      "legal_name": "BARTOSZUK GONZALO ANDRES",
+      "display_name": null,
+      "cuit": "20-40547220-2",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "beau_lieu_sociedad_anonima",
+      "legal_name": "BEAU LIEU SOCIEDAD ANONIMA",
+      "display_name": null,
+      "cuit": "30-70831130-4",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 3
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "beriut",
+      "legal_name": "BERIUT",
+      "display_name": null,
+      "cuit": "30-71867520-7",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "bodegas_chandon_s_a",
+      "legal_name": "BODEGAS CHANDON S.A.",
+      "display_name": null,
+      "cuit": "30-55371841-0",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 34
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "bodegas_esmeralda_sociedad_anonima_s_a",
+      "legal_name": "BODEGAS ESMERALDA SOCIEDAD ANONIMA S. A.",
+      "display_name": null,
+      "cuit": "30-50258442-8",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 29
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "buenos_ayres_vinos_y_bebidas_s_a",
+      "legal_name": "BUENOS AYRES VINOS Y BEBIDAS S.A.",
+      "display_name": "Souverain",
+      "cuit": "30-70958506-8",
+      "folder_name": null,
+      "aliases": [
+        "BUENOS AIRES VINOS Y BEBIDAS SA",
+        "DISTRIBUIDORA SOUVERAIN",
+        "SOUVERAIN"
+      ],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 13
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "calcagno_waldo_esteban",
+      "legal_name": "CALCAGNO WALDO ESTEBAN",
+      "display_name": null,
+      "cuit": "20-25154526-0",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 3
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "camargo_sergio_ariel",
+      "legal_name": "CAMARGO SERGIO ARIEL",
+      "display_name": null,
+      "cuit": "20-45503217-3",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "campos_alves_ezequiel",
+      "legal_name": "CAMPOS ALVES EZEQUIEL",
+      "display_name": null,
+      "cuit": "20-32952742-6",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 7
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "cantine_s_r_l",
+      "legal_name": "CANTINE S.R.L",
+      "display_name": "IVINI",
+      "cuit": "30-71547031-0",
+      "folder_name": null,
+      "aliases": [
+        "CANTINE SRL",
+        "IVINI",
+        "IVINI.GALICIA"
+      ],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "careri_carla_lucia",
+      "legal_name": "CARERI CARLA LUCIA",
+      "display_name": null,
+      "cuit": "23-24515310-4",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 6
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "ceballos_jose_ramon",
+      "legal_name": "CEBALLOS JOSE RAMON",
+      "display_name": null,
+      "cuit": "20-20800514-7",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 4
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "cerveceria_y_malteria_quilmes",
+      "legal_name": "CERVECERIA Y MALTERIA QUILMES SAICA Y G",
+      "display_name": null,
+      "cuit": "33-50835825-9",
+      "folder_name": null,
+      "aliases": [
+        "CERVECERIA Y MALTERIA QUILMES S.A.I.C.A. Y G."
+      ],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 66
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "chefcoat_s_a",
+      "legal_name": "CHEFCOAT S.A.",
+      "display_name": null,
+      "cuit": "30-71624188-9",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "chesko_agustin_ezequiel",
+      "legal_name": "CHESKO AGUSTIN EZEQUIEL",
+      "display_name": null,
+      "cuit": "20-37018937-5",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 39
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "cibones_s_a_s",
+      "legal_name": "CIBONES S.A.S.",
+      "display_name": null,
+      "cuit": "30-71658907-9",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 44
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "cobros_y_pagos_mauma_s_a",
+      "legal_name": "COBROS Y PAGOS MAUMA S.A.",
+      "display_name": null,
+      "cuit": "30-71711888-6",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "coca_cola_femsa",
+      "legal_name": "COCA COLA FEMSA DE BUENOS AIRES S A",
+      "display_name": null,
+      "cuit": "30-52539008-6",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 41
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "colman_tomas_agustin",
+      "legal_name": "COLMAN TOMAS AGUSTIN",
+      "display_name": null,
+      "cuit": "23-42649804-9",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 13
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "contenedores_hugo_sa",
+      "legal_name": "CONTENEDORES HUGO SA",
+      "display_name": null,
+      "cuit": "30-68967475-1",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 4
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "cuatro_carnes",
+      "legal_name": "CUATRO CARNES S.R.L.",
+      "display_name": null,
+      "cuit": "33-71621542-9",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          10.5,
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 75
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "cueva_criollo_jeyson_andres",
+      "legal_name": "CUEVA CRIOLLO JEYSON ANDRES",
+      "display_name": null,
+      "cuit": "20-95338643-8",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 3
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "customcoffee_s_r_l",
+      "legal_name": "CUSTOMCOFFEE S.R.L.",
+      "display_name": null,
+      "cuit": "30-71690307-5",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "81 - Tique Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 3
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "daniel_a_chozas",
+      "legal_name": "DANIEL A CHOZAS S A C I F",
+      "display_name": null,
+      "cuit": "30-53097675-7",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 12
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "davila_juan_ignacio",
+      "legal_name": "DAVILA JUAN IGNACIO",
+      "display_name": null,
+      "cuit": "24-36502047-3",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 19
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "dba",
+      "legal_name": "DISTRIBUIDORA DE BEBIDAS SRL",
+      "display_name": "DBA",
+      "cuit": "30-70942442-0",
+      "folder_name": null,
+      "aliases": [
+        "DBA",
+        "DISTRIBUIDORA DE BEBIDAS S.R.L.",
+        "DISTRIBUIDORA DE BEBIDAS SRL",
+        "DISTRUIBUIDORA DE BEBIDAS SRL"
+      ],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 53
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "de_carluccio_martina",
+      "legal_name": "DE CARLUCCIO MARTINA",
+      "display_name": null,
+      "cuit": "23-44870599-4",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C",
+          "13 - Nota de Crédito C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "dell_aera_guadalupe",
+      "legal_name": "DELL AERA GUADALUPE",
+      "display_name": null,
+      "cuit": "27-32617870-0",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 21
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "detailing_company_srl",
+      "legal_name": "DETAILING COMPANY SRL",
+      "display_name": null,
+      "cuit": "30-71848418-5",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "el_cacique_limpieza_srl",
+      "legal_name": "EL CACIQUE LIMPIEZA SRL",
+      "display_name": null,
+      "cuit": "30-71081955-2",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 4
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "el_criollo",
+      "legal_name": "DISTRIBUIDORA EL CRIOLLO SRL",
+      "display_name": "El Criollo",
+      "cuit": "30-70887901-7",
+      "folder_name": "El Criollo",
+      "aliases": [
+        "DISTRIBUIDORA EL CRIOLLO S.R.L.",
+        "DISTRIBUIDORA EL CRIOLLO SRL",
+        "DISTRUBUIDORA EL CRIOLLO SRL",
+        "EL CRIOLLO"
+      ],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          10.5,
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 72
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "el_jumillano",
+      "legal_name": "EL JUMILLANO S A",
+      "display_name": null,
+      "cuit": "30-53788287-1",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 29
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "el_nuevo_emporio_sa",
+      "legal_name": "EL NUEVO EMPORIO SA",
+      "display_name": null,
+      "cuit": "33-70703773-9",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "emprendimientos_inmobiliarios_arenales",
+      "legal_name": "EMPRENDIMIENTOS INMOBILIARIOS ARENALES SA",
+      "display_name": null,
+      "cuit": "30-69757899-0",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "2 - Nota de Débito A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS",
+          "USD"
+        ],
+        "document_count": 15
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "envairo_s_a_u",
+      "legal_name": "ENVAIRO S.A.U.",
+      "display_name": null,
+      "cuit": "30-70747386-6",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 3
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "equipos_del_chef_s_a",
+      "legal_name": "EQUIPOS DEL CHEF S.A.",
+      "display_name": null,
+      "cuit": "30-70824679-0",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 4
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "escobar_jorge_martin",
+      "legal_name": "ESCOBAR JORGE MARTIN",
+      "display_name": null,
+      "cuit": "20-30590650-7",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 11
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "establecimiento_don_pacho_2024",
+      "legal_name": "ESTABLECIMIENTO DON PANCHO 2024 S.R.L.",
+      "display_name": "Establecimiento Don Pacho",
+      "cuit": "30-71877162-1",
+      "folder_name": null,
+      "aliases": [
+        "ESTABLECIMIENTO DON PACHO",
+        "ESTABLECIMIENTO DON PACHO 2024 S.R.L.",
+        "ESTABLECIMIENTO DON PACHO 2024 SRL",
+        "ESTABLECIMIENTO DON PANCHO 2024 SRL"
+      ],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          10.5
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 18
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "fabbri_argentina_s_r_l",
+      "legal_name": "FABBRI ARGENTINA S. R. L.",
+      "display_name": null,
+      "cuit": "30-68519041-5",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 3
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "ferradas_maria_pia",
+      "legal_name": "FERRADAS MARIA PIA",
+      "display_name": null,
+      "cuit": "27-35431944-1",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "fondello_maria_florencia",
+      "legal_name": "FONDELLO MARIA FLORENCIA",
+      "display_name": null,
+      "cuit": "27-36649654-3",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 9
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "fratelli_branca_destilerias_sociedad_anonima",
+      "legal_name": "FRATELLI BRANCA DESTILERIAS SOCIEDAD ANONIMA",
+      "display_name": "Fratelli Branca",
+      "cuit": "30-50415535-4",
+      "folder_name": null,
+      "aliases": [
+        "FRATELLI BRANCA",
+        "FRATELLI BRANCA DESTILERIAS S.A."
+      ],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 15
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "frigorifico_los_prados",
+      "legal_name": "FRIGORIFICO LOS PRADOS SA",
+      "display_name": null,
+      "cuit": "30-70844445-2",
+      "folder_name": null,
+      "aliases": [
+        "FRIGORIFICO LOS PRADOS",
+        "LOS PRADOS"
+      ],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          10.5
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 39
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "garcia_juanico_rafael",
+      "legal_name": "GARCIA JUANICO RAFAEL",
+      "display_name": null,
+      "cuit": "20-31380940-5",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 7
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "gifel_s_r_l",
+      "legal_name": "GIFEL S.R.L.",
+      "display_name": "GIFEL",
+      "cuit": "30-71520983-3",
+      "folder_name": null,
+      "aliases": [
+        "GIFEL SRL"
+      ],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "Pendientes históricos validados"
+    },
+    {
+      "identifier": "gonzalez_luis_alberto",
+      "legal_name": "GONZALEZ LUIS ALBERTO",
+      "display_name": null,
+      "cuit": "20-29275015-4",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C",
+          "13 - Nota de Crédito C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "goodies_sa",
+      "legal_name": "GOODIES SA",
+      "display_name": null,
+      "cuit": "30-63779923-8",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 10
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "gouvy_s_a",
+      "legal_name": "GOUVY S. A.",
+      "display_name": null,
+      "cuit": "30-71878065-5",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "green_delfina",
+      "legal_name": "GREEN DELFINA",
+      "display_name": null,
+      "cuit": "27-41779271-1",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 4
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "green_sofia",
+      "legal_name": "GREEN SOFIA",
+      "display_name": null,
+      "cuit": "23-43628641-4",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 7
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "grillia_rodolfo_alejandro",
+      "legal_name": "GRILLIA RODOLFO ALEJANDRO",
+      "display_name": null,
+      "cuit": "20-32642022-1",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "groene_appel_s_r_l",
+      "legal_name": "GROENE APPEL S. R. L.",
+      "display_name": null,
+      "cuit": "30-71785883-9",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 5
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "grupo_avinea",
+      "legal_name": "GRUPO AVINEA S.A.",
+      "display_name": null,
+      "cuit": "30-56065543-2",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 7
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "holcman_horacio_daniel",
+      "legal_name": "HOLCMAN HORACIO DANIEL",
+      "display_name": null,
+      "cuit": "20-17363973-3",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "honolulu_s_r_l",
+      "legal_name": "HONOLULU S.R.L",
+      "display_name": null,
+      "cuit": "30-71678105-0",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 6
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "horeca",
+      "legal_name": "HORECA SRL.",
+      "display_name": null,
+      "cuit": "30-71209619-1",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          10.5,
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 67
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "iacovo_matias_ariel",
+      "legal_name": "IACOVO MATIAS ARIEL",
+      "display_name": null,
+      "cuit": "20-31626248-2",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "jo_trans",
+      "legal_name": "JO-TRANS S.R.L.",
+      "display_name": null,
+      "cuit": "30-71327490-5",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 20
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "jordan_facundo_martin",
+      "legal_name": "JORDAN FACUNDO MARTIN",
+      "display_name": null,
+      "cuit": "20-36413307-4",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 3
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "la_agricola",
+      "legal_name": "LA AGRICOLA S A",
+      "display_name": null,
+      "cuit": "30-51787491-0",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 8
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "langeneker_carlos_marcelo",
+      "legal_name": "LANGENEKER CARLOS MARCELO",
+      "display_name": null,
+      "cuit": "20-17611222-1",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 16
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "lavadero_industrial_norte",
+      "legal_name": "LAVADERO INDUSTRIAL NORTE S.A.",
+      "display_name": null,
+      "cuit": "30-71099288-2",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 14
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "maccan_urbano",
+      "legal_name": "MACCAN URBANO",
+      "display_name": null,
+      "cuit": "20-40511561-2",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 4
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "machado_barrios_juan_martin",
+      "legal_name": "MACHADO BARRIOS JUAN MARTIN",
+      "display_name": null,
+      "cuit": "20-32063142-5",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 7
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "madero_este_parking",
+      "legal_name": "MADERO ESTE PARKING S.A.",
+      "display_name": null,
+      "cuit": "30-70966360-3",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 7
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "martinez_hermanos_y_compania_sa",
+      "legal_name": "MARTINEZ HERMANOS Y COMPAÑIA SA",
+      "display_name": null,
+      "cuit": "30-52734182-1",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 7
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "martorell_facundo_martin",
+      "legal_name": "MARTORELL FACUNDO MARTIN",
+      "display_name": null,
+      "cuit": "20-32620301-8",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "melba_srl",
+      "legal_name": "MELBA SRL",
+      "display_name": null,
+      "cuit": "30-71461086-0",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 63
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "meoli_felipe",
+      "legal_name": "MEOLI FELIPE",
+      "display_name": null,
+      "cuit": "23-36594307-9",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "mercadolibre",
+      "legal_name": "MERCADOLIBRE S.R.L.",
+      "display_name": null,
+      "cuit": "30-70308853-4",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 7
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "moltoni_martin_daniel",
+      "legal_name": "MOLTONI MARTIN DANIEL",
+      "display_name": null,
+      "cuit": "20-40382161-7",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "monasa",
+      "legal_name": "MONASA S.A",
+      "display_name": null,
+      "cuit": "30-71524041-2",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          10.5,
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 33
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "nestle_argentina",
+      "legal_name": "NESTLE ARGENTINA S A",
+      "display_name": null,
+      "cuit": "30-54676404-0",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 5
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "novoa_nunez_evangelina_geraldine",
+      "legal_name": "NOVOA NUÑEZ EVANGELINA GERALDINE",
+      "display_name": null,
+      "cuit": "27-34942659-0",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 12
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "nss_sa",
+      "legal_name": "NSS SA",
+      "display_name": null,
+      "cuit": "30-70265297-5",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 7
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "ofimarket",
+      "legal_name": "OFIMARKET SRL",
+      "display_name": null,
+      "cuit": "30-70840725-5",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 26
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "pagani_talleres_graficos_s_r_l",
+      "legal_name": "PAGANI TALLERES GRAFICOS S.R.L.",
+      "display_name": null,
+      "cuit": "30-71166573-7",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 5
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "paniagua_carlos_alberto",
+      "legal_name": "PANIAGUA CARLOS ALBERTO",
+      "display_name": null,
+      "cuit": "20-26522885-3",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 4
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "payway",
+      "legal_name": "PAYWAY SAU",
+      "display_name": null,
+      "cuit": "30-71766440-6",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 7
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "pecchenino_carla_daniela",
+      "legal_name": "PECCHENINO CARLA DANIELA",
+      "display_name": null,
+      "cuit": "27-35363670-2",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 4
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "pena_spampinato_nahuel",
+      "legal_name": "PENA SPAMPINATO NAHUEL",
+      "display_name": null,
+      "cuit": "20-38891246-5",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "pinero_jorge_oscar",
+      "legal_name": "PIÑERO JORGE OSCAR",
+      "display_name": null,
+      "cuit": "20-20013817-2",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 26
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "prestifilippo_ezequiel_alejandro",
+      "legal_name": "PRESTIFILIPPO EZEQUIEL ALEJANDRO",
+      "display_name": null,
+      "cuit": "20-37016550-6",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 6
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "qbo",
+      "legal_name": "QBO S. R. L.",
+      "display_name": null,
+      "cuit": "30-71090456-8",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 17
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "rafael_cioffi_e_hijos",
+      "legal_name": "RAFAEL CIOFFI E HIJOS SA",
+      "display_name": null,
+      "cuit": "30-68204143-5",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 35
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "ristaino_adriana_daniela",
+      "legal_name": "RISTAINO ADRIANA DANIELA",
+      "display_name": null,
+      "cuit": "27-23169717-4",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 4
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "roberto_o_rodofeli_y_cia_s_r_l",
+      "legal_name": "ROBERTO O RODOFELI Y CIA S R L",
+      "display_name": null,
+      "cuit": "30-54752995-9",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "ruffino_jorge_sebastian",
+      "legal_name": "RUFFINO JORGE SEBASTIAN",
+      "display_name": null,
+      "cuit": "23-24957038-9",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 29
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "sadelar_s_r_l",
+      "legal_name": "SADELAR S.R.L.",
+      "display_name": null,
+      "cuit": "30-71118305-8",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A",
+          "3 - Nota de Crédito A"
+        ],
+        "vat_rates": [
+          10.5,
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 12
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "sagarna_federico",
+      "legal_name": "SAGARNA FEDERICO",
+      "display_name": null,
+      "cuit": "20-26119732-5",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "salazar_estrada_john_alberto",
+      "legal_name": "SALAZAR ESTRADA JOHN ALBERTO",
+      "display_name": null,
+      "cuit": "20-19130412-9",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 5
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "salto_jose_fernando_ezequiel",
+      "legal_name": "SALTO JOSE FERNANDO EZEQUIEL",
+      "display_name": null,
+      "cuit": "20-30663399-7",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          10.5,
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 30
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "sam_canillas",
+      "legal_name": "SAM CANILLAS DE MIGUEL ANGEL TALAVERA CONTRERAS Y ANDRES ARTURO ROMERO GONZALEZ SOCIEDAD LEY 19550 C",
+      "display_name": null,
+      "cuit": "30-71764501-0",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          10.5
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 66
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "santangelo_marcela",
+      "legal_name": "SANTANGELO MARCELA",
+      "display_name": null,
+      "cuit": "27-23257297-9",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 3
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "savio_pablo",
+      "legal_name": "SAVIO PABLO",
+      "display_name": null,
+      "cuit": "20-35969782-2",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          10.5
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "somaschini_maria_carmen",
+      "legal_name": "SOMASCHINI MARIA CARMEN",
+      "display_name": null,
+      "cuit": "27-13655413-7",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 3
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "soy_botiquera_s_r_l",
+      "legal_name": "SOY BOTIQUERA S.R.L",
+      "display_name": null,
+      "cuit": "33-71665282-9",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 4
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "stock_de_carnes",
+      "legal_name": "STOCK DE CARNES",
+      "display_name": null,
+      "cuit": "30-71747552-2",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          10.5
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 7
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "storni_maria",
+      "legal_name": "STORNI MARIA",
+      "display_name": null,
+      "cuit": "27-30595013-6",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 22
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "suarez_quiroga_jorge_marcelo_mariano",
+      "legal_name": "SUAREZ QUIROGA JORGE MARCELO MARIANO",
+      "display_name": null,
+      "cuit": "20-28341380-3",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C",
+          "13 - Nota de Crédito C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 9
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "suli_srl",
+      "legal_name": "SULI SRL",
+      "display_name": null,
+      "cuit": "30-70776094-6",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "3 - Nota de Crédito A",
+          "81 - Tique Factura A"
+        ],
+        "vat_rates": [
+          10.5,
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 21
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "szvalb_pablo_gabriel",
+      "legal_name": "SZVALB PABLO GABRIEL",
+      "display_name": null,
+      "cuit": "20-26315483-6",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "81 - Tique Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "telecom_argentina",
+      "legal_name": "TELECOM ARGENTINA SOCIEDAD ANONIMA",
+      "display_name": null,
+      "cuit": "30-63945373-8",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "tossounian_ana_veronica",
+      "legal_name": "TOSSOUNIAN ANA VERONICA",
+      "display_name": null,
+      "cuit": "23-23618616-4",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 16
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "tropical_argentina_s_r_l",
+      "legal_name": "TROPICAL ARGENTINA  S R L",
+      "display_name": null,
+      "cuit": "30-70799111-5",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "vasches_vanina_nuncia",
+      "legal_name": "VASCHES VANINA NUNCIA",
+      "display_name": null,
+      "cuit": "27-25345617-0",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "11 - Factura C"
+        ],
+        "vat_rates": [],
+        "other_taxes": false,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 2
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    },
+    {
+      "identifier": "volf",
+      "legal_name": "VOLF S.A.",
+      "display_name": null,
+      "cuit": "30-50436387-9",
+      "folder_name": null,
+      "aliases": [],
+      "observed": {
+        "document_types": [
+          "1 - Factura A"
+        ],
+        "vat_rates": [
+          21.0
+        ],
+        "other_taxes": true,
+        "currencies": [
+          "ARS"
+        ],
+        "document_count": 13
+      },
+      "source": "AFIP/ARCA - Mis Comprobantes Recibidos"
+    }
+  ]
+}

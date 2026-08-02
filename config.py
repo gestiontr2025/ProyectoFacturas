@@ -72,6 +72,14 @@ STATE_DB_PATH = obtener_ruta_desde_entorno(
     DEFAULT_STATE_DB_PATH,
 )
 
+# Los proveedores ocasionales se registran fuera del catálogo recurrente.
+# El archivo es auxiliar y puede regenerarse a partir de nuevas facturas.
+DEFAULT_SUPPLIER_CANDIDATES_PATH = PROJECT_ROOT / "data" / "supplier_candidates.json"
+SUPPLIER_CANDIDATES_PATH = obtener_ruta_desde_entorno(
+    "SUPPLIER_CANDIDATES_PATH",
+    DEFAULT_SUPPLIER_CANDIDATES_PATH,
+)
+
 
 def validar_configuracion() -> None:
     """Detectar configuraciones inválidas antes de conectarse a Gmail."""

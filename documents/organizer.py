@@ -10,6 +10,19 @@ FOLDERS_BY_TYPE = {
     TipoDocumento.LISTA_PRECIOS: "Listas_de_precios",
     TipoDocumento.COMPROBANTE_PAGO: "Comprobantes_de_pago",
     TipoDocumento.ORDEN_PAGO: "Ordenes_de_pago",
+    TipoDocumento.RRHH_ALTAS_BAJAS: "Recursos_Humanos/Altas_y_Bajas",
+    TipoDocumento.RRHH_LIQUIDACIONES: "Recursos_Humanos/Liquidaciones",
+    TipoDocumento.RRHH_RECIBOS_LEGAJOS: "Recursos_Humanos/Recibos_y_Legajos",
+    TipoDocumento.RETENCIONES_TRANSFERENCIAS: "Retenciones_y_Transferencias",
+    TipoDocumento.ESTADO_CUENTA: "Estados_de_cuenta",
+    TipoDocumento.MENUS_CARTAS: "Menus_y_Cartas",
+    TipoDocumento.INSTRUCTIVO: "Instructivos",
+    TipoDocumento.ADMINISTRATIVO: "Administrativos",
+    TipoDocumento.COMUNICACION: "Comunicaciones",
+    TipoDocumento.REMITO_RECIBO: "Remitos_y_recibos",
+    TipoDocumento.IMPUESTOS_SERVICIOS: "Impuestos_y_servicios",
+    TipoDocumento.OPERATIVO: "Operativos",
+    TipoDocumento.CONSORCIO: "Consorcio_y_gastos_comunes",
 }
 
 

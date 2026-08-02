@@ -1,3 +1,12 @@
+
+## Etapa 5.3 — cierre de familias pendientes
+
+- Proveedores recurrentes nuevos: Souverain/Buenos Ayres Vinos, Fratelli Branca y La Agrícola.
+- Emisores ocasionales se reconocen desde el encabezado sin incorporarlos al catálogo JSON.
+- Clasificación de ABL, instructivos, documentos operativos, consorcio, recibos y transferencias.
+- Segundo lector PDF con PyMuPDF para estructuras que pypdf rechaza.
+- Nuevas familias: El Nuevo Emporio FACA/NCB y FCVTA de Souverain.
+
 # Proyecto Facturas
 
 Automatiza la búsqueda de correos en Gmail, descarga archivos PDF, extrae su
@@ -66,14 +75,19 @@ permanecerán en `_Pendientes`.
 
 La detección fiscal está separada en el paquete `fiscal/`:
 
+- `definitions.py`: fuente única de tipos, letras, prefijos y códigos AFIP/ARCA.
 - `type_detector.py`: distingue factura, nota de crédito y nota de débito.
-- `letter.py`: detecta las letras A, B y C con contexto fiscal.
+- `letter.py`: detecta las letras A, B y C únicamente con contexto fiscal.
 - `number.py`: normaliza punto de venta y número como `00000-00000000`.
 - `issue_date.py`: detecta y valida la fecha de emisión.
+- `parser.py`: coordina los extractores y devuelve un `FiscalHeaderAnalysis`.
+- `analysis_result.py`: modelo del resultado fiscal, código y advertencias.
 
-El proyecto contempla estas combinaciones: FCA, FCB, FCC, NCA, NCB, NCC,
-NDA, NDB y NDC. El contenido del PDF tiene prioridad; el nombre del archivo
-solo funciona como evidencia secundaria cuando faltan datos.
+El proyecto contempla explícitamente estas nueve combinaciones: FCA, FCB,
+FCC, NCA, NCB, NCC, NDA, NDB y NDC. Las reglas no se repiten en cada módulo:
+`FiscalDocument`, el constructor de nombres y la evidencia del nombre del PDF
+consultan las mismas definiciones centrales. El contenido del PDF tiene
+prioridad; el nombre del archivo solo completa datos ausentes.
 
 ### Razón social y nombre comercial
 
@@ -182,3 +196,95 @@ python main.py --reset-email-history --apply
 
 Eliminar la carpeta `Facturas` no reinicia automáticamente el historial. Para
 reconstruir todo desde Gmail deben reiniciarse ambas cosas de manera consciente.
+
+## Clasificación ampliada de documentos pendientes
+
+El comando:
+
+```powershell
+python main.py --reprocess-pending
+```
+
+clasifica primero cada PDF antes de intentar interpretarlo como factura. Los
+documentos con evidencia suficiente pueden archivarse en:
+
+```text
+_OtrosDocumentos/
+├── Listas_de_precios/
+├── Ordenes_de_pago/
+├── Comprobantes_de_pago/
+├── Recursos_Humanos/
+│   ├── Altas_y_Bajas/
+│   ├── Liquidaciones/
+│   └── Recibos_y_Legajos/
+├── Retenciones_y_Transferencias/
+├── Estados_de_cuenta/
+├── Menus_y_Cartas/
+├── Instructivos/
+└── Administrativos/
+```
+
+La clasificación combina el nombre y el contenido del archivo. Solo se mueve un
+documento cuando una categoría supera un umbral alto y se diferencia claramente
+de las demás. Un caso ambiguo permanece en `_Pendientes` para revisión.
+
+## Compatibilidad fiscal incorporada en la etapa 4.8
+
+El motor reconoce también nombres de adjuntos generados por sistemas que usan
+formatos como `FACA...`, `FACB...`, `factura_ARCA_A_...` y
+`Comprobante-FCVTA-A-...`. La evidencia del nombre solo completa campos que no
+pudieron recuperarse desde el contenido del PDF.
+
+Algunos encabezados gráficos no son extraíbles con `pypdf`. Para esos casos se
+incorporaron firmas muy específicas y comprobadas para IVINI/Cantine y para la
+familia de adjuntos de Frigorífico Los Prados. Los PDF completamente escaneados
+continúan en `_Pendientes` hasta incorporar un fallback OCR seguro.
+
+
+## Manejo de texto vertical y familias fiscales estructuradas
+
+La versión 0.20 reconoce comprobantes cuyo PDF conserva los datos, pero extrae cada carácter en una línea distinta. El programa solo aplica la compactación como respaldo cuando el nombre del archivo ya confirmó de forma inequívoca el tipo, la letra y el número fiscal. Esto evita usar una fecha aislada en documentos desconocidos.
+
+También se distinguen documentos comerciales no fiscales (`INV-*` con `Recibo X`) y comunicaciones institucionales, que se archivan fuera de `_Pendientes`.
+
+
+## Auditoría defensiva de fechas organizadas
+
+Una factura puede haberse guardado históricamente con una fecha secundaria,
+como el inicio de actividades o el vencimiento del CAE. El comando siguiente
+revisa las facturas ya organizadas sin modificar archivos:
+
+```powershell
+python main.py --audit-organized-dates
+```
+
+Después de revisar la vista previa, las correcciones se aplican con:
+
+```powershell
+python main.py --audit-organized-dates --apply
+```
+
+El auditor no sobrescribe destinos existentes y excluye `_Pendientes` y
+`_OtrosDocumentos`.
+
+
+## Bandeja manual de entrada
+
+Además de los adjuntos descargados desde Gmail, se puede copiar cualquier PDF
+directamente en `Facturas/_Pendientes` y ejecutar:
+
+```powershell
+python main.py --reprocess-pending
+```
+
+El archivo será leído, clasificado y organizado con el mismo flujo. Esto permite
+incorporar documentos descargados desde WhatsApp, Google Drive u otros medios.
+
+## Proveedores ocasionales
+
+Los emisores detectados desde una factura válida pueden organizarse aunque no
+formen parte del catálogo recurrente. Sus apariciones se guardan localmente en
+`data/supplier_candidates.json`. El archivo es auxiliar: no modifica
+`suppliers/data/supplier_catalog.json` y evita promover automáticamente compras
+únicas. A partir de tres comprobantes distintos se marca al emisor como candidato
+para revisión manual.
