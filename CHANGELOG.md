@@ -1,3 +1,13 @@
+
+## 0.27 - Detección genérica de proveedores nuevos
+
+- Valida CUIT argentinos mediante su dígito verificador.
+- Excluye automáticamente el CUIT de Madero Roof.
+- Extrae una razón social confiable del encabezado fiscal de facturas ARCA.
+- Organiza proveedores nuevos sin agregarlos manualmente al catálogo.
+- Registra la identidad aprendida en el archivo auxiliar de candidatos.
+- Mantiene pendientes los documentos ambiguos con varios CUIT de terceros.
+
 ## 0.26 - 2026-08-04
 
 - Se agregó soporte general para comprobantes compactos como `A00013-00024717`, incluso cuando el número aparece antes de la etiqueta `Número:`.

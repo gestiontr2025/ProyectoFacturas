@@ -194,6 +194,7 @@ def procesar_factura(ruta_pdf, texto: str, resultado_proveedor: dict, carpeta_ra
     # mismo comprobante si se vuelve a ejecutar el reprocesamiento.
     if proveedor.detection_method in {
         "encabezado_fiscal_no_persistente",
+        "encabezado_fiscal_generico_no_persistente",
         "nombre_archivo_validado_no_persistente",
     } and proveedor.cuit:
         document_key = "|".join(

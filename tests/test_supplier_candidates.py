@@ -102,3 +102,50 @@ def test_ceamse_se_detecta_aunque_el_parser_haya_tomado_el_cuit_del_receptor():
     assert result["razon_social_canonica"] == (
         "COORDINACION ECOLOGICA AREA METROPOLITANA S.E."
     )
+
+
+def test_proveedor_nuevo_se_detecta_genericamente_por_cuit_y_encabezado():
+    texto = """
+    Fecha de Emisión:
+    ORIGINAL
+    CORVALAN ARIEL ANDRES
+    Olleros 1363 - La Tablada, Buenos Aires
+    CUIT:
+    03/08/2026
+    20290392781
+    30718347463 MADERO ROOF TOP S. A.
+    Punto de Venta: Comp. Nro:00001 00002165
+    Razón Social:
+    ESTABLECIMIENTOS CORVALAN
+    FACTURA A COD. 01
+    IVA Responsable Inscripto
+    20-29039278-1
+    Código Producto / Servicio Cantidad U. medida
+    """
+    result = detectar_emisor_no_recurrente(texto, "20-29039278-1")
+    assert result is not None
+    assert result["razon_social_canonica"] == "CORVALAN ARIEL ANDRES"
+    assert result["cuit_canonico"] == "20-29039278-1"
+    assert result["metodo_deteccion"] == "encabezado_fiscal_generico_no_persistente"
+
+
+def test_detector_generico_no_confunde_al_receptor_con_proveedor():
+    texto = """
+    ORIGINAL
+    MADERO ROOF TOP S. A.
+    CUIT 30-71834746-3
+    FACTURA A 00001-00000001
+    """
+    assert detectar_emisor_no_recurrente(texto, "30-71834746-3") is None
+
+
+def test_detector_generico_rechaza_varios_cuits_terceros_ambiguos():
+    texto = """
+    ORIGINAL
+    PROVEEDOR SIN IDENTIDAD CLARA
+    CUIT 20-29039278-1
+    CUIT 30-63779923-8
+    MADERO ROOF TOP S. A. CUIT 30-71834746-3
+    FACTURA A 00001-00000001
+    """
+    assert detectar_emisor_no_recurrente(texto, None) is None

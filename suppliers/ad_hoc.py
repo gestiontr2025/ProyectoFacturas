@@ -9,6 +9,7 @@ from __future__ import annotations
 import re
 import unicodedata
 import business_config
+from suppliers.issuer_identity import extraer_identidad_emisor
 
 _KNOWN_HEADERS = (
     (re.compile(r"\bAUREA\s+VINOS\s+SRL\b", re.I), "AUREA VINOS SRL", "30-71538851-7"),
@@ -95,4 +96,23 @@ def detectar_emisor_no_recurrente(
                 'puntaje': 8,
                 'advertencias': ('Proveedor ocasional: no fue incorporado al catálogo JSON.',),
             }
+    identidad = extraer_identidad_emisor(contenido, cuit_emisor)
+    if identidad is not None:
+        return {
+            'proveedor_detectado': True,
+            'identificador': f'ocasional_{_slug(identidad.legal_name)}',
+            'nombre_proveedor': identidad.legal_name,
+            'razon_social_encontrada': identidad.legal_name,
+            'razon_social_canonica': identidad.legal_name,
+            'nombre_fantasia': None,
+            'cuit_encontrado': identidad.cuit,
+            'cuit_canonico': identidad.cuit,
+            'metodo_deteccion': 'encabezado_fiscal_generico_no_persistente',
+            'nivel_confianza': 'alta',
+            'puntaje': identidad.score,
+            'advertencias': (
+                'Proveedor nuevo detectado desde CUIT y encabezado fiscal; '
+                'no fue incorporado al catálogo JSON.',
+            ),
+        }
     return None
