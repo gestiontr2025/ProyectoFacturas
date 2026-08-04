@@ -69,3 +69,37 @@ FACTURACCOD. 011
     assert datos.letra_comprobante == "C"
     assert datos.numero_comprobante == "00002-00000308"
     assert datos.fecha_emision == "21/07/2026"
+
+
+def test_formato_goodies_numero_compacto_antes_de_etiquetas():
+    texto = """
+A00013-00024717
+Número:
+Fecha:
+24/07/2025
+Responsable Inscripto
+30637799238
+GOODIES S.A.
+A
+01
+Factura
+"""
+    datos = invoice_parser.extraer_datos_factura(texto).datos
+
+    assert datos.tipo_comprobante == "FACTURA"
+    assert datos.letra_comprobante == "A"
+    assert datos.numero_comprobante == "00013-00024717"
+    assert datos.fecha_emision == "24/07/2025"
+
+
+def test_no_infiere_letra_desde_una_a_aislada_sin_numero_fiscal():
+    texto = """
+Factura
+Piso 4 A
+Fecha: 24/07/2025
+"""
+    datos = invoice_parser.extraer_datos_factura(texto).datos
+
+    assert datos.tipo_comprobante == "FACTURA"
+    assert datos.letra_comprobante is None
+    assert datos.numero_comprobante is None

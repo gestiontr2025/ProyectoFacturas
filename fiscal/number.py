@@ -64,8 +64,17 @@ def detectar_numero_comprobante(texto: str) -> Optional[str]:
         return _normalizar(*separado.groups())
 
     if detectar_tipo_comprobante(texto):
+        # Formato compacto observado en sistemas comerciales que imprimen el
+        # comprobante antes de la etiqueta ``Número:``, por ejemplo:
+        #
+        #     A00013-00024717
+        #     Número:
+        #
+        # Admitimos espacios opcionales entre la letra y el punto de venta,
+        # pero exigimos siempre la letra fiscal, el guion y ambos componentes
+        # numéricos para evitar capturar códigos o importes comunes.
         coincidencia = re.search(
-            r"\b[ABC]\s+(\d{1,5})\s*[-/]\s*(\d{1,8})\b", texto
+            r"\b[ABC]\s*(\d{1,5})\s*[-/]\s*(\d{1,8})\b", texto
         )
         if coincidencia:
             return _normalizar(*coincidencia.groups())

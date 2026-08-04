@@ -55,8 +55,12 @@ def detectar_letra_comprobante(texto: str) -> Optional[str]:
         if letter_by_code:
             return letter_by_code
 
+        # Algunos sistemas imprimen la letra pegada al punto de venta, por
+        # ejemplo ``A00013-00024717``. La combinación completa es una
+        # estructura fiscal suficientemente específica; no equivale a aceptar
+        # una letra aislada en cualquier parte del documento.
         match = re.search(
-            rf"\b{letter}\s+(\d{{1,5}})\s*[-/]\s*(\d{{1,8}})\b", texto
+            rf"\b{letter}\s*(\d{{1,5}})\s*[-/]\s*(\d{{1,8}})\b", texto
         )
         if match:
             return match.group(1)

@@ -1,3 +1,9 @@
+## 0.26 - 2026-08-04
+
+- Se agregó soporte general para comprobantes compactos como `A00013-00024717`, incluso cuando el número aparece antes de la etiqueta `Número:`.
+- Se incorporó una regresión basada en la familia real de facturas de GOODIES S.A.
+- La regla sigue exigiendo una estructura fiscal completa y no acepta letras aisladas.
+
 ## Etapa 5.8
 
 - Corregida la auditoría de fechas para PDF cuyo texto expone un carácter por línea.
