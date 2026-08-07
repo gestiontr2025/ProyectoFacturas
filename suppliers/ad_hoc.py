@@ -110,6 +110,7 @@ def detectar_emisor_no_recurrente(
             'metodo_deteccion': 'encabezado_fiscal_generico_no_persistente',
             'nivel_confianza': 'alta',
             'puntaje': identidad.score,
+            'evidencias': identidad.evidence,
             'advertencias': (
                 'Proveedor nuevo detectado desde CUIT y encabezado fiscal; '
                 'no fue incorporado al catálogo JSON.',

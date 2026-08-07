@@ -1,4 +1,13 @@
 
+## 0.28 - Detección de emisores por evidencia ponderada
+
+- El detector de proveedores nuevos recorre todo el documento, sin asumir que el emisor está en el encabezado.
+- Los nombres candidatos se asocian al CUIT mediante distancia, etiquetas explícitas y señales fiscales.
+- Cada decisión conserva el puntaje y la evidencia que la justifica.
+- Se rechazan empates ambiguos y documentos con varios CUIT de terceros.
+- Se agregaron regresiones para emisor al final del PDF y para CUIT/razón social separados.
+
+
 ## 0.27 - Detección genérica de proveedores nuevos
 
 - Valida CUIT argentinos mediante su dígito verificador.

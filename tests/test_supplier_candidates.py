@@ -149,3 +149,75 @@ def test_detector_generico_rechaza_varios_cuits_terceros_ambiguos():
     FACTURA A 00001-00000001
     """
     assert detectar_emisor_no_recurrente(texto, None) is None
+
+
+def test_proveedor_nuevo_puede_aparecer_despues_del_cliente_y_del_detalle():
+    texto = """
+    ORIGINAL
+    CLIENTE
+    Razón Social: MADERO ROOF TOP S. A.
+    CUIT: 30-71834746-3
+    Descripción Cantidad Precio unit. Subtotal
+    SERVICIO DE PRUEBA BETA 1.00 42000.00 42000.00
+    SERVICIOS BETA DE MARTIN PEREZ
+    Razón Social: PEREZ MARTIN ALEJANDRO
+    Nombre de fantasía: SERVICIOS BETA
+    CUIT: 20-34567890-6
+    FACTURA B
+    Punto de Venta: 00007
+    Comp. Nro: 00000321
+    Fecha de Emisión: 06/08/2026
+    IVA 21%: 9450.00
+    """
+    result = detectar_emisor_no_recurrente(texto, None)
+    assert result is not None
+    assert result["razon_social_canonica"] == "PEREZ MARTIN ALEJANDRO"
+    assert result["cuit_canonico"] == "20-34567890-6"
+    assert "razon_social_explicita_en_misma_linea" in result["evidencias"]
+
+
+def test_proveedor_nuevo_vincula_cuit_y_razon_social_separados():
+    texto = """
+    ORIGINAL
+    FACTURA A
+    Fecha de Emisión: 07/08/2026
+    Punto de Venta: 00023
+    Comp. Nro: 00004567
+    Receptor CUIT: 30-71834746-3
+    Receptor: MADERO ROOF TOP S. A.
+    Descripción Cantidad Precio unit. Subtotal
+    PRODUCTO GAMMA TEST 3.00 8500.00 25500.00
+    CUIT emisor: 33-76543210-9
+    Ingresos Brutos: 33-76543210-9
+    Inicio de actividades: 01/01/2020
+    INSUMOS GAMMA S.A.S.
+    Razón Social: INSUMOS GAMMA S.A.S.
+    Domicilio Comercial: Avenida Simulada 456 - Buenos Aires
+    IVA 21%: 5880.00
+    """
+    result = detectar_emisor_no_recurrente(texto, None)
+    assert result is not None
+    assert result["razon_social_canonica"] == "INSUMOS GAMMA S.A.S"
+    assert result["cuit_canonico"] == "33-76543210-9"
+    assert "cuit_etiquetado_como_emisor" in result["evidencias"]
+
+
+def test_scoring_conserva_evidencias_que_explican_la_decision():
+    texto = """
+    ORIGINAL
+    PROVEEDOR PRUEBA ALFA S.R.L.
+    Razón Social: PROVEEDOR PRUEBA ALFA S.R.L.
+    CUIT: 30-71234567-1
+    Domicilio Comercial: Calle Ficticia 100 - CABA
+    A FACTURA COD. 01
+    Punto de Venta: 00011
+    Comp. Nro: 00000001
+    Fecha de Emisión: 05/08/2026
+    CUIT receptor: 30-71834746-3
+    MADERO ROOF TOP S. A.
+    """
+    result = detectar_emisor_no_recurrente(texto, None)
+    assert result is not None
+    assert result["puntaje"] >= 18
+    assert "cuit_valido_distinto_del_receptor" in result["evidencias"]
+    assert "inmediatamente_despues_de_marca_de_copia" in result["evidencias"]
