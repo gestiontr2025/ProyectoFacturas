@@ -24,6 +24,7 @@ _EXCLUDED_DATE_CONTEXT = (
     "INICIO ACTIVIDADES",
     "FECHA DE INICIO",
     "VENCIMIENTO",
+    "VENC",
     "VTO",
     "CAE",
     "ENTREGA",
@@ -50,6 +51,45 @@ def _limpiar_fecha_textual(dia: str, mes: str, anio: str) -> Optional[str]:
         return datetime(int(anio), numero_mes, int(dia)).strftime("%d/%m/%Y")
     except ValueError:
         return None
+
+
+def _reparar_anio_por_vencimiento(fecha: str, texto: str) -> str:
+    """Corregir un año OCR claramente incompatible con el vencimiento.
+
+    En formularios escaneados un ``6`` puede leerse como ``8`` o ``0``. Si la
+    fecha de emisión detectada tiene un año distinto al vencimiento, probamos
+    el mismo día y mes con el año del vencimiento. Solo se corrige cuando esa
+    alternativa queda entre 0 y 62 días antes del vencimiento. Así evitamos
+    usar el año actual o una heurística dependiente del reloj del equipo.
+    """
+    try:
+        issue = datetime.strptime(fecha, "%d/%m/%Y")
+    except ValueError:
+        return fecha
+
+    due_match = re.search(
+        r"\b(?:VENC(?:IMIENTO)?|VTO)\.?\s*[:;.-]?\s*(\d{1,2}[./-]\d{1,2}[./-](?:\d{4}|\d{2}))",
+        texto,
+    )
+    if not due_match:
+        return fecha
+
+    due_text = _limpiar_fecha(due_match.group(1))
+    if not due_text:
+        return fecha
+    due = datetime.strptime(due_text, "%d/%m/%Y")
+    if issue.year == due.year:
+        return fecha
+
+    try:
+        repaired = issue.replace(year=due.year)
+    except ValueError:
+        return fecha
+
+    delta = (due - repaired).days
+    if 0 <= delta <= 62:
+        return repaired.strftime("%d/%m/%Y")
+    return fecha
 
 
 def _contexto_excluido(texto: str, inicio: int) -> bool:
@@ -90,13 +130,39 @@ def detectar_fecha_emision(texto: str, *, contexto_fiscal_confirmado: bool = Fal
     if textual:
         fecha = _limpiar_fecha_textual(*textual.groups())
         if fecha:
-            return fecha
+            return _reparar_anio_por_vencimiento(fecha, texto)
+
+    # ERP legacy: la capa de texto puede omitir la palabra FECHA y dejar el
+    # valor inmediatamente después de ``FACTURA 0056 - 00562701``. La
+    # numeración fiscal aporta el contexto necesario para interpretar esos tres
+    # grupos como día, mes y año.
+    legacy_factura = re.search(
+        r"\bFACTURA\s+\d{1,5}\s*[-/]\s*\d{1,8}.{0,80}?"
+        r"(\d{1,2})\s+(\d{1,2})\s+(\d{4})\b",
+        texto,
+    )
+    if legacy_factura:
+        fecha = _limpiar_fecha("/".join(legacy_factura.groups()))
+        if fecha:
+            return _reparar_anio_por_vencimiento(fecha, texto)
+
+    # En OCR de comprobantes escaneados el orden visual puede invertirse y la
+    # fecha quedar inmediatamente antes de la etiqueta FECHA. Se admite solo
+    # una fecha válida dentro de una ventana pequeña.
+    before_fecha = re.search(
+        r"(\d{1,2})\s+(\d{1,2})\s+(\d{4})(?=.{0,40}?\bFECHA\b)",
+        texto,
+    )
+    if before_fecha:
+        fecha = _limpiar_fecha("/".join(before_fecha.groups()))
+        if fecha:
+            return _reparar_anio_por_vencimiento(fecha, texto)
 
     # Algunos comprobantes antiguos separan día, mes y año únicamente con
     # espacios (por ejemplo ``FECHA: 08 07 25``). Esta variante se admite solo
     # junto a la etiqueta FECHA para no convertir importes o códigos en fechas.
     fecha_espaciada = re.search(
-        r"\bFECHA\b\s*[:\-]?\s*(\d{1,2})\s+(\d{1,2})\s+(\d{2}|\d{4})\b",
+        r"\bFECHA\b\s*[:;,.\-]?\s*(\d{1,2})\s+(\d{1,2})\s+(\d{2}|\d{4})\b",
         texto,
     )
     if fecha_espaciada:
@@ -104,7 +170,7 @@ def detectar_fecha_emision(texto: str, *, contexto_fiscal_confirmado: bool = Fal
         valor = f"{dia}/{mes}/{anio}"
         fecha = _limpiar_fecha(valor)
         if fecha:
-            return fecha
+            return _reparar_anio_por_vencimiento(fecha, texto)
 
     # Algunos comprobantes legacy imprimen la fecha sin etiqueta, pero justo
     # después de la identidad fiscal completa. Ejemplo real:
@@ -124,7 +190,7 @@ def detectar_fecha_emision(texto: str, *, contexto_fiscal_confirmado: bool = Fal
         dia, mes, anio = fecha_despues_identidad.groups()
         fecha = _limpiar_fecha(f"{dia}/{mes}/{anio}")
         if fecha:
-            return fecha
+            return _reparar_anio_por_vencimiento(fecha, texto)
 
     # Algunos PDF antiguos no exponen palabras ni números como bloques: cada
     # carácter aparece en una línea independiente. Después de normalizar los
@@ -155,7 +221,7 @@ def detectar_fecha_emision(texto: str, *, contexto_fiscal_confirmado: bool = Fal
             )
         fecha = _limpiar_fecha(f"{dia}/{mes}/{anio}")
         if fecha:
-            return fecha
+            return _reparar_anio_por_vencimiento(fecha, texto)
 
     # Etiquetas inequívocas tienen prioridad absoluta.
     for etiqueta in (r"FECHA\s+DE\s+EMISION", r"FECHA\s+EMISION", r"FECHA\s+DEL\s+COMPROBANTE"):
@@ -163,7 +229,7 @@ def detectar_fecha_emision(texto: str, *, contexto_fiscal_confirmado: bool = Fal
         if coincidencia:
             fecha = _limpiar_fecha(coincidencia.group(1))
             if fecha:
-                return fecha
+                return _reparar_anio_por_vencimiento(fecha, texto)
 
     fecha_arca = _detectar_fecha_en_bloque_arca(texto)
     if fecha_arca:
@@ -180,7 +246,7 @@ def detectar_fecha_emision(texto: str, *, contexto_fiscal_confirmado: bool = Fal
             continue
         fecha = _limpiar_fecha(antes_del_tipo.group(1))
         if fecha:
-            return fecha
+            return _reparar_anio_por_vencimiento(fecha, texto)
 
     # ``Fecha:`` es ambiguo. Solo se acepta si el contexto inmediato no habla
     # de vencimiento, CAE, entrega o inicio de actividades.
@@ -189,7 +255,7 @@ def detectar_fecha_emision(texto: str, *, contexto_fiscal_confirmado: bool = Fal
             continue
         fecha = _limpiar_fecha(coincidencia.group(1))
         if fecha:
-            return fecha
+            return _reparar_anio_por_vencimiento(fecha, texto)
 
     if contexto_fiscal_confirmado or detectar_tipo_comprobante(texto):
         for coincidencia in re.finditer(PATRON_FECHA, texto):
@@ -197,11 +263,11 @@ def detectar_fecha_emision(texto: str, *, contexto_fiscal_confirmado: bool = Fal
                 continue
             fecha = _limpiar_fecha(coincidencia.group(1))
             if fecha:
-                return fecha
+                return _reparar_anio_por_vencimiento(fecha, texto)
 
         texto_compacto = re.sub(r"\s+", "", texto)
         for valor in re.findall(PATRON_FECHA, texto_compacto):
             fecha = _limpiar_fecha(valor)
             if fecha:
-                return fecha
+                return _reparar_anio_por_vencimiento(fecha, texto)
     return None

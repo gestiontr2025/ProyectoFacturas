@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Optional
 
 import invoice_parser
+import pdf_reader
+import supplier_detector
 
 from documents import TipoDocumento, clasificar_documento
 from documents.organizer import archivar_lista_precios
@@ -51,6 +53,51 @@ def _validar_datos_obligatorios(
     return documento.missing_required_fields(
         require_supplier=True,
         supplier_present=proveedor.detected,
+    )
+
+
+_CRITICAL_FISCAL_FIELDS = (
+    "tipo_comprobante",
+    "letra_comprobante",
+    "numero_comprobante",
+    "fecha_emision",
+)
+
+
+def _completar_campos_faltantes_desde_ocr(datos, datos_ocr) -> bool:
+    """Completar solo huecos; nunca pisar evidencia digital ya confiable."""
+    changed = False
+    fields = _CRITICAL_FISCAL_FIELDS + (
+        "cuit_emisor", "cuit_receptor", "moneda", "subtotal", "impuestos",
+        "importe_total", "cae", "vencimiento_cae",
+    )
+    for field in fields:
+        if not getattr(datos, field, None) and getattr(datos_ocr, field, None):
+            setattr(datos, field, getattr(datos_ocr, field))
+            changed = True
+    return changed
+
+
+def _requiere_rescate_semantico(datos, proveedor: Supplier) -> bool:
+    """Detectar capas de texto parciales que justifican un segundo OCR."""
+    if not proveedor.detected:
+        return True
+    return any(not getattr(datos, field, None) for field in _CRITICAL_FISCAL_FIELDS)
+
+
+def _detectar_proveedor_en_texto_rescate(texto_ocr: str, datos_ocr, ruta_pdf: Path) -> dict | None:
+    """Intentar catálogo y emisor ocasional sobre una lectura OCR secundaria."""
+    if not texto_ocr.strip():
+        return None
+    texto_proveedor = f"{texto_ocr}\nNOMBRE ORIGINAL DEL ARCHIVO: {ruta_pdf.name}"
+    resultado = supplier_detector.detectar_proveedor(texto_proveedor)
+    candidato = Supplier.from_detection_result(resultado)
+    if candidato.detected:
+        return resultado
+    return detectar_emisor_no_recurrente(
+        texto_ocr,
+        getattr(datos_ocr, "cuit_emisor", None),
+        ruta_pdf.name,
     )
 
 
@@ -101,6 +148,38 @@ def procesar_factura(ruta_pdf, texto: str, resultado_proveedor: dict, carpeta_ra
         if resultado_ocasional is not None:
             resultado_proveedor = resultado_ocasional
             proveedor = Supplier.from_detection_result(resultado_proveedor)
+
+    # Una capa de texto puede existir y, aun así, ser incompleta: encabezados
+    # dibujados como imagen, columnas laterales o logos pueden perder razón
+    # social, fecha o letra. Solo cuando faltan datos críticos ejecutamos un
+    # OCR de rescate y usamos esa segunda lectura para completar huecos.
+    # Nunca reemplazamos un dato fiscal ya detectado en la capa digital.
+    if _requiere_rescate_semantico(datos, proveedor):
+        try:
+            rescate = pdf_reader.extraer_texto_ocr_forzado(ruta_pdf)
+        except Exception:
+            rescate = {"texto_completo": "", "estado": "ocr_error"}
+        texto_ocr = rescate.get("texto_completo", "") or ""
+        if texto_ocr.strip():
+            parseo_ocr = invoice_parser.extraer_datos_factura(texto_ocr)
+            datos_ocr = parseo_ocr.datos
+            _completar_campos_faltantes_desde_ocr(datos, datos_ocr)
+
+            if not proveedor.detected:
+                resultado_rescate = _detectar_proveedor_en_texto_rescate(
+                    texto_ocr, datos_ocr, ruta_pdf
+                )
+                if resultado_rescate is None:
+                    # A veces una fuente conserva el CUIT y la otra el nombre.
+                    # La fusión se reserva exclusivamente a identidad del emisor.
+                    resultado_rescate = detectar_emisor_no_recurrente(
+                        f"{texto}\n{texto_ocr}",
+                        datos.cuit_emisor or datos_ocr.cuit_emisor,
+                        ruta_pdf.name,
+                    )
+                if resultado_rescate is not None:
+                    resultado_proveedor = resultado_rescate
+                    proveedor = Supplier.from_detection_result(resultado_proveedor)
 
     # El contenido del PDF es la fuente principal. Solo cuando el parser no
     # pudo obtener la letra o el número consultamos el nombre original como

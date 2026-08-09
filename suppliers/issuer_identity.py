@@ -26,7 +26,13 @@ _REJECT_EXACT = {
     "FACTURA B",
     "FACTURA C",
     "NOTA DE CREDITO",
+    "NOTA DE CREDITO A",
+    "NOTA DE CREDITO B",
+    "NOTA DE CREDITO C",
     "NOTA DE DEBITO",
+    "NOTA DE DEBITO A",
+    "NOTA DE DEBITO B",
+    "NOTA DE DEBITO C",
     "RECIBO",
     "CLIENTE",
     "PROVEEDOR",
@@ -47,6 +53,12 @@ _REJECT_EXACT = {
     "PUNTO DE VENTA",
     "COMP NRO",
     "IVA RESPONSABLE INSCRIPTO",
+    "NO RESPONSABLE",
+    "RESP INSCRIPTO",
+    "ING BRUTOS",
+    "SENOR CONSORCISTA",
+    "ACLARACION Y SELLO",
+    "FIRMA AUTORIZADA",
     "DESCRIPCION",
     "CANTIDAD",
     "PRECIO UNIT",
@@ -73,6 +85,19 @@ _REJECT_CONTAINS = (
     "ALICUOTA",
     "PAG ",
     "PRECIO UNIT",
+    "LIQUIDACION DE GASTOS COMUNES",
+    "DETALLES DE GASTOS",
+    "EMITIR CHEQUES",
+    "CHEQUES A LA ORDEN",
+    "COMPROBANTE ASOCIADO",
+    "FACTURA ASOCIADA",
+    "NOTA DE CREDITO ASOCIADA",
+    "NOTA DE DEBITO ASOCIADA",
+    "DOCUMENTO ASOCIADO",
+    "DOCUMENTO RELACIONADO",
+    "COMPROBANTE RELACIONADO",
+    "COMPROBANTE ORIGINAL",
+    "REFERENCIA",
 )
 _ADDRESS_WORDS = {
     "CALLE", "AV", "AVENIDA", "PISO", "DPTO", "BUENOS", "AIRES", "CABA",
@@ -80,7 +105,7 @@ _ADDRESS_WORDS = {
 }
 _LEGAL_SUFFIXES = {
     "SA", "SRL", "SAS", "SE", "SCA", "SH", "SACIF", "SAU", "SOCIEDAD",
-    "COOPERATIVA",
+    "COOPERATIVA", "CONSORCIO", "COPROPIETARIOS",
 }
 _EXPLICIT_NAME_LABEL = re.compile(
     r"^(?:APELLIDO\s+Y\s+NOMBRE\s*/?\s*)?RAZON\s+SOCIAL\s*:\s*(.+)$"
@@ -88,6 +113,22 @@ _EXPLICIT_NAME_LABEL = re.compile(
 _TRADE_NAME_LABEL = re.compile(r"^NOMBRE\s+DE\s+FANTASIA\s*:\s*(.+)$")
 _CUIT_TEXT_PATTERN = re.compile(
     r"(?<!\d)(\d{2})\s*[-.]?\s*(\d{8})\s*[-.]?\s*(\d)(?!\d)"
+)
+
+_DYNAMIC_REJECT_PREFIXES = (
+    "CUIT ", "CUIT:", "CUIT EMISOR", "CUIT RECEPTOR",
+    "RAZON SOCIAL", "NOMBRE DE FANTASIA",
+    "FECHA ", "FECHA:", "FECHA DE EMISION", "VENC",
+    "INGRESOS BRUTOS", "INICIO DE ACTIVIDADES", "FECHA DE INICIO",
+    "NUMERO ", "NRO ", "NRO.", "NO ", "NO.",
+    "PUNTO DE VENTA", "COMP ", "COMPROBANTE ",
+    "CLIENTE ", "RECEPTOR ", "DESTINATARIO ",
+    "TOTAL ", "NETO ", "IVA ", "CAE ", "MOTIVO ",
+)
+
+_DOCUMENT_PREFIX_PATTERN = re.compile(
+    r"^(?:(?:FACTURA|NOTA\s+(?:DE\s+)?CREDITO|NOTA\s+(?:DE\s+)?DEBITO|REMITO|RECIBO)"
+    r"(?:\s+[ABC]\b)?\s*[-:–—]*\s*)+"
 )
 
 
@@ -124,7 +165,12 @@ def _lines(text: str) -> list[str]:
 
 
 def _normalized_words(value: str) -> list[str]:
-    return re.findall(r"[A-Z]{2,}", re.sub(r"[^A-Z0-9]+", " ", value))
+    normalized = _ascii_upper(value)
+    # Unificar formas jurídicas puntuadas antes de separar palabras.
+    normalized = re.sub(r"\bS\s*\.\s*R\s*\.\s*L\s*\.?", " SRL ", normalized)
+    normalized = re.sub(r"\bS\s*\.\s*A\s*\.\s*S\s*\.?", " SAS ", normalized)
+    normalized = re.sub(r"\bS\s*\.\s*A\s*\.?", " SA ", normalized)
+    return re.findall(r"[A-Z]{2,}", re.sub(r"[^A-Z0-9]+", " ", normalized))
 
 
 def _is_name_candidate(line: str) -> bool:
@@ -132,6 +178,8 @@ def _is_name_candidate(line: str) -> bool:
     if not normalized or normalized in _COPY_MARKERS or normalized in _REJECT_EXACT:
         return False
     if any(fragment in normalized for fragment in _REJECT_CONTAINS):
+        return False
+    if any(normalized.startswith(prefix) for prefix in _DYNAMIC_REJECT_PREFIXES):
         return False
     if re.search(r"\b\d{2}[/-]\d{2}[/-]\d{2,4}\b", normalized):
         return False
@@ -163,6 +211,16 @@ def _add_candidate(
     evidence: list[str],
 ) -> None:
     cleaned = _clean_line(name)
+    # El OCR puede pegar el tipo documental al nombre del emisor, p. ej.
+    # ``NOTA DE CREDITO CONSTRUCCIONES KAISA S.A.``. El tipo no forma parte
+    # de la razón social y se elimina antes del scoring/naming.
+    cleaned = _DOCUMENT_PREFIX_PATTERN.sub("", cleaned).strip()
+    if cleaned.startswith("CONSORCIO DE "):
+        # El OCR suele pegar la numeración del inmueble al beneficiario:
+        # ``CONSORCIO DE COP COSSETTINI 703/787``. Esa fracción identifica la
+        # dirección, no forma parte estable de la razón social y produciría
+        # carpetas duplicadas para el mismo CUIT.
+        cleaned = re.sub(r"\s+\d{2,4}\s*/\s*\d{2,4}$", "", cleaned).strip()
     if not _is_name_candidate(cleaned):
         return
     key = _candidate_key(cleaned)
@@ -176,7 +234,52 @@ def _collect_name_candidates(lines: list[str]) -> list[_NameCandidate]:
     """Reunir nombres candidatos en todo el documento, no solo en el encabezado."""
     candidates: dict[str, _NameCandidate] = {}
 
+    # Los consorcios suelen imprimir la denominación legal partida en varias
+    # líneas (CONSORCIO / COPROPIETARIOS / dirección o nombre del edificio).
+    # Componer ese encabezado es más fiable que tomar una línea OCR aislada.
     for index, line in enumerate(lines):
+        if line != "CONSORCIO":
+            continue
+        window_end = min(len(lines), index + 6)
+        copro_index = next(
+            (i for i in range(index + 1, window_end) if "COPROPIETARIOS" in lines[i]),
+            None,
+        )
+        if copro_index is None:
+            continue
+        parts = [line, lines[copro_index]]
+        # El nombre o dirección identificatoria puede quedar una o dos líneas
+        # después de COPROPIETARIOS por el orden de lectura del OCR.
+        for candidate_index in range(copro_index + 1, min(len(lines), copro_index + 4)):
+            candidate_line = lines[candidate_index]
+            if _is_name_candidate(candidate_line) and not re.search(r"\bN[°O]?\.?\s*\d", candidate_line):
+                parts.append(candidate_line)
+                break
+        _add_candidate(
+            candidates,
+            name=" ".join(parts),
+            index=index,
+            score=13,
+            evidence=["denominacion_consorcio_compuesta"],
+        )
+
+    for index, line in enumerate(lines):
+        # En liquidaciones de expensas la denominación del emisor suele
+        # repetirse como beneficiario de pago en una sola línea y el OCR la
+        # conserva mejor que el membrete superior partido en columnas.
+        consorcio_match = re.search(
+            r"\b(CONSORCIO\s+DE\s+[A-Z][A-Z0-9 .&-]*?)(?=\s+\d{2,4}\s*/\s*\d{2,4}\b|$)",
+            line,
+        )
+        if consorcio_match:
+            _add_candidate(
+                candidates,
+                name=consorcio_match.group(1),
+                index=index,
+                score=15,
+                evidence=["denominacion_consorcio_explicita"],
+            )
+
         explicit = _EXPLICIT_NAME_LABEL.match(line)
         if explicit:
             _add_candidate(
@@ -218,6 +321,33 @@ def _collect_name_candidates(lines: list[str]) -> list[_NameCandidate]:
                 evidence=["inmediatamente_despues_de_marca_de_copia"],
             )
 
+        # Patrón genérico muy frecuente: razón social en una línea y CUIT en
+        # la siguiente. No requiere literalmente la etiqueta ``Razón Social``.
+        # Si además el CUIT dice ``emisor``, la señal es todavía más fuerte.
+        if index + 1 < len(lines) and _CUIT_TEXT_PATTERN.search(lines[index + 1]):
+            cuit_line = lines[index + 1]
+            # Para un CUIT genérico exigimos que la línea anterior parezca un
+            # nombre puro (sin importes/códigos). ``CUIT EMISOR`` ya aporta una
+            # etiqueta semántica fuerte y admite una regla más directa.
+            previous_words = _normalized_words(line)
+            looks_like_clean_name = (
+                not re.search(r"\d", line)
+                and 2 <= len(previous_words) <= 8
+            )
+            if looks_like_clean_name:
+                score = 11 if "CUIT EMISOR" in cuit_line else 8
+                evidence = [
+                    "nombre_inmediatamente_antes_del_cuit",
+                    "cuit_emisor_explicito" if "CUIT EMISOR" in cuit_line else "cuit_en_linea_siguiente",
+                ]
+                _add_candidate(
+                    candidates,
+                    name=line,
+                    index=index,
+                    score=score,
+                    evidence=evidence,
+                )
+
         if not _is_name_candidate(line):
             continue
 
@@ -227,6 +357,9 @@ def _collect_name_candidates(lines: list[str]) -> list[_NameCandidate]:
         if any(word in _LEGAL_SUFFIXES for word in words):
             score += 4
             evidence.append("forma_juridica")
+            if words and words[0] == "CONSORCIO":
+                score += 3
+                evidence.append("denominacion_consorcio")
         elif 3 <= len(words) <= 5:
             score += 2
             evidence.append("estructura_nombre_persona")
@@ -248,12 +381,44 @@ def _collect_name_candidates(lines: list[str]) -> list[_NameCandidate]:
     return list(candidates.values())
 
 
+
+
+def _receiver_cuits_by_name_context(lines: list[str]) -> set[str]:
+    """Detectar CUIT ligados visualmente al receptor aunque el dígito difiera.
+
+    El CUIT canónico sigue siendo la fuente de verdad. Esta ayuda existe para
+    OCR: si una línea dice explícitamente MADERO ROOF TOP y junto a ella aparece
+    otro CUIT válido, ese número pertenece al bloque receptor y no debe competir
+    como emisor ocasional. Nunca convierte ese CUIT en dato canónico; solo lo
+    excluye del conjunto de candidatos.
+    """
+    result: set[str] = set()
+    for index, line in enumerate(lines):
+        if "MADERO ROOF" not in line:
+            continue
+        for candidate_index in range(index, min(len(lines), index + 2)):
+            for cuit in extraer_cuits(lines[candidate_index]):
+                result.add(cuit)
+    return result
+
+
 def _find_cuit_line_indices(lines: list[str], cuit: str) -> list[int]:
-    digits = re.sub(r"\D", "", cuit)
+    """Localizar el CUIT como campo, no como fragmento de un código de barras.
+
+    Un comprobante puede incluir una tira numérica que contiene el CUIT dentro
+    de 40 o 50 dígitos. Usar una búsqueda por subcadena hacía que texto OCR
+    cercano al código de barras pareciera estar junto al CUIT y recibiera un
+    puntaje artificialmente alto.
+    """
+
+    target = re.sub(r"\D", "", cuit)
     result: list[int] = []
     for index, line in enumerate(lines):
-        if digits in re.sub(r"\D", "", line):
-            result.append(index)
+        for match in _CUIT_TEXT_PATTERN.finditer(line):
+            candidate = "".join(match.groups())
+            if candidate == target:
+                result.append(index)
+                break
     return result
 
 
@@ -336,9 +501,22 @@ def _best_name_for_cuit(
     # de fantasía, pero una diferencia mínima entre candidatos similares se
     # considera ambigua.
     if len(scored) > 1:
-        second_score, _second_index, second_name, _second_evidence = scored[1]
+        second_score, _second_index, second_name, second_evidence = scored[1]
         if second_name != best_name and second_score >= best_score - 1:
-            return None, best_score, best_evidence + ("nombres_candidatos_ambiguos",)
+            # Una denominación explícita puede convivir con el mismo nombre
+            # fragmentado por OCR. No es una ambigüedad real: es la misma
+            # entidad expresada con distinta calidad de lectura.
+            explicit_best = any(
+                reason in best_evidence
+                for reason in (
+                    "razon_social_explicita_en_misma_linea",
+                    "razon_social_explicita_en_linea_siguiente",
+                    "denominacion_consorcio_explicita",
+                )
+            )
+            second_is_fragment = "denominacion_consorcio_compuesta" in second_evidence
+            if not (explicit_best and second_is_fragment):
+                return None, best_score, best_evidence + ("nombres_candidatos_ambiguos",)
 
     return best_name, best_score, best_evidence
 
@@ -354,12 +532,23 @@ def extraer_identidad_emisor(text: str, cuit_hint: str | None = None) -> IssuerI
     * ausencia de empate entre nombres candidatos.
     """
     third_party_cuits: list[str] = []
+    lines = _lines(text)
+    receiver_context_cuits = _receiver_cuits_by_name_context(lines)
+
     normalized_hint = normalizar_cuit(cuit_hint)
-    if normalized_hint and not business_config.es_cuit_receptor(normalized_hint):
+    if (
+        normalized_hint
+        and not business_config.es_cuit_receptor(normalized_hint)
+        and normalized_hint not in receiver_context_cuits
+    ):
         third_party_cuits.append(normalized_hint)
 
     for cuit in extraer_cuits(text):
-        if business_config.es_cuit_receptor(cuit) or cuit in third_party_cuits:
+        if (
+            business_config.es_cuit_receptor(cuit)
+            or cuit in receiver_context_cuits
+            or cuit in third_party_cuits
+        ):
             continue
         third_party_cuits.append(cuit)
 
@@ -368,7 +557,6 @@ def extraer_identidad_emisor(text: str, cuit_hint: str | None = None) -> IssuerI
     if len(third_party_cuits) != 1:
         return None
 
-    lines = _lines(text)
     name_candidates = _collect_name_candidates(lines)
     legal_name, name_score, name_evidence = _best_name_for_cuit(
         third_party_cuits[0], lines, name_candidates

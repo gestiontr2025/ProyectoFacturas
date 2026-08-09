@@ -69,39 +69,101 @@ def _normalizar(texto: str) -> str:
 
 
 def _score_fiscal(content: str) -> int:
-    """Medir evidencia de un comprobante fiscal real.
+    """Medir evidencia fiscal independiente de la categoría documental.
 
-    No alcanza con encontrar la palabra ``factura``: órdenes de pago y estados
-    de cuenta también pueden mencionarla. Por eso se combinan encabezado,
-    numeración, datos tributarios y CAE.
+    El puntaje combina señales estructurales. Esto permite reconocer facturas
+    de sistemas legacy (por ejemplo ``FACTURA 0056 - 00562701``) y
+    liquidaciones fiscales de expensas (por ejemplo ``FA "A"
+    0001-00005591``) aunque también contengan palabras como ``consorcio`` o
+    ``comprobante de pago``.
     """
 
     score = 0
+
+    # Tipo fiscal explícito o abreviatura estructurada.
     if re.search(r"F\s*A\s*C\s*T\s*U\s*R\s*A|NOTA\s+DE\s+(?:CREDITO|DEBITO)", content):
         score += 5
     if re.search(r"\b(?:FCA|FCB|FCC|NCA|NCB|NCC|NDA|NDB|NDC)\b", content):
         score += 5
-    if re.search(r"\b[ABCEMT]\s+\d{1,5}\s*[-/]\s*\d{1,8}\b", content):
+    if re.search(r"\bFA\s*[-_/\"' ]*[ABC]\s*[-_/\"' ]*\d{1,5}\s*[-/]\s*\d{1,8}\b", content):
+        score += 5
+
+    # Numeración fiscal. Algunos ERP omiten la letra junto al número porque la
+    # imprimen en un recuadro separado.
+    if re.search(r"\b[ABCEMT]\s*\d{1,5}\s*[-/]\s*\d{1,8}\b", content):
         score += 4
-    if re.search(r"\b(?:PUNTO DE VENTA|COMP\.?\s*NRO|N[ROº°]*\s*:?\s*\d{1,5}\s*[-/]\s*\d+)", content):
+    elif re.search(r"\b(?:FACTURA|NOTA\s+(?:DE\s+)?(?:CREDITO|DEBITO))\s+\d{1,5}\s*[-/]\s*\d{1,8}\b", content):
+        score += 4
+    elif re.search(r"\bN[ROº°]*\s*[:;,.-]?\s*\d{1,5}\s*[-/]\s*\d{1,8}\b", content):
         score += 3
-    if "CAE" in content:
+
+    if re.search(r"\b(?:PUNTO DE VENTA|COMP\.?\s*NRO)\b", content):
+        score += 3
+
+    # CAE tolerante a puntos: C.A.E. también es una señal fuerte.
+    if re.search(r"\bC\s*\.?\s*A\s*\.?\s*E\s*\.?\b", content):
         score += 4
-    if "CUIT" in content:
+
+    # Identidad tributaria, IVA y totales aportan evidencia adicional.
+    if "CUIT" in content or re.search(r"(?<!\d)\d{2}-?\d{8}-?\d(?!\d)", content):
         score += 1
-    if "RESPONSABLE INSCRIPTO" in content:
+    if "RESPONSABLE INSCRIPTO" in content or re.search(r"\bIVA\b", content):
         score += 1
-    if re.search(r"\b\d{1,2}/\d{1,2}/\d{4}\b", content):
+    if re.search(r"\b(?:TOTAL A PAGAR|IMPORTE TOTAL|TOTAL EXPENSAS|TOTAL)\b", content):
         score += 1
+    if re.search(r"\b\d{1,2}[./-]\d{1,2}[./-]\d{4}\b|\b\d{1,2}\s+\d{1,2}\s+20\d{2}\b", content):
+        score += 1
+
+    # Las liquidaciones fiscales de expensas suelen omitir la palabra FACTURA
+    # aunque visualmente exhiben letra, numeración, CUIT e IVA. El OCR puede
+    # perder la letra del recuadro, por lo que usamos la combinación completa
+    # de señales estructurales en vez de una palabra aislada.
+    common_expense = "LIQUIDACION DE GASTOS COMUNES" in content
+    common_expense_number = bool(re.search(
+        r"\bN[ROº°]*\.?\s*[:;,.-]?\s*\d{1,5}\s*[-/]\s*\d{1,8}\b",
+        content,
+    ))
+    common_expense_vat = bool(re.search(r"\bIVA\s+(?:21|27)\s*%", content))
+    common_expense_cuit = bool(re.search(r"\bCUIT\b.{0,80}?(?<!\d)\d{2}-?\d{8}-?\d(?!\d)", content))
+    if common_expense and common_expense_number and common_expense_vat and common_expense_cuit:
+        score += 6
+
     return score
 
 
+def _explicit_receipt_type(content: str) -> TipoDocumento | None:
+    """Reconocer recibos propios aunque mencionen facturas imputadas.
+
+    Un recibo puede listar números como ``A00002-00000003`` o la palabra
+    ``FACTURA`` dentro de la imputación. Esas referencias no convierten al
+    recibo en factura. Se exige una cabecera inequívoca del documento.
+    """
+
+    if re.search(
+        r"\bRECIBO\s+OFICIAL\b|\bN\s*[°º]?\s*RECIBO\b|\bNRO\.?\s*RECIBO\b",
+        content,
+    ):
+        return TipoDocumento.REMITO_RECIBO
+    return None
+
+
 def _special_payment_type(content: str) -> TipoDocumento | None:
-    """Detectar documentos de pago antes de evaluar categorías genéricas."""
+    """Detectar documentos de pago sin confundir negaciones contractuales.
+
+    Muchas facturas imprimen literalmente ``NO ES COMPROBANTE DE PAGO``. Esa
+    frase describe justamente lo contrario y no puede activar la categoría de
+    comprobante de pago.
+    """
 
     if re.search(r"\bORDEN(?:\s+DE)?\s+PAGO\b|\bOP\s*\d{1,5}\s*[-/]\s*\d+|OP\d{1,5}-\d+", content):
         return TipoDocumento.ORDEN_PAGO
-    if re.search(r"\bCOMPROBANTE\s+DE\s+PAGO\b|COMPROBANTEDEPAGO|\bPAGO\s+REALIZADO\b|\bIMPORTE\s+PAGADO\b", content):
+
+    payment_content = re.sub(
+        r"\b(?:NO\s+ES|NO\s+CONSTITUYE|NO\s+REVISTE\s+CARACTER\s+DE)\s+COMPROBANTE\s+DE\s+PAGO\b",
+        " ",
+        content,
+    )
+    if re.search(r"\bCOMPROBANTE\s+DE\s+PAGO\b|COMPROBANTEDEPAGO|\bPAGO\s+REALIZADO\b|\bIMPORTE\s+PAGADO\b", payment_content):
         return TipoDocumento.COMPROBANTE_PAGO
     return None
 
@@ -126,6 +188,17 @@ def clasificar_documento(texto: str, nombre_archivo: str = "") -> ResultadoClasi
     for category, points in puntuar_por_nombre_descriptivo(normalized_name).items():
         scores[category] = scores.get(category, 0) + points
 
+    receipt_type = _explicit_receipt_type(combined)
+    if receipt_type is not None:
+        return ResultadoClasificacion(
+            receipt_type,
+            invoice_score,
+            scores.get(TipoDocumento.LISTA_PRECIOS.value, 0),
+            "El documento se identifica explícitamente como recibo; las facturas mencionadas son imputaciones o referencias.",
+            scores,
+            "alta",
+        )
+
     payment_type = _special_payment_type(combined)
     if payment_type is not None and invoice_score < 8:
         return ResultadoClasificacion(
@@ -133,6 +206,20 @@ def clasificar_documento(texto: str, nombre_archivo: str = "") -> ResultadoClasi
             invoice_score,
             scores.get(TipoDocumento.LISTA_PRECIOS.value, 0),
             f"El contenido o el nombre identifica un {payment_type.value.replace('_', ' ')}.",
+            scores,
+            "alta",
+        )
+
+    # Evidencia fiscal fuerte tiene prioridad sobre categorías auxiliares. Una
+    # liquidación de expensas puede ser simultáneamente un documento de
+    # consorcio y un comprobante fiscal; para el proyecto interesa conservarla
+    # dentro del flujo de facturas cuando posee identidad y numeración fiscal.
+    if invoice_score >= 10:
+        return ResultadoClasificacion(
+            TipoDocumento.FACTURA,
+            invoice_score,
+            scores.get(TipoDocumento.LISTA_PRECIOS.value, 0),
+            "El documento contiene evidencia fiscal estructural fuerte.",
             scores,
             "alta",
         )
