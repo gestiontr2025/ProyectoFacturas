@@ -51,6 +51,21 @@ def reprocesar_pendientes() -> list[dict]:
         try:
             lectura = pdf_reader.leer_pdf(ruta_pdf)
             texto = lectura.get("texto_completo", "")
+
+            # Un PDF escaneado sin texto no puede clasificarse con seguridad.
+            # En particular, el nombre ``CCF_*.pdf`` no debe bastar para
+            # archivarlo como consorcio porque puede contener una factura fiscal.
+            if not lectura.get("contiene_texto"):
+                resultados.append({
+                    "nombre": ruta_pdf.name,
+                    "estado": "pendiente",
+                    "categoria": "desconocido",
+                    "ruta_final": ruta_pdf,
+                    "motivo": pdf_reader.describir_fallo_ocr(lectura),
+                    "ocr_estado": lectura.get("ocr_estado"),
+                })
+                continue
+
             clasificacion = clasificar_documento(texto, ruta_pdf.name)
 
             if clasificacion.tipo in FOLDERS_BY_TYPE:

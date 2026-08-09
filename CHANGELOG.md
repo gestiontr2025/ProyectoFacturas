@@ -1,3 +1,113 @@
+# Versión 0.36.1
+
+- Implementa realmente OCR rotado 90°/270° para texto vertical.
+- Expone `ocr_candidatos` con método, puntaje y texto de cada pasada.
+- Mantiene fusión conservadora y validación estricta de CUIT.
+
+# Versión 0.36
+
+- Agrega diagnóstico de candidatos OCR.
+- Prepara OCR rotado 90°/270° para rescatar texto vertical cuando falta proveedor.
+- Mantiene validación estricta de CUIT y fusión conservadora de evidencia.
+
+# Versión 0.35 — fusión conservadora de evidencia OCR
+
+- Fusiona evidencia validada entre distintas pasadas OCR en vez de descartar todas salvo la de mayor puntaje global.
+- Mantiene como base la lectura mejor puntuada y completa únicamente campos faltantes; nunca reemplaza tipo, letra, número o fecha ya detectados.
+- Puede recuperar razón social y CUIT desde una pasada secundaria cuando otra segmentación conserva mejor la cabecera fiscal.
+- La identidad complementaria solo se incorpora si el CUIT supera la validación matemática y el detector de emisor construye una identidad no ambigua.
+- La fusión agrega evidencia canónica mínima, no concatena OCRs completos, para evitar mezclar facturas asociadas, receptores u otros textos internos.
+- `ocr_metodo` expone las pasadas utilizadas con el formato `fusion_ocr[...]`, facilitando el diagnóstico.
+- Agrega regresiones para fusionar cabecera + emisor, preservar campos fiscales confiables y rechazar CUIT OCR inválidos. La suite alcanza 168 pruebas.
+
+# Versión 0.34 — OCR multipasada con scoring fiscal
+
+- Agrega OCR multipasada con Tesseract CLI usando PSM 3, 4, 6, 11 y 12 para layouts de columnas, formularios y texto disperso.
+- La selección entre lecturas OCR ya no depende solo de palabras clave: premia tipo, letra, número, fecha, CUIT válido e identidad de emisor realmente validada por los parsers del proyecto.
+- Penaliza lecturas donde una etiqueta CUIT contiene once dígitos que no superan el dígito verificador, reduciendo errores OCR de un solo carácter.
+- Mantiene intacta la política conservadora: no corrige ni inventa CUIT o letras; elige otra lectura únicamente cuando Tesseract la recuperó con mayor evidencia.
+- Expone `ocr_puntaje` junto a `ocr_metodo` para diagnóstico.
+- Las facturas digitales no pagan el costo multipasada: estas estrategias solo se ejecutan cuando el documento ya necesita OCR o rescate semántico.
+
+# Versión 0.33 — rescate semántico y scoring conservador
+
+- Agrega OCR de rescate aunque el PDF ya tenga capa de texto cuando faltan campos críticos.
+- La lectura OCR secundaria completa únicamente huecos y nunca sobrescribe datos fiscales ya detectados.
+- Refuerza la detección de emisores cuando la razón social está inmediatamente antes de un CUIT, con mayor peso para `CUIT emisor`.
+- Descarta rótulos variables como CUIT, fecha, número, receptor o nombre de fantasía como candidatos de razón social.
+- Normaliza formas jurídicas puntuadas (`S.A.`, `S.R.L.`, `S.A.S.`) para mejorar el scoring.
+- Limpia prefijos documentales pegados por OCR, por ejemplo `NOTA DE CREDITO CONSTRUCCIONES KAISA S.A.`.
+- Corrige Factura B con `Punto de venta ... Comprobante ...` sin rótulo `Nro`.
+- Corrige NC/ND para no confundir fechas con números de comprobante y admite `Numero del comprobante` en otra línea.
+- Mantiene la validación estricta de CUIT y el criterio de dejar en `_Pendientes` los casos realmente ambiguos.
+- Agrega pruebas de regresión para Archeron, Kaisa, Eventos Manon y rescate OCR semántico. La suite alcanza 161 pruebas.
+
+# Versión 0.32 — OCR semántico y comprobantes relacionados
+
+- Agrega un segundo OCR de rescate con Tesseract CLI (`--psm 3`) para PDFs imagen y conserva automáticamente la lectura con mayor evidencia fiscal.
+- Distingue el número propio de una Nota de Crédito/Débito del número de la factura o comprobante asociado.
+- Impide que rótulos como `Comprobante asociado`, `Factura asociada` o `Referencia` sean candidatos a razón social.
+- Recupera letras A/B/C que el OCR deja aisladas o pegadas al nombre del emisor, únicamente cuando existe numeración fiscal completa.
+- Puede recuperar una Nota de Débito desde `TOTAL DEBITO` cuando el OCR pierde el título, exigiendo además número y evidencia fiscal.
+- La frase `NO ES FACTURA` deja de ser evidencia de factura, evitando falsos positivos en remitos.
+- Excluye CUIT ubicados en el bloque explícito de Madero Roof aunque el OCR haya alterado el CUIT canónico.
+- Expone `ocr_metodo` para diagnosticar si ganó PyMuPDF/Tesseract o el OCR CLI de rescate.
+- Agrega regresiones específicas para NC asociadas, ND degradadas por OCR, letras aisladas, remitos negados y receptor OCR.
+
+# Versión 0.31 — OCR fiscal robusto para expensas y recibos
+
+- Aumenta el OCR de respaldo de 250 a 300 DPI para recuperar mejor letras y campos pequeños en comprobantes escaneados.
+- Reconoce liquidaciones fiscales de gastos comunes aun cuando no imprimen la palabra FACTURA, siempre que combinen numeración fiscal, CUIT e IVA discriminado.
+- Recupera la letra A en liquidaciones escaneadas cuando aparece aislada o degradada por OCR dentro de una estructura fiscal confirmada.
+- Los recibos explícitos conservan prioridad como recibos aunque mencionen facturas imputadas dentro de su detalle.
+- Evita usar `Venc.` como fecha de emisión y repara años OCR incompatibles cuando la fecha de vencimiento aporta una referencia temporal inequívoca.
+- Normaliza la razón social de consorcios para que numeraciones de domicilio como `703/787` no creen carpetas duplicadas.
+- Agrega regresiones para liquidaciones sin la palabra factura, recibos con referencias fiscales, fechas OCR y nombres de consorcio.
+
+# Versión 0.30
+
+- Migra PyMuPDF desde la API obsoleta `fitz` a `pymupdf`.
+- Agrega diagnóstico explícito del OCR (`ocr_estado` y `ocr_error`).
+- Busca `tessdata` mediante `OCR_TESSDATA_PATH`, `TESSDATA_PREFIX` o rutas estándar de Windows.
+- Un PDF sin capa de texto y sin OCR ya no puede archivarse automáticamente por nombre: permanece en `_Pendientes`.
+- El mismo fail-safe se aplica tanto al reprocesamiento local como al pipeline normal de PDFs.
+- Mejora los mensajes de diagnóstico para instalaciones sin Tesseract OCR.
+
+## 0.29 - Prioridad fiscal y OCR selectivo
+
+- La evidencia fiscal estructural fuerte tiene prioridad sobre categorías auxiliares como consorcio o comprobante de pago.
+- Se evita interpretar la frase `NO ES COMPROBANTE DE PAGO` como un comprobante de pago real.
+- Se incorporó soporte para numeración legacy `FACTURA 0056 - 00562701` y `FA "A" 0001-00005591`.
+- Las fechas legacy separadas por espacios se recuperan cuando están vinculadas a una identidad fiscal.
+- Los PDF completamente escaneados usan OCR selectivo de PyMuPDF como último recurso, sin penalizar los PDF digitales.
+- El scoring de emisores evita asociar CUIT embebidos en códigos de barras y mejora denominaciones de consorcios.
+
+
+
+## 0.28 - Detección de emisores por evidencia ponderada
+
+- El detector de proveedores nuevos recorre todo el documento, sin asumir que el emisor está en el encabezado.
+- Los nombres candidatos se asocian al CUIT mediante distancia, etiquetas explícitas y señales fiscales.
+- Cada decisión conserva el puntaje y la evidencia que la justifica.
+- Se rechazan empates ambiguos y documentos con varios CUIT de terceros.
+- Se agregaron regresiones para emisor al final del PDF y para CUIT/razón social separados.
+
+
+## 0.27 - Detección genérica de proveedores nuevos
+
+- Valida CUIT argentinos mediante su dígito verificador.
+- Excluye automáticamente el CUIT de Madero Roof.
+- Extrae una razón social confiable del encabezado fiscal de facturas ARCA.
+- Organiza proveedores nuevos sin agregarlos manualmente al catálogo.
+- Registra la identidad aprendida en el archivo auxiliar de candidatos.
+- Mantiene pendientes los documentos ambiguos con varios CUIT de terceros.
+
+## 0.26 - 2026-08-04
+
+- Se agregó soporte general para comprobantes compactos como `A00013-00024717`, incluso cuando el número aparece antes de la etiqueta `Número:`.
+- Se incorporó una regresión basada en la familia real de facturas de GOODIES S.A.
+- La regla sigue exigiendo una estructura fiscal completa y no acepta letras aisladas.
+
 ## Etapa 5.8
 
 - Corregida la auditoría de fechas para PDF cuyo texto expone un carácter por línea.

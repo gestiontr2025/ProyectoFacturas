@@ -166,8 +166,8 @@ def detectar_proveedores_pdf(resultados_lectura):
                 "nombre": nombre,
                 "ruta": ruta,
                 "deteccion_realizada": False,
-                "motivo_no_realizada": (
-                    "El PDF no contiene texto extraíble."
+                "motivo_no_realizada": pdf_reader.describir_fallo_ocr(
+                    resultado_lectura.get("resultado_lectura") or {}
                 ),
                 "resultado_proveedor": None,
                 "error": None
@@ -288,7 +288,9 @@ def organizar_facturas_pdf(
                     "ruta_original": archivo["ruta"],
                     "ruta_final": archivo["ruta"],
                     "datos_factura": None,
-                    "motivo_pendiente": "El PDF no contiene texto utilizable.",
+                    "motivo_pendiente": pdf_reader.describir_fallo_ocr(
+                        lectura.get("resultado_lectura") or {}
+                    ),
                 }
             )
             continue
