@@ -1,0 +1,335 @@
+COMANDOS GENERALES DE DESARROLLO - WINDOWS / POWERSHELL
+=======================================================
+
+Machete reutilizable para este y otros proyectos Python.
+
+
+1. ENTORNO VIRTUAL PYTHON
+-------------------------
+
+Crear un entorno virtual:
+
+    python -m venv .venv
+
+Activarlo en PowerShell:
+
+    .venv\Scripts\Activate.ps1
+
+Desactivarlo:
+
+    deactivate
+
+Si PowerShell bloquea Activate.ps1 (normalmente se hace una sola vez por usuario):
+
+    Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+
+Comprobar qué Python se está usando:
+
+    python -c "import sys; print(sys.executable)"
+
+Ver versión de Python:
+
+    python --version
+
+
+2. PIP Y DEPENDENCIAS
+---------------------
+
+Actualizar pip:
+
+    python -m pip install --upgrade pip
+
+Instalar dependencias normales:
+
+    python -m pip install -r requirements.txt
+
+Instalar dependencias de desarrollo:
+
+    python -m pip install -r requirements-dev.txt
+
+Ver paquetes instalados:
+
+    python -m pip list
+
+Ver información de un paquete:
+
+    python -m pip show NOMBRE_PAQUETE
+
+
+3. PYTEST
+---------
+
+Ejecutar todas las pruebas de forma resumida:
+
+    python -m pytest -q
+
+Mostrar detalle:
+
+    python -m pytest -v
+
+Ejecutar un archivo concreto:
+
+    python -m pytest tests/test_archivo.py -v
+
+Ejecutar una prueba concreta:
+
+    python -m pytest tests/test_archivo.py::test_nombre -v
+
+Detenerse en el primer fallo:
+
+    python -m pytest -x
+
+
+4. GIT - ESTADO E HISTORIAL
+---------------------------
+
+Ver estado:
+
+    git status
+
+Ver rama actual:
+
+    git branch --show-current
+
+Ver ramas locales:
+
+    git branch
+
+Ver ramas remotas:
+
+    git branch -r
+
+Ver todas las ramas:
+
+    git branch -a
+
+Ver ramas con seguimiento y último commit:
+
+    git branch -vv
+
+Actualizar la información de los remotos sin modificar los archivos locales:
+
+    git fetch --all
+
+Historial resumido:
+
+    git log --oneline
+
+Últimos 10 commits:
+
+    git log --oneline -10
+
+Historial gráfico de todas las ramas:
+
+    git log --oneline --graph --decorate --all
+
+
+5. GIT - VER CAMBIOS
+--------------------
+
+Ver cambios no preparados:
+
+    git diff
+
+Resumen de archivos modificados:
+
+    git diff --stat
+
+Ver cambios de un archivo:
+
+    git diff -- ruta/al/archivo.py
+
+Ver cambios ya agregados al staging:
+
+    git diff --staged
+
+
+6. GIT - COMMIT Y PUSH
+----------------------
+
+Agregar todos los cambios:
+
+    git add .
+
+Agregar un archivo concreto:
+
+    git add ruta/al/archivo.py
+
+Crear commit:
+
+    git commit -m "tipo: descripción clara del cambio"
+
+Subir la rama actual si ya tiene upstream configurado:
+
+    git push
+
+Primera subida de una rama nueva:
+
+    git push -u origin nombre-rama
+
+
+7. GIT - PULL Y SINCRONIZACIÓN
+------------------------------
+
+Traer y aplicar los cambios de la rama remota asociada:
+
+    git pull
+
+Actualizar main explícitamente:
+
+    git switch main
+    git fetch --all
+    git pull origin main
+
+Comprobar después:
+
+    git status
+
+
+8. GIT - RAMAS
+--------------
+
+Crear una rama y cambiarse a ella:
+
+    git switch -c feature/nombre
+
+Cambiar de rama:
+
+    git switch nombre-rama
+
+Crear una rama local siguiendo una rama remota existente:
+
+    git switch -c nombre-rama --track origin/nombre-rama
+
+Merge de una rama hacia main (estando main actualizado):
+
+    git switch main
+    git pull origin main
+    git merge --no-ff nombre-rama
+
+Después del merge, ejecutar pruebas y finalmente:
+
+    git push origin main
+
+
+9. GIT - STASH / GUARDAR CAMBIOS TEMPORALES
+-------------------------------------------
+
+Guardar cambios temporalmente:
+
+    git stash push -m "descripción"
+
+Incluir también archivos no rastreados:
+
+    git stash push -u -m "descripción"
+
+Ver stashes:
+
+    git stash list
+
+Recuperar el último sin borrarlo del stash:
+
+    git stash apply
+
+Recuperar el último y quitarlo del stash:
+
+    git stash pop
+
+
+10. POWERSHELL - NAVEGACIÓN Y ARCHIVOS
+--------------------------------------
+
+Mostrar carpeta actual:
+
+    Get-Location
+
+Listar contenido:
+
+    Get-ChildItem
+
+Versión corta habitual:
+
+    ls
+
+Cambiar de carpeta:
+
+    cd "C:\ruta\del\proyecto"
+
+Subir una carpeta:
+
+    cd ..
+
+Comprobar si existe una ruta:
+
+    Test-Path "C:\ruta\archivo"
+
+Crear una carpeta:
+
+    New-Item -ItemType Directory -Path "NombreCarpeta"
+
+Copiar archivo:
+
+    Copy-Item origen destino
+
+Mover/renombrar:
+
+    Move-Item origen destino
+
+
+11. VISUAL STUDIO CODE
+----------------------
+
+Abrir la carpeta actual en VS Code:
+
+    code .
+
+Abrir un archivo concreto:
+
+    code archivo.py
+
+Abrir una nueva ventana de VS Code:
+
+    code -n .
+
+
+12. FLUJO SEGURO ANTES DE UN COMMIT
+-----------------------------------
+
+Secuencia recomendada:
+
+    python -m pytest -q
+    git status
+    git diff --stat
+    git add .
+    git diff --staged
+    git commit -m "tipo: descripción"
+    git push
+
+
+13. FLUJO AL CAMBIAR ENTRE DOS COMPUTADORAS
+-------------------------------------------
+
+Antes de dejar una computadora:
+
+    git status
+    python -m pytest -q
+    git add .
+    git commit -m "tipo: descripción"
+    git push
+
+Al comenzar en la otra:
+
+    git switch main
+    git fetch --all
+    git pull origin main
+    git status
+
+Si se trabaja en otra rama, cambiar primero a esa rama y hacer pull de su remoto.
+
+
+RECORDATORIO RÁPIDO
+-------------------
+
+El comando que solemos necesitar al abrir una terminal nueva es:
+
+    .venv\Scripts\Activate.ps1

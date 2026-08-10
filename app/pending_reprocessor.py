@@ -46,10 +46,20 @@ def reprocesar_pendientes() -> list[dict]:
     carpeta = Path(config.SAVE_FOLDER) / "_Pendientes"
     carpeta.mkdir(parents=True, exist_ok=True)
     resultados = []
+    archivos = sorted(carpeta.glob("*.pdf"))
+    total = len(archivos)
 
-    for ruta_pdf in sorted(carpeta.glob("*.pdf")):
+    for indice, ruta_pdf in enumerate(archivos, start=1):
+        # El OCR puede tardar varios segundos en escaneos reales. Mostrar el
+        # archivo actual evita confundir trabajo intensivo con una consola
+        # congelada y facilita identificar un documento patológico.
+        print(f"[{indice}/{total}] Procesando: {ruta_pdf.name}", flush=True)
+
         try:
             lectura = pdf_reader.leer_pdf(ruta_pdf)
+            if lectura.get("ocr_utilizado"):
+                metodo = lectura.get("ocr_metodo") or "OCR"
+                print(f"    OCR utilizado: {metodo}", flush=True)
             texto = lectura.get("texto_completo", "")
 
             # Un PDF escaneado sin texto no puede clasificarse con seguridad.

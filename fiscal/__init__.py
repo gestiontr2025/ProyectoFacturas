@@ -13,7 +13,7 @@ from fiscal.definitions import (
     build_fiscal_code,
     is_supported_combination,
 )
-from fiscal.issue_date import detectar_fecha_emision
+from fiscal.issue_date import detectar_fecha_emision, detectar_fecha_emision_para_auditoria
 from fiscal.letter import detectar_letra_comprobante
 from fiscal.number import detectar_numero_comprobante
 from fiscal.parser import analizar_encabezado_fiscal
@@ -27,6 +27,7 @@ __all__ = [
     "analizar_encabezado_fiscal",
     "build_fiscal_code",
     "detectar_fecha_emision",
+    "detectar_fecha_emision_para_auditoria",
     "detectar_letra_comprobante",
     "detectar_numero_comprobante",
     "detectar_tipo_comprobante",

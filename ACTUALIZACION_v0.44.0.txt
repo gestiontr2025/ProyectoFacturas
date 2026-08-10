@@ -1,0 +1,16 @@
+ProyectoFacturas v0.44.0
+
+Auditoría de fechas:
+- Corrige un defecto de v0.43 donde una fecha equivocada podía quedar oculta como "estable" solo porque coincidía con una fecha secundaria presente en el PDF.
+- Agrega verificación geométrica digital con PyMuPDF (sin OCR) para relacionar visualmente FECHA DE EMISION con su valor y separar vencimientos en layouts por columnas.
+- Si la lectura lineal y la geometría fuerte discrepan, el archivo queda en revisión manual: nunca se mueve por fuerza.
+- La fecha actual del nombre solo se considera confirmada silenciosamente si existe evidencia independiente suficientemente fuerte.
+- El resumen ahora informa cuántos PDF digitales fueron efectivamente verificados, para que los archivos correctos no parezcan ignorados aunque no se impriman uno por uno.
+- OCR sigue siendo opt-in y únicamente para PDF sin texto digital (--audit-organized-dates --ocr).
+
+Seguridad:
+- Vista previa sigue siendo el modo predeterminado.
+- --apply continúa siendo obligatorio para mover/renombrar.
+- Vencimiento, CAE, período facturado e inicio de actividad continúan excluidos como fecha de emisión.
+
+Tests: 199 passed.

@@ -422,6 +422,10 @@ def extraer_texto_pagina(pagina):
 # normal de facturas digitales.
 _OCR_DPI = 300
 _OCR_MAX_PAGES = 2
+# Una pasada CLI individual no debe inmovilizar un lote completo.
+# Los PSM complementarios siguen disponibles como fallback; este límite
+# simplemente permite abandonar una estrategia patológica y probar la siguiente.
+_OCR_CLI_TIMEOUT_SECONDS = 25
 
 
 def _resolver_tessdata() -> str | None:
@@ -558,24 +562,34 @@ def _puntuar_calidad_ocr(texto: str) -> int:
 
 
 def _ejecutar_tesseract_sobre_imagen(image_path: Path, executable: str, *, psm: int) -> str:
-    """Ejecutar Tesseract sobre una imagen ya renderizada."""
+    """Ejecutar Tesseract sobre una imagen ya renderizada.
+
+    Cada PSM es una estrategia alternativa. Si una de ellas queda atrapada en
+    una imagen problemática, el timeout devuelve texto vacío y permite que el
+    OCR adaptativo continúe con la siguiente estrategia. De este modo un solo
+    escaneo no puede bloquear indefinidamente todo ``_Pendientes``.
+    """
     import subprocess
 
-    completed = subprocess.run(
-        [
-            executable,
-            str(image_path),
-            "stdout",
-            "-l",
-            "spa+eng",
-            "--psm",
-            str(psm),
-        ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-        timeout=90,
-    )
+    try:
+        completed = subprocess.run(
+            [
+                executable,
+                str(image_path),
+                "stdout",
+                "-l",
+                "spa+eng",
+                "--psm",
+                str(psm),
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            timeout=_OCR_CLI_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired:
+        return ""
+
     if completed.returncode != 0:
         return ""
     return completed.stdout.decode("utf-8", errors="replace").strip()
@@ -819,8 +833,20 @@ def _ocr_multapas_tesseract(pagina, executable: str) -> list[tuple[str, str]]:
                 if not texto:
                     continue
                 candidatos.append((f"{prefijo}_psm{psm}", texto))
+
+                # Corte rápido 1: una pasada individual ya reconstruyó toda
+                # la evidencia fiscal necesaria.
                 if _ocr_tiene_evidencia_suficiente(texto):
                     return True
+
+                # Corte rápido 2: dos PSM pueden haber recuperado regiones
+                # complementarias. Conservamos la fusión segura desarrollada
+                # en los stress tests y evitamos seguir ejecutando Tesseract
+                # cuando esa evidencia combinada ya es suficiente.
+                if len(candidatos) > 1:
+                    _metodo, texto_acumulado, _puntaje = _seleccionar_mejor_ocr(candidatos)
+                    if _ocr_tiene_evidencia_suficiente(texto_acumulado):
+                        return True
             return False
 
         image_path = temp_path / "page.png"
@@ -847,11 +873,13 @@ def _ocr_multapas_tesseract(pagina, executable: str) -> list[tuple[str, str]]:
                     # que solo implementan la firma histórica con ``dpi``.
                     continue
                 rotated.save(str(rotated_path))
-                ejecutar_sobre_raster(
+                suficiente_rotada = ejecutar_sobre_raster(
                     rotated_path,
                     f"tesseract_cli_rot{angulo}",
                     (6, 11, 3),
                 )
+                if suficiente_rotada:
+                    break
 
     return candidatos
 
@@ -914,9 +942,17 @@ def _extraer_texto_ocr(ruta_pdf, cantidad_paginas: int) -> dict:
         candidatos_ocr: list[tuple[str, str]] = [
             ("pymupdf_tesseract", texto_pymupdf),
         ]
-        executable = _resolver_tesseract_executable()
-        if executable:
-            candidatos_ocr.extend(_ocr_multapas_tesseract(pagina, executable))
+
+        # PyMuPDF ya ejecutó una pasada OCR completa. Antes se lanzaban además
+        # todas las pasadas CLI aunque esa primera lectura ya fuera suficiente.
+        # Ahora las estrategias costosas quedan como fallback: si la evidencia
+        # fiscal ya está completa, conservamos el resultado y evitamos trabajo
+        # redundante; si falta algo, mantenemos intacto el arsenal multipasada,
+        # scoring, fusión y rotaciones validado por los stress tests.
+        if not _ocr_tiene_evidencia_suficiente(texto_pymupdf):
+            executable = _resolver_tesseract_executable()
+            if executable:
+                candidatos_ocr.extend(_ocr_multapas_tesseract(pagina, executable))
 
         metodo_ocr, texto, puntaje_ocr = _seleccionar_mejor_ocr(candidatos_ocr)
         diagnostico_candidatos = [
@@ -990,7 +1026,7 @@ def extraer_texto_ocr_forzado(ruta_pdf) -> dict:
 # INICIO DE LA FUNCIÓN extraer_paginas_pdf()
 # ==========================================================
 
-def extraer_paginas_pdf(ruta_pdf):
+def extraer_paginas_pdf(ruta_pdf, *, permitir_ocr=True):
     """
     Extraer por separado el texto de todas las páginas.
 
@@ -1060,10 +1096,16 @@ def extraer_paginas_pdf(ruta_pdf):
             informacion_pagina
         )
 
-    # Si pypdf no obtuvo texto de ninguna página, intentamos OCR solo entonces.
-    # El diagnóstico se guarda de forma transitoria en cada página para que
-    # ``leer_pdf`` pueda exponerlo sin cambiar la API histórica de esta función.
-    if paginas_extraidas and not any(pagina["texto"] for pagina in paginas_extraidas):
+    # Si pypdf no obtuvo texto de ninguna página, intentamos OCR solo entonces
+    # y únicamente si el llamador lo permite. El parser normal sigue siendo la
+    # ruta por defecto; ``permitir_ocr=False`` existe para operaciones como la
+    # auditoría histórica, donde preferimos omitir un escaneo antes que pagar
+    # OCR o mover un archivo basándonos en una lectura secundaria.
+    if (
+        permitir_ocr
+        and paginas_extraidas
+        and not any(pagina["texto"] for pagina in paginas_extraidas)
+    ):
         resultado_ocr = _extraer_texto_ocr(ruta_pdf, len(paginas_extraidas))
         paginas_ocr = resultado_ocr["paginas"]
         paginas_por_numero = {pagina["numero"]: pagina for pagina in paginas_ocr}
@@ -1143,7 +1185,7 @@ def unir_texto_paginas(paginas):
 # INICIO DE LA FUNCIÓN leer_pdf()
 # ==========================================================
 
-def leer_pdf(ruta_pdf):
+def leer_pdf(ruta_pdf, *, permitir_ocr=True):
     """
     Leer un archivo PDF y devolver un resumen de su contenido.
 
@@ -1172,6 +1214,12 @@ def leer_pdf(ruta_pdf):
                 "texto_completo": "..."
             }
 
+    permitir_ocr:
+
+        Si es ``True`` (valor por defecto), un PDF completamente sin texto
+        digital puede recurrir a OCR. Si es ``False``, la función se limita a
+        extracción digital y nunca invoca Tesseract.
+
     Importante
     ----------
     La función devuelve información estructurada.
@@ -1185,7 +1233,8 @@ def leer_pdf(ruta_pdf):
     )
 
     paginas = extraer_paginas_pdf(
-        ruta_pdf
+        ruta_pdf,
+        permitir_ocr=permitir_ocr,
     )
 
     cantidad_paginas = len(

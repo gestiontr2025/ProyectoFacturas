@@ -1,0 +1,19 @@
+PROYECTO FACTURAS v0.38.0
+
+Esta versión debe copiarse/extraerse sobre el proyecto local existente.
+Conservá tus archivos locales privados y de estado:
+- .env
+- credentials.json
+- token.json
+- data/
+- logs/
+- .venv/
+
+Cambios principales:
+- Parser digital primero; OCR forzado solo después de agotar evidencia digital.
+- La evidencia estructurada del nombre y la recuperación semántica de fecha se evalúan antes del OCR de rescate.
+- --audit-organized-dates usa extracción digital sin OCR/Tesseract.
+- Corrección específica y generalizable de fechas tipo "06/08/2026 Fecha:" frente a "INICIO ACTIV.: 01/04/2006".
+- Se elimina el fallback genérico de fecha sobre texto compactado que perdía contexto semántico.
+- Se conserva OCR multipasada, PSM, scoring, fusión conservadora y rotaciones como fallback.
+- Suite: 180 tests aprobados.

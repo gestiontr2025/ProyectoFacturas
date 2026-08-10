@@ -1,0 +1,11 @@
+ProyectoFacturas v0.40.0
+
+Cambios principales:
+- Auditoría de fechas basada en candidatos, puntuación y confianza.
+- La auditoría puede corregir una fecha actual incorrecta cuando el PDF aporta evidencia fuerte de otra fecha.
+- Contextos como vencimiento, VTO, CAE, período facturado e inicio de actividades quedan penalizados/excluidos como fecha de emisión.
+- Los casos ambiguos se marcan para revisión manual en vez de mover archivos automáticamente.
+- La auditoría continúa usando texto digital sin OCR por defecto.
+- Se agregaron pruebas de regresión específicas para la auditoría puntuada.
+
+Validación: 186 tests superados.

@@ -25,3 +25,22 @@ def test_pdf_con_un_caracter_por_linea_no_confunde_fvto_con_emision():
     assert detectar_fecha_emision(
         texto, contexto_fiscal_confirmado=True
     ) == "08/07/2025"
+
+
+def test_dba_fecha_antes_de_etiqueta_gana_sobre_inicio_actividad():
+    texto = """
+    A
+    06/08/2026 Fecha:
+    Nro: 00013-00189814
+    Distribuidora de Bebidas SRL
+    CUIT: 30-70942442-0
+    INICIO ACTIV.:
+    01/04/2006
+    FACTURA
+    CAE: 86327172503529
+    16/08/2026 Fecha Vencimiento CAE:
+    """
+
+    assert detectar_fecha_emision(
+        texto, contexto_fiscal_confirmado=True
+    ) == "06/08/2026"

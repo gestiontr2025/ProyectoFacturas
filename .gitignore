@@ -129,3 +129,9 @@ data/*.sqlite3-wal
 
 # Registro local y regenerable de proveedores ocasionales.
 data/supplier_candidates.json
+# Credenciales privadas de Google OAuth
+credentials.json
+token.json
+# Registro JSON legado del prototipo de Google Drive.
+# El módulo definitivo migra estos IDs a SQLite y no necesita versionarlos.
+data/drive_downloaded.json

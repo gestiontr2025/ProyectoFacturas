@@ -149,38 +149,6 @@ def procesar_factura(ruta_pdf, texto: str, resultado_proveedor: dict, carpeta_ra
             resultado_proveedor = resultado_ocasional
             proveedor = Supplier.from_detection_result(resultado_proveedor)
 
-    # Una capa de texto puede existir y, aun así, ser incompleta: encabezados
-    # dibujados como imagen, columnas laterales o logos pueden perder razón
-    # social, fecha o letra. Solo cuando faltan datos críticos ejecutamos un
-    # OCR de rescate y usamos esa segunda lectura para completar huecos.
-    # Nunca reemplazamos un dato fiscal ya detectado en la capa digital.
-    if _requiere_rescate_semantico(datos, proveedor):
-        try:
-            rescate = pdf_reader.extraer_texto_ocr_forzado(ruta_pdf)
-        except Exception:
-            rescate = {"texto_completo": "", "estado": "ocr_error"}
-        texto_ocr = rescate.get("texto_completo", "") or ""
-        if texto_ocr.strip():
-            parseo_ocr = invoice_parser.extraer_datos_factura(texto_ocr)
-            datos_ocr = parseo_ocr.datos
-            _completar_campos_faltantes_desde_ocr(datos, datos_ocr)
-
-            if not proveedor.detected:
-                resultado_rescate = _detectar_proveedor_en_texto_rescate(
-                    texto_ocr, datos_ocr, ruta_pdf
-                )
-                if resultado_rescate is None:
-                    # A veces una fuente conserva el CUIT y la otra el nombre.
-                    # La fusión se reserva exclusivamente a identidad del emisor.
-                    resultado_rescate = detectar_emisor_no_recurrente(
-                        f"{texto}\n{texto_ocr}",
-                        datos.cuit_emisor or datos_ocr.cuit_emisor,
-                        ruta_pdf.name,
-                    )
-                if resultado_rescate is not None:
-                    resultado_proveedor = resultado_rescate
-                    proveedor = Supplier.from_detection_result(resultado_proveedor)
-
     # El contenido del PDF es la fuente principal. Solo cuando el parser no
     # pudo obtener la letra o el número consultamos el nombre original como
     # evidencia secundaria. Nunca reemplazamos un dato ya detectado dentro de
@@ -240,6 +208,38 @@ def procesar_factura(ruta_pdf, texto: str, resultado_proveedor: dict, carpeta_ra
     fecha_validada = get_validated_issue_date(ruta_pdf.name)
     if fecha_validada:
         datos.fecha_emision = fecha_validada
+
+    # OCR es un rescate de último recurso, no la ruta normal. Antes de llegar
+    # aquí ya agotamos parser digital, proveedor por texto/nombre, evidencia
+    # estructurada del filename y detección semántica de fecha. Solo si todavía
+    # falta proveedor o un dato fiscal crítico hacemos una segunda lectura OCR.
+    # Nunca reemplazamos evidencia digital ya confiable.
+    if _requiere_rescate_semantico(datos, proveedor):
+        try:
+            rescate = pdf_reader.extraer_texto_ocr_forzado(ruta_pdf)
+        except Exception:
+            rescate = {"texto_completo": "", "estado": "ocr_error"}
+        texto_ocr = rescate.get("texto_completo", "") or ""
+        if texto_ocr.strip():
+            parseo_ocr = invoice_parser.extraer_datos_factura(texto_ocr)
+            datos_ocr = parseo_ocr.datos
+            _completar_campos_faltantes_desde_ocr(datos, datos_ocr)
+
+            if not proveedor.detected:
+                resultado_rescate = _detectar_proveedor_en_texto_rescate(
+                    texto_ocr, datos_ocr, ruta_pdf
+                )
+                if resultado_rescate is None:
+                    # A veces una fuente conserva el CUIT y la otra el nombre.
+                    # La fusión se reserva exclusivamente a identidad del emisor.
+                    resultado_rescate = detectar_emisor_no_recurrente(
+                        f"{texto}\n{texto_ocr}",
+                        datos.cuit_emisor or datos_ocr.cuit_emisor,
+                        ruta_pdf.name,
+                    )
+                if resultado_rescate is not None:
+                    resultado_proveedor = resultado_rescate
+                    proveedor = Supplier.from_detection_result(resultado_proveedor)
 
     # La evidencia del nombre puede completar campos del objeto histórico.
     # Reconstruimos el modelo para que refleje esos cambios antes de validar.

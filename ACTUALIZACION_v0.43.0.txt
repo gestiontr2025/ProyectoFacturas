@@ -1,0 +1,12 @@
+PROYECTO FACTURAS — v0.43.0
+
+Auditoría de fechas: reparación canónica de ruta y nombre
+=========================================================
+
+- La auditoría valida por separado la fecha del nombre y la carpeta año/mes.
+- Si la fecha detectada es correcta pero el nombre conserva una fecha vieja, renombra el PDF.
+- Si el nombre es correcto pero la carpeta está equivocada, reubica el PDF.
+- Si ambos son incorrectos, corrige ambos en una única operación de movimiento.
+- La vista previa muestra ubicación actual y ubicación canónica.
+- Se mantienen todas las defensas de v0.42: parser digital por defecto, OCR selectivo,
+  exclusión de vencimientos/CAE/inicio de actividad y bloqueo de casos ambiguos.

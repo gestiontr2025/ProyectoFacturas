@@ -1,0 +1,46 @@
+MIGRACIÓN — GOOGLE DRIVE MODULARIZADO
+=====================================
+
+Este paquete NO incluye archivos privados locales:
+
+- .env
+- credentials.json
+- token.json
+- .venv/
+
+Si extraés este ZIP encima de tu carpeta ProyectoFacturas actual, esos archivos
+no se borran porque simplemente no forman parte del ZIP.
+
+1. Conservá tus actuales credentials.json y token.json en la raíz.
+
+2. En tu .env actual agregá estas líneas:
+
+DRIVE_PROVIDER_FOLDER_ID=13rjMerJcrwuSoGg9LTxsQZAV9k0XnO-z
+DRIVE_SCAN_FOLDER_ID=
+DRIVE_CREDENTIALS_PATH=
+DRIVE_TOKEN_PATH=
+
+La segunda carpeta queda vacía hasta que definamos la carpeta de escaneos.
+Las rutas OAuth vacías usan automáticamente:
+
+<proyecto>/credentials.json
+<proyecto>/token.json
+
+3. Actualizá dependencias si hiciera falta:
+
+python -m pip install -r requirements.txt
+
+4. Probá solamente la descarga:
+
+python main.py --download-drive
+
+Los 39 IDs que se registraron durante drive_test.py están en
+`data/drive_downloaded.json`. El nuevo módulo los migra automáticamente a la
+base SQLite `data/project_state.sqlite3`, por lo que no deberían volver a
+bajarse.
+
+5. Para procesar lo que ya esté en _Pendientes:
+
+python main.py --reprocess-pending
+
+`drive_test.py` ya no forma parte de la arquitectura definitiva.

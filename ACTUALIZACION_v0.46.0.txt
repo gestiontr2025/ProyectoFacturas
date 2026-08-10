@@ -1,0 +1,38 @@
+PROYECTO FACTURAS v0.46.0
+===========================
+
+Objetivo de esta versión
+------------------------
+Corregir la arquitectura del auditor de fechas. Las versiones anteriores
+tenían decisiones separadas entre texto, geometría y auditoría; eso producía
+falsos `manual_review` y podía hacer que un bloque ARCA aplanado compitiera
+contra la relación visual real entre etiqueta y fecha.
+
+Cambios principales
+-------------------
+1. Un único motor decide entre todos los candidatos de fecha.
+2. La geometría solo aporta evidencia; no decide por separado.
+3. La fecha del nombre no suma puntos a sí misma.
+4. Un bloque ARCA lineal es evidencia auxiliar, no una verdad por posición.
+5. Solo evidencia estructural fuerte puede mover una factura.
+6. Una coincidencia media con la fecha actual deja el archivo estable.
+7. `manual_review` representa un conflicto real, no falta de doble confirmación.
+8. Las facturas sin evidencia suficiente se cuentan como `unresolved_date`.
+
+Validación
+----------
+- Suite automática: 206 pruebas.
+- Banco real entregado por el usuario: 515 facturas organizadas dentro de la
+  estructura proveedor/año/mes. Resultado sin OCR:
+    * 380 verified_ok
+    * 46 would_move
+    * 1 manual_review
+    * 73 unresolved_date
+    * 15 skipped_no_digital_text
+
+Importante
+----------
+Primero ejecutar siempre en vista previa:
+    python main.py --audit-organized-dates
+
+Solo después de revisar la lista de `would_move` usar `--apply`.

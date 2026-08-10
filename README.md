@@ -237,8 +237,9 @@ pudieron recuperarse desde el contenido del PDF.
 
 Algunos encabezados gráficos no son extraíbles con `pypdf`. Para esos casos se
 incorporaron firmas muy específicas y comprobadas para IVINI/Cantine y para la
-familia de adjuntos de Frigorífico Los Prados. Los PDF completamente escaneados
-continúan en `_Pendientes` hasta incorporar un fallback OCR seguro.
+familia de adjuntos de Frigorífico Los Prados. Los PDF completamente escaneados recurren a OCR únicamente cuando no existe
+texto digital utilizable. Las pasadas multipropósito, PSM alternativos y
+rotaciones se reservan como fallback para documentos difíciles.
 
 
 ## Manejo de texto vertical y familias fiscales estructuradas
@@ -265,7 +266,8 @@ python main.py --audit-organized-dates --apply
 ```
 
 El auditor no sobrescribe destinos existentes y excluye `_Pendientes` y
-`_OtrosDocumentos`.
+`_OtrosDocumentos`. Además trabaja deliberadamente en modo digital-only: no
+dispara OCR/Tesseract durante una auditoría masiva de archivos ya organizados.
 
 
 ## Bandeja manual de entrada
@@ -299,3 +301,69 @@ El comando analiza las facturas organizadas y crea en el Escritorio un Excel
 con una única fila por CUIT. Para cada proveedor indica si se observó alguna
 vez IVA 27%, IVA 21%, IVA 10,5%, percepción de IVA, percepción de IIBB CABA,
 percepción de IIBB Buenos Aires o impuestos internos. No exporta importes.
+
+## Integración con Google Drive
+
+Google Drive funciona como una fuente de entrada adicional. El módulo **no**
+interpreta facturas ni decide su destino final: descarga los PDF completos a
+`Facturas/_Pendientes` y reutiliza el pipeline existente.
+
+Arquitectura:
+
+```text
+drive/
+├── connection.py   # OAuth, token y cliente Drive v3
+├── files.py        # listado paginado de una carpeta
+└── downloads.py    # descarga segura .part -> PDF
+
+app/drive_workflow.py   # coordina las fuentes configuradas
+state/drive_history.py  # historial SQLite por fileId de Google Drive
+```
+
+La carpeta `_Pendientes` se crea automáticamente si no existe. Las descargas
+incompletas permanecen con extensión `.part` dentro de una subcarpeta temporal
+y nunca son entregadas al reprocesador.
+
+### Configuración
+
+1. Habilitá Google Drive API y creá un cliente OAuth de tipo **Desktop app**.
+2. Guardá el JSON privado como `credentials.json` en la raíz del proyecto.
+3. Configurá en `.env` al menos una fuente:
+
+```text
+DRIVE_PROVIDER_FOLDER_ID=ID_DE_LA_CARPETA_DEL_PROVEEDOR
+DRIVE_SCAN_FOLDER_ID=
+```
+
+`DRIVE_SCAN_FOLDER_ID` es opcional y puede agregarse más adelante para la
+carpeta donde se carguen facturas físicas escaneadas.
+
+La primera autorización crea `token.json`. Tanto `credentials.json` como
+`token.json` están ignorados por Git.
+
+### Descargar desde Drive
+
+```powershell
+python main.py --download-drive
+```
+
+El comando:
+
+- revisa todas las páginas de cada carpeta configurada;
+- ignora elementos que no sean PDF;
+- omite `fileId` ya completados;
+- descarga primero como `.part`;
+- nunca sobrescribe silenciosamente un PDF local distinto;
+- registra éxito/error en `data/project_state.sqlite3`.
+
+Después, el procesamiento continúa con el comando ya existente:
+
+```powershell
+python main.py --reprocess-pending
+```
+
+### Migración desde `drive_test.py`
+
+Si existe `data/drive_downloaded.json`, los IDs del prototipo se importan de
+forma idempotente a SQLite. De esta forma los documentos ya descargados durante
+las pruebas no vuelven a bajarse. El JSON queda únicamente como archivo legado.

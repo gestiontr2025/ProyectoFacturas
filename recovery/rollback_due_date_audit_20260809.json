@@ -1,0 +1,267 @@
+{
+  "incident": "v0.38.0_due_date_misclassification",
+  "generated_from_user_log": true,
+  "safety": "preview_by_default_no_overwrite",
+  "moves": [
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\BARTOSZUK_GONZALO_ANDRES\\2026\\04\\09-04FCC00001-00000127_MADERO_ROOF_TOP_BARTOSZUK_GONZALO_ANDRES.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\BARTOSZUK_GONZALO_ANDRES\\2026\\03\\30-03FCC00001-00000127_MADERO_ROOF_TOP_BARTOSZUK_GONZALO_ANDRES.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\BARTOSZUK_GONZALO_ANDRES\\2026\\04\\27-04FCC00001-00000128_MADERO_ROOF_TOP_BARTOSZUK_GONZALO_ANDRES.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\BARTOSZUK_GONZALO_ANDRES\\2026\\04\\17-04FCC00001-00000128_MADERO_ROOF_TOP_BARTOSZUK_GONZALO_ANDRES.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\CALCAGNO_WALDO_ESTEBAN\\2026\\03\\19-03FCC00001-00000067_MADERO_ROOF_TOP_CALCAGNO_WALDO_ESTEBAN.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\CALCAGNO_WALDO_ESTEBAN\\2026\\03\\09-03FCC00001-00000067_MADERO_ROOF_TOP_CALCAGNO_WALDO_ESTEBAN.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\03\\12-03FCC00001-00000343_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\03\\02-03FCC00001-00000343_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\03\\16-03FCC00001-00000348_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\03\\06-03FCC00001-00000348_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\03\\22-03FCC00001-00000351_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\03\\12-03FCC00001-00000351_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\03\\22-03FCC00001-00000352_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\03\\12-03FCC00001-00000352_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\03\\26-03FCC00001-00000353_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\03\\16-03FCC00001-00000353_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\03\\30-03FCC00001-00000354_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\03\\20-03FCC00001-00000354_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\04\\06-04FCC00001-00000356_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\03\\27-03FCC00001-00000356_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\04\\14-04FCC00001-00000359_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\04\\04-04FCC00001-00000359_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\05\\07-05FCC00001-00000366_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\04\\27-04FCC00001-00000366_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\05\\18-05FCC00001-00000370_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\05\\08-05FCC00001-00000370_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\05\\25-05FCC00001-00000371_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\05\\15-05FCC00001-00000371_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\05\\25-05FCC00001-00000372_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\05\\15-05FCC00001-00000372_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\07\\10-07FCC00001-00000384_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\06\\30-06FCC00001-00000384_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\07\\18-07FCC00001-00000387_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\07\\08-07FCC00001-00000387_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\07\\26-07FCC00001-00000389_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\07\\16-07FCC00001-00000389_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\08\\10-08FCC00001-00000393_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\07\\31-07FCC00001-00000393_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\08\\15-08FCC00001-00000394_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\CHESKO_AGUSTIN_EZEQUIEL\\2026\\08\\05-08FCC00001-00000394_MADERO_ROOF_TOP_CHESKO_AGUSTIN_EZEQUIEL.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\COLMAN_TOMAS_AGUSTIN\\2026\\04\\27-04FCC00001-00000030_MADERO_ROOF_TOP_COLMAN_TOMAS_AGUSTIN.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\COLMAN_TOMAS_AGUSTIN\\2026\\04\\17-04FCC00001-00000030_MADERO_ROOF_TOP_COLMAN_TOMAS_AGUSTIN.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\COLMAN_TOMAS_AGUSTIN\\2026\\07\\24-07FCC00001-00000042_MADERO_ROOF_TOP_COLMAN_TOMAS_AGUSTIN.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\COLMAN_TOMAS_AGUSTIN\\2026\\07\\14-07FCC00001-00000042_MADERO_ROOF_TOP_COLMAN_TOMAS_AGUSTIN.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\COLMAN_TOMAS_AGUSTIN\\2026\\08\\15-08FCC00001-00000046_MADERO_ROOF_TOP_COLMAN_TOMAS_AGUSTIN.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\COLMAN_TOMAS_AGUSTIN\\2026\\08\\05-08FCC00001-00000046_MADERO_ROOF_TOP_COLMAN_TOMAS_AGUSTIN.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\COLMAN_TOMAS_AGUSTIN\\2026\\08\\15-08FCC00001-00000048_MADERO_ROOF_TOP_COLMAN_TOMAS_AGUSTIN.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\COLMAN_TOMAS_AGUSTIN\\2026\\08\\05-08FCC00001-00000048_MADERO_ROOF_TOP_COLMAN_TOMAS_AGUSTIN.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\DAVILA_JUAN_IGNACIO\\2026\\03\\20-03FCC00002-00000286_MADERO_ROOF_TOP_DAVILA_JUAN_IGNACIO.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\DAVILA_JUAN_IGNACIO\\2026\\03\\10-03FCC00002-00000286_MADERO_ROOF_TOP_DAVILA_JUAN_IGNACIO.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\DAVILA_JUAN_IGNACIO\\2026\\04\\03-04FCC00002-00000290_MADERO_ROOF_TOP_DAVILA_JUAN_IGNACIO.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\DAVILA_JUAN_IGNACIO\\2026\\03\\24-03FCC00002-00000290_MADERO_ROOF_TOP_DAVILA_JUAN_IGNACIO.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\DAVILA_JUAN_IGNACIO\\2026\\04\\11-04FCC00002-00000291_MADERO_ROOF_TOP_DAVILA_JUAN_IGNACIO.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\DAVILA_JUAN_IGNACIO\\2026\\04\\01-04FCC00002-00000291_MADERO_ROOF_TOP_DAVILA_JUAN_IGNACIO.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\DAVILA_JUAN_IGNACIO\\2026\\04\\18-04FCC00002-00000292_MADERO_ROOF_TOP_DAVILA_JUAN_IGNACIO.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\DAVILA_JUAN_IGNACIO\\2026\\04\\08-04FCC00002-00000292_MADERO_ROOF_TOP_DAVILA_JUAN_IGNACIO.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\DAVILA_JUAN_IGNACIO\\2026\\07\\24-07FCC00002-00000306_MADERO_ROOF_TOP_DAVILA_JUAN_IGNACIO.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\DAVILA_JUAN_IGNACIO\\2026\\07\\14-07FCC00002-00000306_MADERO_ROOF_TOP_DAVILA_JUAN_IGNACIO.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\DAVILA_JUAN_IGNACIO\\2026\\07\\31-07FCC00002-00000308_MADERO_ROOF_TOP_DAVILA_JUAN_IGNACIO.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\DAVILA_JUAN_IGNACIO\\2026\\07\\21-07FCC00002-00000308_MADERO_ROOF_TOP_DAVILA_JUAN_IGNACIO.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\ENVAIRO_S_A_U\\2026\\05\\10-05FCA00004-00010187_MADERO_ROOF_TOP_ENVAIRO_S_A_U.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\ENVAIRO_S_A_U\\2026\\04\\30-04FCA00004-00010187_MADERO_ROOF_TOP_ENVAIRO_S_A_U.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\MACHADO_BARRIOS_JUAN_MARTIN\\2026\\05\\28-05FCC00004-00000022_MADERO_ROOF_TOP_MACHADO_BARRIOS_JUAN_MARTIN.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\MACHADO_BARRIOS_JUAN_MARTIN\\2026\\05\\18-05FCC00004-00000022_MADERO_ROOF_TOP_MACHADO_BARRIOS_JUAN_MARTIN.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\MACHADO_BARRIOS_JUAN_MARTIN\\2026\\07\\23-07FCC00004-00000027_MADERO_ROOF_TOP_MACHADO_BARRIOS_JUAN_MARTIN.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\MACHADO_BARRIOS_JUAN_MARTIN\\2026\\07\\13-07FCC00004-00000027_MADERO_ROOF_TOP_MACHADO_BARRIOS_JUAN_MARTIN.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\MACHADO_BARRIOS_JUAN_MARTIN\\2026\\07\\26-07FCC00004-00000028_MADERO_ROOF_TOP_MACHADO_BARRIOS_JUAN_MARTIN.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\MACHADO_BARRIOS_JUAN_MARTIN\\2026\\07\\16-07FCC00004-00000028_MADERO_ROOF_TOP_MACHADO_BARRIOS_JUAN_MARTIN.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\MACHADO_BARRIOS_JUAN_MARTIN\\2026\\07\\31-07FCC00004-00000029_MADERO_ROOF_TOP_MACHADO_BARRIOS_JUAN_MARTIN.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\MACHADO_BARRIOS_JUAN_MARTIN\\2026\\07\\21-07FCC00004-00000029_MADERO_ROOF_TOP_MACHADO_BARRIOS_JUAN_MARTIN.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\MACHADO_BARRIOS_JUAN_MARTIN\\2026\\08\\01-08FCC00004-00000030_MADERO_ROOF_TOP_MACHADO_BARRIOS_JUAN_MARTIN.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\MACHADO_BARRIOS_JUAN_MARTIN\\2026\\07\\22-07FCC00004-00000030_MADERO_ROOF_TOP_MACHADO_BARRIOS_JUAN_MARTIN.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\NOVOA_NUNEZ_EVANGELINA_GERALDINE\\2026\\03\\19-03FCC00001-00000057_MADERO_ROOF_TOP_NOVOA_NUNEZ_EVANGELINA_GERALDINE.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\NOVOA_NUNEZ_EVANGELINA_GERALDINE\\2026\\03\\09-03FCC00001-00000057_MADERO_ROOF_TOP_NOVOA_NUNEZ_EVANGELINA_GERALDINE.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\NOVOA_NUNEZ_EVANGELINA_GERALDINE\\2026\\03\\27-03FCC00001-00000060_MADERO_ROOF_TOP_NOVOA_NUNEZ_EVANGELINA_GERALDINE.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\NOVOA_NUNEZ_EVANGELINA_GERALDINE\\2026\\03\\17-03FCC00001-00000060_MADERO_ROOF_TOP_NOVOA_NUNEZ_EVANGELINA_GERALDINE.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\NOVOA_NUNEZ_EVANGELINA_GERALDINE\\2026\\04\\07-04FCC00001-00000062_MADERO_ROOF_TOP_NOVOA_NUNEZ_EVANGELINA_GERALDINE.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\NOVOA_NUNEZ_EVANGELINA_GERALDINE\\2026\\03\\28-03FCC00001-00000062_MADERO_ROOF_TOP_NOVOA_NUNEZ_EVANGELINA_GERALDINE.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\NOVOA_NUNEZ_EVANGELINA_GERALDINE\\2026\\04\\30-04FCC00001-00000065_MADERO_ROOF_TOP_NOVOA_NUNEZ_EVANGELINA_GERALDINE.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\NOVOA_NUNEZ_EVANGELINA_GERALDINE\\2026\\04\\20-04FCC00001-00000065_MADERO_ROOF_TOP_NOVOA_NUNEZ_EVANGELINA_GERALDINE.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\NOVOA_NUNEZ_EVANGELINA_GERALDINE\\2026\\07\\30-07FCC00001-00000075_MADERO_ROOF_TOP_NOVOA_NUNEZ_EVANGELINA_GERALDINE.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\NOVOA_NUNEZ_EVANGELINA_GERALDINE\\2026\\07\\20-07FCC00001-00000075_MADERO_ROOF_TOP_NOVOA_NUNEZ_EVANGELINA_GERALDINE.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\03\\19-03FCC00003-00000134_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\03\\09-03FCC00003-00000134_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\04\\04-04FCC00003-00000136_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\03\\25-03FCC00003-00000136_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\04\\09-04FCC00003-00000137_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\03\\30-03FCC00003-00000137_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\04\\19-04FCC00003-00000141_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\04\\09-04FCC00003-00000141_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\04\\26-04FCC00003-00000143_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\04\\16-04FCC00003-00000143_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\05\\17-05FCC00003-00000146_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\05\\07-05FCC00003-00000146_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\07\\12-07FCC00003-00000153_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\07\\02-07FCC00003-00000153_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\07\\23-07FCC00003-00000154_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\07\\13-07FCC00003-00000154_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\07\\30-07FCC00003-00000155_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\07\\20-07FCC00003-00000155_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\08\\09-08FCC00003-00000156_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\07\\30-07FCC00003-00000156_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    },
+    {
+      "current_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\08\\15-08FCC00003-00000157_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "original_path": "C:\\Users\\piola\\Documents\\Facturas\\TOSSOUNIAN_ANA_VERONICA\\2026\\08\\05-08FCC00003-00000157_MADERO_ROOF_TOP_TOSSOUNIAN_ANA_VERONICA.pdf",
+      "reason": "La auditoría v0.38.0 desplazó la fecha exactamente +10 días; patrón compatible con fecha de vencimiento para el pago."
+    }
+  ]
+}

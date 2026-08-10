@@ -1,5 +1,7 @@
 python-dotenv
 pypdf
 openpyxl
-
 PyMuPDF>=1.24
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib

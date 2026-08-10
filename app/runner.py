@@ -1,8 +1,8 @@
 """Punto central de comandos del Proyecto Facturas.
 
 El runner interpreta los argumentos de la terminal y delega cada operación en
-un módulo especializado. Mantener esta capa breve hace que agregar un comando
-nuevo no mezcle su implementación con las demás tareas.
+un módulo especializado. Mantener esta capa breve hace que agregar una fuente
+nueva no mezcle su implementación con las demás tareas.
 """
 
 from __future__ import annotations
@@ -23,7 +23,9 @@ logger = get_logger(__name__)
 
 
 def _crear_argumentos() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Descarga y organiza facturas de Gmail.")
+    parser = argparse.ArgumentParser(
+        description="Descarga, clasifica y organiza documentos comerciales."
+    )
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument(
         "--full-scan",
@@ -31,9 +33,17 @@ def _crear_argumentos() -> argparse.Namespace:
         help="Recorre todo Gmail y omite los correos ya completados.",
     )
     modes.add_argument(
+        "--download-drive",
+        action="store_true",
+        help=(
+            "Descarga a _Pendientes los PDF nuevos de las carpetas de "
+            "Google Drive configuradas."
+        ),
+    )
+    modes.add_argument(
         "--reprocess-pending",
         action="store_true",
-        help="Analiza los PDF de _Pendientes sin conectarse a Gmail.",
+        help="Analiza los PDF de _Pendientes sin conectarse a Gmail ni Drive.",
     )
     modes.add_argument(
         "--normalize-supplier-folders",
@@ -70,13 +80,37 @@ def _crear_argumentos() -> argparse.Namespace:
         action="store_true",
         help="Confirma una operación destructiva que por defecto es vista previa.",
     )
-    return parser.parse_args()
+    parser.add_argument(
+        "--ocr",
+        action="store_true",
+        help=(
+            "En --audit-organized-dates, aplica OCR únicamente a los PDF que "
+            "no tengan texto digital. No OCRiza documentos digitales."
+        ),
+    )
+    argumentos = parser.parse_args()
+    if argumentos.ocr and not argumentos.audit_organized_dates:
+        parser.error("--ocr solo puede usarse junto con --audit-organized-dates.")
+    return argumentos
 
 
 def main() -> None:
     argumentos = _crear_argumentos()
     log_file = configure_logging(config.LOG_FOLDER, config.LOG_LEVEL)
     logger.info("Aplicación iniciada. Archivo de log: %s", log_file)
+
+    if argumentos.download_drive:
+        # Importación diferida: los comandos de Gmail y de procesamiento local
+        # no necesitan cargar las bibliotecas de Google Drive.
+        from app.drive_workflow import run_drive_download
+
+        try:
+            run_drive_download()
+        except Exception as error:
+            logger.exception("Error general durante el flujo Google Drive")
+            print("\nSE PRODUJO UN ERROR EN GOOGLE DRIVE")
+            print(error)
+        return
 
     if argumentos.reprocess_pending:
         resultados = reprocesar_pendientes()
@@ -92,7 +126,7 @@ def main() -> None:
         return
 
     if argumentos.audit_organized_dates:
-        _run_date_audit(apply=argumentos.apply)
+        _run_date_audit(apply=argumentos.apply, allow_ocr=argumentos.ocr)
         return
 
     if argumentos.export_supplier_tax_profile:
@@ -181,17 +215,48 @@ def _run_supplier_normalization() -> None:
     print("\n" + "=" * 50)
 
 
-def _run_date_audit(*, apply: bool) -> None:
-    resultados = audit_organized_invoice_dates(config.SAVE_FOLDER, apply=apply)
+def _run_date_audit(*, apply: bool, allow_ocr: bool = False) -> None:
+    resultados = audit_organized_invoice_dates(
+        config.SAVE_FOLDER,
+        apply=apply,
+        allow_ocr=allow_ocr,
+        include_verified=True,
+    )
     print("\n" + "=" * 50)
     print("AUDITORÍA DE FECHAS ORGANIZADAS")
     print("=" * 50)
-    if not resultados:
+    print(
+        "Modo de lectura: OCR selectivo solo para PDF sin texto digital."
+        if allow_ocr
+        else "Modo de lectura: texto digital únicamente (sin OCR)."
+    )
+    verified = sum(r.status == "verified_ok" for r in resultados)
+    # ``unresolved_date`` queda contabilizado en el resumen pero no se imprime
+    # uno por uno: no es un conflicto ni una propuesta de movimiento.
+    actionable = [
+        r for r in resultados
+        if r.status not in {"verified_ok", "unresolved_date"}
+    ]
+    moves = sum(r.status in {"would_move", "would_move_ocr", "date_repaired", "date_repaired_ocr"} for r in resultados)
+    skipped = sum(r.status == "skipped_no_digital_text" for r in resultados)
+    review = sum("manual_review" in r.status for r in resultados)
+    unresolved = sum(r.status == "unresolved_date" for r in resultados)
+
+    print(f"Facturas digitales verificadas como correctas: {verified}")
+    print(f"Correcciones detectadas/aplicadas: {moves}")
+    print(f"Conflictos reales para revisión manual: {review}")
+    print(f"Fechas sin evidencia suficiente (sin cambios): {unresolved}")
+    print(f"PDF sin texto digital omitidos: {skipped}")
+
+    if not actionable:
         print("No se encontraron facturas con fechas inconsistentes.")
     elif not apply:
         print("Modo vista previa: no se movió ningún archivo.")
         print("Usá --audit-organized-dates --apply para confirmar.")
-    for resultado in resultados:
+
+    # Los archivos ya verificados no se imprimen uno por uno para no llenar la
+    # consola. El resumen anterior demuestra que también fueron auditados.
+    for resultado in actionable:
         print(f"\nEstado: {resultado.status}")
         print(f"Origen: {resultado.source}")
         if resultado.destination:
@@ -203,6 +268,7 @@ def _run_date_audit(*, apply: bool) -> None:
 
 def _run_supplier_tax_profile_export() -> None:
     """Generar el perfil impositivo acumulado de proveedores organizados."""
+
     result = export_supplier_tax_profile(config.SAVE_FOLDER)
     print("\n" + "=" * 50)
     print("EXPORTACIÓN DEL PERFIL IMPOSITIVO")

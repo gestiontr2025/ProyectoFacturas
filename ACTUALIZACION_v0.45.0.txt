@@ -1,0 +1,16 @@
+ProyectoFacturas v0.45.0 — Auditoría de fechas validada contra corpus real
+
+Cambios principales:
+- Corrige la asociación geométrica entre FECHA DE EMISION y su valor en PDFs ARCA reales.
+- Evita que fechas de período facturado (Desde/Hasta) se confundan con emisión.
+- La geometría visual explícita prevalece sobre el orden lineal aplanado del bloque ARCA.
+- Mantiene parser digital como primera opción; no activa OCR en PDFs con texto digital.
+- El modo --ocr sigue siendo selectivo solo para PDFs sin texto digital.
+- Añade soporte de auditoría para fechas OCR/legacy espaciadas como "FECHA: 31 07 2026".
+- Conserva corrección atómica de carpeta año/mes y nombre DD-MM.
+
+Validación:
+- Suite automatizada: 202 tests aprobados.
+- Corpus real suministrado: 626 PDFs.
+- Auditoría digital detecta 46 correcciones de fecha conocidas con alta confianza.
+- Los 15 PDFs sin texto digital permanecen fuera de la pasada normal y requieren --ocr.

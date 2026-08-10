@@ -1,3 +1,40 @@
+## 0.44.0
+
+- Agrega auditoría geométrica digital sin OCR para layouts en columnas.
+- Evita ocultar fechas erróneas como estables por coincidencia con vencimientos.
+- Informa cantidad de facturas digitales efectivamente verificadas.
+- Mantiene OCR selectivo y opt-in.
+
+# Versión 0.39.0 — auditoría conservadora y recuperación segura
+
+- Separa la detección de fecha para auditoría del parser general: la auditoría ya no usa fallbacks amplios para decidir movimientos.
+- Conserva la fecha actual si ya aparece en el PDF fuera de contextos secundarios como vencimiento, VTO, CAE, período facturado o inicio de actividades.
+- Bloquea fechas futuras antes de cualquier movimiento automático.
+- Mantiene la corrección DBA cuando la evidencia fuerte es `DD/MM/AAAA Fecha:` y la fecha histórica pertenece a `INICIO ACTIV.`.
+- Agrega regresiones para el patrón observado de facturas C donde la fecha de vencimiento quedaba exactamente 10 días después de la emisión.
+- Incluye un recuperador seguro y un plan generado desde el log del incidente v0.38.0 para revertir únicamente desplazamientos exactos de +10 días. La recuperación es vista previa por defecto y nunca sobrescribe archivos.
+- Suite: 184 pruebas.
+
+# Versión 0.38.0 — parser primero, OCR solo como rescate
+
+- Refuerza la política parser-first: la evidencia digital, el nombre estructurado y la fecha semántica se agotan antes de ejecutar OCR forzado.
+- `leer_pdf(..., permitir_ocr=False)` permite rutas explícitamente libres de OCR sin alterar el comportamiento seguro de los PDFs realmente escaneados.
+- `--audit-organized-dates` ahora es digital-only y ya no dispara Tesseract al revisar archivos organizados.
+- Corrige el layout DBA donde `06/08/2026 Fecha:` debe ganar sobre `INICIO ACTIV.: 01/04/2006`.
+- Amplía la exclusión semántica para variantes abreviadas de `INICIO ACTIV.`.
+- Elimina el fallback genérico de fechas sobre texto compactado, que perdía contexto y podía elegir fechas societarias o vencimientos.
+- Conserva OCR multipasada, scoring fiscal, fusión conservadora, PSM alternativos y rotaciones como fallback para documentos realmente difíciles.
+
+# Versión 0.37.0 — OCR adaptativo y rendimiento defensivo
+
+- Convierte el OCR multipasada en fallback real: si la pasada inicial de PyMuPDF/Tesseract ya recuperó evidencia fiscal completa, no ejecuta PSM adicionales.
+- Conserva PSM 3/11/4/6/12, fusión conservadora, scoring fiscal y rotaciones 90°/270° para documentos difíciles.
+- Puede detener las pasadas cuando la evidencia combinada de varios PSM ya es suficiente.
+- Reduce el timeout individual de Tesseract CLI a 25 segundos y trata cada timeout como una estrategia fallida, permitiendo continuar con el resto del lote.
+- Detiene las rotaciones cuando una orientación ya reconstruyó evidencia suficiente.
+- Muestra progreso por archivo durante `--reprocess-pending`, incluyendo el método OCR usado, para distinguir trabajo intensivo de un bloqueo.
+- Agrega regresiones específicas para timeout y para evitar OCR multipasada redundante.
+
 # Versión 0.36.1
 
 - Implementa realmente OCR rotado 90°/270° para texto vertical.
@@ -316,3 +353,36 @@
 - Se detecta presencia de percepción IVA, IIBB CABA, IIBB Buenos Aires e impuestos internos.
 - El reporte no suma ni expone importes: solo indica `Sí` o `No` para cada concepto observado.
 - La extracción tributaria se aisló en el paquete `taxes` y se agregaron pruebas de regresión.
+
+# Integración Google Drive modularizada
+
+- Reemplaza el prototipo monolítico `drive_test.py` por el paquete `drive/`.
+- Separa OAuth (`drive/connection.py`), listado paginado (`drive/files.py`) y descarga defensiva (`drive/downloads.py`).
+- Agrega `app/drive_workflow.py` como coordinador de fuentes Drive.
+- Incorpora `--download-drive` al runner principal; Drive descarga a `_Pendientes` y no interpreta facturas.
+- Agrega soporte opcional para una segunda carpeta de escaneos mediante `DRIVE_SCAN_FOLDER_ID`.
+- Migra automáticamente los IDs de `data/drive_downloaded.json` a la base SQLite compartida del proyecto.
+- Evita sobrescrituras: archivos locales idénticos se reutilizan y colisiones con contenido distinto reciben sufijo numérico.
+- Las descargas usan archivos temporales `.part`; un PDF solo aparece en `_Pendientes` después de completarse.
+- Agrega las dependencias oficiales de Google Drive al `requirements.txt` y pruebas del historial persistente.
+
+## 0.43.0
+- La auditoría de fechas valida la ruta canónica completa: proveedor/año/mes/nombre.
+- Corrige nombres con fecha antigua aunque la carpeta ya sea correcta.
+- Corrige carpeta año/mes aunque el nombre ya tenga la fecha correcta.
+- Si carpeta y nombre están mal, los corrige juntos en una única operación de movimiento.
+- La vista previa informa ubicación actual y ubicación canónica esperada.
+- Se mantienen las defensas parser-first, OCR selectivo y bloqueo de fechas ambiguas.
+
+
+## 0.46.0 — Motor único de decisión de fechas
+
+- Se centralizó la decisión de fecha en `fiscal.issue_date.resolver_candidatos_fecha`.
+- La geometría ya no actúa como un segundo parser: aporta evidencia al mismo motor que evalúa el texto.
+- Se eliminó la evidencia circular que sumaba puntos a una fecha solo por aparecer en el nombre actual.
+- Un bloque ARCA aplanado ya no se considera evidencia fuerte por posición: su orden textual puede variar entre generadores PDF.
+- Una fecha geométrica explícitamente asociada a `Fecha de Emisión` prevalece sobre el orden lineal ambiguo.
+- `manual_review` queda reservado a contradicciones reales entre fechas plausibles. Una coincidencia media con el nombre se considera estable y no genera cientos de falsos positivos.
+- Los documentos sin evidencia suficiente ahora se contabilizan como `unresolved_date` en lugar de desaparecer silenciosamente del resumen.
+- Se agregaron regresiones específicas para la nueva política de decisión.
+- Validación sobre el conjunto real suministrado: 515 facturas organizadas contabilizadas, 380 verificadas, 46 correcciones digitales detectadas, 1 conflicto real, 73 sin evidencia suficiente y 15 escaneadas omitidas en modo sin OCR.

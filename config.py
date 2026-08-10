@@ -55,6 +55,39 @@ SAVE_FOLDER = obtener_ruta_desde_entorno(
     DEFAULT_SAVE_FOLDER,
 )
 
+# Bandeja única de entrada para documentos todavía no procesados. Gmail, Drive
+# y futuros orígenes deben depositar aquí archivos completos antes de entregarlos
+# al pipeline de clasificación.
+PENDING_FOLDER = SAVE_FOLDER / "_Pendientes"
+
+# ---------------------------------------------------------------------------
+# Google Drive
+# ---------------------------------------------------------------------------
+# OAuth usa dos archivos locales privados. ``credentials.json`` identifica la
+# aplicación y ``token.json`` recuerda la autorización del usuario. Ambos están
+# ignorados por Git.
+DEFAULT_DRIVE_CREDENTIALS_PATH = PROJECT_ROOT / "credentials.json"
+DRIVE_CREDENTIALS_PATH = obtener_ruta_desde_entorno(
+    "DRIVE_CREDENTIALS_PATH",
+    DEFAULT_DRIVE_CREDENTIALS_PATH,
+)
+
+DEFAULT_DRIVE_TOKEN_PATH = PROJECT_ROOT / "token.json"
+DRIVE_TOKEN_PATH = obtener_ruta_desde_entorno(
+    "DRIVE_TOKEN_PATH",
+    DEFAULT_DRIVE_TOKEN_PATH,
+)
+
+# Cada carpeta remota funciona como una fuente independiente. La carpeta de
+# escaneos es opcional por ahora; al configurarla, el mismo workflow comenzará a
+# revisarla sin cambios de código.
+DRIVE_PROVIDER_FOLDER_ID = os.getenv("DRIVE_PROVIDER_FOLDER_ID", "").strip()
+DRIVE_SCAN_FOLDER_ID = os.getenv("DRIVE_SCAN_FOLDER_ID", "").strip()
+
+# Archivo utilizado por el prototipo drive_test.py. El workflow definitivo lo
+# migra automáticamente a SQLite para conservar los IDs ya descargados.
+LEGACY_DRIVE_HISTORY_PATH = PROJECT_ROOT / "data" / "drive_downloaded.json"
+
 # Los logs se guardan fuera de la carpeta de facturas para que una tarea de
 # organización o deduplicación nunca los confunda con documentos comerciales.
 DEFAULT_LOG_FOLDER = PROJECT_ROOT / "logs"
@@ -79,6 +112,22 @@ SUPPLIER_CANDIDATES_PATH = obtener_ruta_desde_entorno(
     "SUPPLIER_CANDIDATES_PATH",
     DEFAULT_SUPPLIER_CANDIDATES_PATH,
 )
+
+
+def validar_configuracion_drive() -> None:
+    """Detectar problemas de configuración antes de conectarse a Drive."""
+
+    if not DRIVE_PROVIDER_FOLDER_ID and not DRIVE_SCAN_FOLDER_ID:
+        raise ValueError(
+            "No hay carpetas de Google Drive configuradas. Definí "
+            "DRIVE_PROVIDER_FOLDER_ID y/o DRIVE_SCAN_FOLDER_ID en .env."
+        )
+
+    if not DRIVE_CREDENTIALS_PATH.exists():
+        raise FileNotFoundError(
+            "No se encontró credentials.json para Google Drive. Ruta esperada: "
+            f"{DRIVE_CREDENTIALS_PATH}"
+        )
 
 
 def validar_configuracion() -> None:

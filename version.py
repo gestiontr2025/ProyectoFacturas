@@ -22,7 +22,7 @@ Ejemplo
 -------
 Para cambiar la versión del proyecto:
 
-    PROJECT_VERSION = "0.36.1"
+    PROJECT_VERSION = "0.46.0"
 
 No deben guardarse aquí contraseñas, direcciones de correo,
 rutas ni otras configuraciones.
@@ -35,7 +35,7 @@ rutas ni otras configuraciones.
 # VERSIÓN ACTUAL DEL PROYECTO
 # ==========================================================
 
-PROJECT_VERSION = "0.36.1"
+PROJECT_VERSION = "0.46.0"
 
 
 # ==========================================================

@@ -1,0 +1,30 @@
+ProyectoFacturas v0.41.0
+========================
+
+Objetivo de esta versión
+------------------------
+Mejorar la precisión de --audit-organized-dates después de detectar dos
+familias de errores reales:
+
+1. DBA: Inicio de Actividades 01/04/2006 podía competir con la emisión 2026.
+2. Facturas C/ARCA: el vencimiento podía quedar 10 días después de la emisión y
+   ser interpretado como emisión al aplanarse las columnas del PDF.
+
+Qué cambia
+----------
+- Parser normal sigue siendo la ruta por defecto.
+- Auditoría masiva NO activa OCR.
+- Fecha genérica ya no alcanza para mover un archivo.
+- Bloque ARCA de cuatro fechas se analiza por consistencia; no por posición fija.
+- Si la geometría digital del PDF está disponible, se usa para volver a asociar
+  `Fecha de Emisión` con la fecha visualmente alineada, sin OCR.
+- Se valida la identidad fiscal antes de mover.
+- Fechas ambiguas, futuras o con identidad contradictoria nunca se aplican.
+
+Prueba recomendada
+------------------
+Ejecutar primero únicamente:
+
+    python main.py --audit-organized-dates
+
+Revisar todos los `would_move` antes de utilizar `--apply`.

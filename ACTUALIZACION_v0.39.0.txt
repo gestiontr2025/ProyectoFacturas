@@ -1,0 +1,30 @@
+ProyectoFacturas v0.39.0
+========================
+
+Corrección principal
+--------------------
+La auditoría de fechas ahora usa un detector estricto independiente del parser general.
+No reutiliza fallbacks amplios al decidir movimientos de archivos ya organizados.
+
+Protecciones agregadas
+----------------------
+- Si la fecha actual del nombre ya aparece en el PDF fuera de contextos como VTO,
+  vencimiento, CAE, período facturado o inicio de actividades, se conserva.
+- Las fechas futuras quedan bloqueadas y nunca se aplican automáticamente.
+- El caso DBA "INICIO ACTIV.: 01/04/2006" sigue corrigiéndose mediante la evidencia
+  fuerte del layout "06/08/2026 Fecha:".
+- La auditoría continúa siendo digital-only: no dispara OCR.
+
+Recuperación del incidente v0.38.0
+----------------------------------
+Se incluye un plan generado a partir del log suministrado por el usuario para revertir
+únicamente movimientos de exactamente +10 días, patrón observado al confundir la fecha
+de vencimiento con la fecha de emisión.
+
+Vista previa:
+  python tools/rollback_date_audit_plan.py recovery/rollback_due_date_audit_20260809.json
+
+Aplicar después de revisar:
+  python tools/rollback_date_audit_plan.py recovery/rollback_due_date_audit_20260809.json --apply
+
+El recuperador nunca sobrescribe un archivo existente.
